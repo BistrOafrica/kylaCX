@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package da.proto;
+option go_package = "./pb";
+import "owner_type.proto";
+
+message Group {
+    string id = 1;
+    string name = 2;
+    string created_at = 3;
+    string updated_at = 4;
+    repeated string contact_ids = 5;
+    string owner_id = 6;
+    OwnerType owner_type = 7;
+  }

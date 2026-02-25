@@ -1,0 +1,156 @@
+syntax = "proto3";
+
+package da.proto;
+option go_package = "./pb";
+import "contact.proto";
+
+enum RingStrategy {
+  RING_STRATEGY_RING_ALL = 0;
+  RING_STRATEGY_RANDOM = 1;
+  RING_STRATEGY_ROUND_ROBIN = 2;
+  RING_STRATEGY_TOP_DOWN = 3;
+  RING_STRATEGY_AGENT_WITH_FEWEST_CALLS = 4;
+  RING_STRATEGY_AGENT_WITH_LEAST_TALK_TIME = 5;
+  RING_STRATEGY_LONGEST_IDLE_AGENT = 6;
+  RING_STRATEGY_SEQUENCIAL_BY_AGENT = 7;
+}
+
+enum QueueType {
+  QUEUE_TYPE_INBOUND = 0;
+  QUEUE_TYPE_OUTBOUND = 1;
+  QUEUE_TYPE_PRIORITY = 2;
+}
+
+enum PickupStrategy {
+  PICKUP_STRATEGY_AUTO = 0;
+  PICKUP_STRATEGY_MANUAL = 1;
+}
+
+message QueueMember {
+  string id = 1;
+  string agent_id = 2;
+  string extension_id = 3;
+}
+
+message CallQueue {
+  string id = 1;
+  string name = 2;
+  string description = 3;
+  int32 max_wait_time = 4;
+  int32 wrap_up_time = 5;
+  int32 announce_frequency = 6;
+  bool announce_position = 7;
+  bool announce_hold_time = 8;
+  bool enable_recording = 9;
+  string greeting_audio_id = 10;
+  string music_on_hold_id = 11;
+  string team_id = 12;
+  string domain_id = 13;
+  string created_at = 14;
+  RingStrategy strategy = 15;
+  QueueType type = 16;
+  PickupStrategy pickup_strategy = 17;
+  repeated QueueMember members = 18;
+}
+
+message CreateQueueRequest {
+  string name = 1;
+  string description = 2;
+  int32 max_wait_time = 3;
+  int32 wrap_up_time = 4;
+  int32 announce_frequency = 5;
+  bool announce_position = 6;
+  bool announce_hold_time = 7;
+  bool enable_recording = 8;
+  string greeting_audio_id = 9;
+  string music_on_hold_id = 10;
+  string team_id = 11;
+  string domain_id = 12;
+  RingStrategy strategy = 14;
+  QueueType type = 15;
+  PickupStrategy pickup_strategy = 16;
+  repeated QueueMember members = 17;
+}
+
+message UpdateQueueRequest {
+  string id = 1;
+  string name = 2;
+  string description = 3;
+  int32 max_wait_time = 4;
+  int32 wrap_up_time = 5;
+  int32 announce_frequency = 6;
+  bool announce_position = 7;
+  bool announce_hold_time = 8;
+  bool enable_recording = 9;
+  string greeting_audio_id = 10;
+  string music_on_hold_id = 11;
+  string team_id = 12;
+  string domain_id = 13;
+  RingStrategy strategy = 14;
+  QueueType type = 15;
+  PickupStrategy pickup_strategy = 16;
+  repeated QueueMember members = 17;
+}
+
+message ReadQueueRequest {
+  string id = 1;
+}
+
+message SuccessQueueResponse {
+  bool success = 1;
+}
+
+message ReadQueuesRequest {
+  int32 page_number = 1;
+  int32 page_size = 2;
+  string domain_id = 3;
+}
+
+message ReadQueuesResponse {
+  int64 total = 1;
+  repeated CallQueue items = 2;
+}
+
+message ContactStatus {
+  string id = 1;
+  string name = 2;
+}
+
+message CallerBasicInformation {
+  string id = 1;
+  string first_name = 2;
+  string last_name = 3;
+  string phone = 4;
+  string country_code = 5;
+  string email = 6;
+  string created_at = 7;
+  ContactStatus status = 8;
+}
+
+message CallerDetails {
+  CallerBasicInformation basic_information = 1;
+  repeated CustomField additional_information = 2;
+}
+
+message Caller {
+  int32 position = 1;
+  CallerDetails details = 2;
+}
+
+message CallersInQueueRequest {
+  string queue_id = 1;
+  string number_id = 2;
+}
+
+message CallersInQueueResponse {
+  repeated Caller callers = 1;
+}
+
+service CallQueueService {
+  rpc CreateQueue(CreateQueueRequest) returns (SuccessQueueResponse);
+  rpc ReadQueue(ReadQueueRequest) returns (CallQueue);
+  rpc UpdateQueue(UpdateQueueRequest) returns (SuccessQueueResponse);
+  rpc DeleteQueue(ReadQueueRequest) returns (SuccessQueueResponse);
+  rpc ReadQueues(ReadQueuesRequest) returns (ReadQueuesResponse);
+  rpc GetCallersInQueue(CallersInQueueRequest) returns (CallersInQueueResponse);
+}

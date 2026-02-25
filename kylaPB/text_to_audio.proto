@@ -1,0 +1,39 @@
+syntax = "proto3";
+
+package da.proto;
+
+option go_package = "./pb";
+
+message TextToAudioRequest {
+    string text = 1;
+    string language = 2;
+}
+
+message TextToAudioResponse {
+    string id = 1;
+    string status = 2;
+    string created_on = 3;
+    string url = 4;
+}
+
+message TextToAudioNotification {
+    string id = 1;
+    string status = 2;
+    string created_on = 3;
+}
+
+message RetrieveTextToAudioRequest {
+    string id = 1;
+}
+
+message RetrieveTextToAudioResponse {
+    oneof response {
+        TextToAudioResponse text_to_audio = 1;
+        TextToAudioNotification notification = 2;
+    }
+}
+
+service TextToAudio {
+    rpc TextToAudio(TextToAudioRequest) returns (TextToAudioResponse);
+    rpc RetrieveTextToAudio(RetrieveTextToAudioRequest) returns (RetrieveTextToAudioResponse);
+}

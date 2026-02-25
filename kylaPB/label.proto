@@ -1,0 +1,67 @@
+syntax = "proto3";
+
+package da.proto;
+option go_package = "./pb";
+
+import "owner_type.proto";
+
+message Label {
+    string id = 1;
+    string name = 2;
+    string created_at = 4;
+    string updated_at = 5;
+    string created_by = 6;
+    OwnerType owner_type = 7;
+    string owner_id = 8;
+}
+
+message CreateLabelRequest {
+    Label label = 1;
+    Scope scope = 2;
+  }
+  
+  message CreateLabelResponse {
+    Label label = 1;
+  }
+  
+  message ReadLabelRequest {
+    string id = 1;
+    Scope scope = 2;
+  }
+  
+  message ReadLabelResponse {
+    Label label = 1;
+  }
+  
+  message ReadLabelsRequest {
+    Scope scope = 2;
+  }
+  
+  message ReadLabelsResponse {
+    repeated Label labels = 1;
+  }
+  message UpdateLabelRequest {
+    Label label = 1;
+    Scope scope = 2;
+  }
+  
+  message UpdateLabelResponse {
+    Label label = 1;
+  }
+  
+  message DeleteLabelRequest {
+    string id = 1;
+    Scope scope = 2;
+  }
+  
+  message DeleteLabelResponse {
+    bool success = 1;
+  }
+  
+  service LabelService {
+    rpc CreateLabel(CreateLabelRequest) returns (CreateLabelResponse) {}
+    rpc ReadLabel(ReadLabelRequest) returns (ReadLabelResponse) {}
+    rpc ReadLabels(ReadLabelsRequest) returns (ReadLabelsResponse) {}
+    rpc UpdateLabel(UpdateLabelRequest) returns (UpdateLabelResponse) {}
+    rpc DeleteLabel(DeleteLabelRequest) returns (DeleteLabelResponse) {}
+  }

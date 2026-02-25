@@ -1,0 +1,56 @@
+syntax="proto3";
+
+package da.proto;
+option go_package = "./pb";
+
+message CallServer {
+  string id = 1;
+  string name = 2;
+  string ip_address = 3;
+  string ownership_id = 4;
+  string region_id = 5;
+  string description = 6;
+  string created_at = 7;
+}
+
+message CreateServerRequest {
+  string name = 1;
+  string ip_address = 2;
+  string region_id = 3;
+  string description = 4;
+}
+
+message UpdateServerRequest {
+  string id = 1;
+  string name = 2;
+  string ip_address = 3;
+  string region_id = 4;
+  string description = 5;
+}
+
+message ReadServerRequest {
+  string id = 1;
+}
+
+message SuccessServerResponse {
+  bool success = 1;
+}
+
+message ReadServersRequest {
+  int32 page_number = 1;
+  int32 page_size = 2;
+  string region_id = 3;
+}
+
+message ReadServersResponse {
+  int64 total = 1;
+  repeated CallServer items = 2;
+}
+
+service CallServerService {
+  rpc CreateServer(CreateServerRequest) returns (SuccessServerResponse);
+  rpc ReadServer(ReadServerRequest) returns (CallServer);
+  rpc UpdateServer(UpdateServerRequest) returns (SuccessServerResponse);
+  rpc DeleteServer(ReadServerRequest) returns (SuccessServerResponse);
+  rpc ReadServers(ReadServersRequest) returns (ReadServersResponse);
+}

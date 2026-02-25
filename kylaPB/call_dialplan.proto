@@ -1,0 +1,81 @@
+syntax = "proto3";
+
+package da.proto;
+option go_package = "./pb";
+import "pipelines.proto";
+
+message NodePosition {
+  float x = 1;
+  float y = 2;
+}
+
+enum DialplanNodeType {
+  DIALPLAN_NODE_TYPE_END = 0;
+  DIALPLAN_NODE_TYPE_AUDIO = 1;
+  DIALPLAN_NODE_TYPE_IVR_MENU = 2;
+  DIALPLAN_NODE_TYPE_IVR_FLOW = 3;
+  DIALPLAN_NODE_TYPE_EXTENSION = 4;
+  DIALPLAN_NODE_TYPE_QUEUE = 5;
+  DIALPLAN_NODE_TYPE_HANGUP = 6;
+  DIALPLAN_NODE_TYPE_VOICEMAIL = 7;
+  DIALPLAN_NODE_TYPE_TRIGGER = 8;
+}
+
+message DialplanNode {
+  string id = 1;
+  DialplanNodeType node_type = 2;
+  NodePosition node_position = 3;
+}
+
+message CallDialplan {
+  string id = 1;
+  string name = 2;
+  string description = 3;
+  string notes = 4;
+  repeated DialplanNode nodes = 5;
+  repeated Edge edges = 6;
+  string created_at = 7;
+}
+
+message CreateDialplanRequest {
+  string name = 1;
+  string description = 2;
+  string notes = 3;
+  repeated DialplanNode nodes = 4;
+  repeated Edge edges = 5;
+}
+
+message UpdateDialplanRequest {
+  string id = 1;
+  string name = 2;
+  string description = 3;
+  string notes = 4;
+  repeated DialplanNode nodes = 5;
+  repeated Edge edges = 6;
+}
+
+message ReadDialplanRequest {
+  string id = 1;
+}
+
+message SuccessDialplanResponse {
+  bool success = 1;
+}
+
+message ReadDialplansRequest {
+  int32 page_number = 1;
+  int32 page_size = 2;
+}
+
+message ReadDialplansResponse {
+  int64 total = 2;
+  repeated CallDialplan items = 1;
+}
+
+service CallDialplanService {
+  rpc CreateDialplan(CreateDialplanRequest) returns (SuccessDialplanResponse);
+  rpc ReadDialplan(ReadDialplanRequest) returns (CallDialplan);
+  rpc UpdateDialplan(UpdateDialplanRequest) returns (SuccessDialplanResponse);
+  rpc DeleteDialplan(ReadDialplanRequest) returns (SuccessDialplanResponse);
+  rpc ReadDialplans(ReadDialplansRequest) returns (ReadDialplansResponse);
+}

@@ -1,0 +1,29 @@
+syntax = "proto3";
+
+package da.proto;
+
+option go_package = "./pb";
+
+message PaymentTransaction {
+  string id = 1;
+
+}
+
+message VerifyTransactionRequest {
+  string reference = 1;
+}
+
+message VerifyTransactionResponse {
+  string reference = 1;
+  string status    = 2;
+}
+
+message ReadPaymentTransactions {
+
+}
+
+// payments service
+service PaymentsTransactionsService {
+  // verify transaction
+  rpc VerifyTransaction(VerifyTransactionRequest) returns(VerifyTransactionResponse);
+}

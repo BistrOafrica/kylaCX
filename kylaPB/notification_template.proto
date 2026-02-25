@@ -1,0 +1,87 @@
+syntax="proto3";
+
+package da.proto;
+option go_package = "./pb";
+import "owner_type.proto";
+
+
+enum NotificationChannel {
+	NOTIFICATION_CHANNEL_UNSPECIFIED = 0;
+	EMAIL = 1;
+	SMS = 2;
+	PUSH = 3;
+	WEBHOOK = 4;
+	WHATSAPP = 5;
+	INSTAGRAM = 6;
+	TELEGRAM = 7;
+	TWITTER = 8;
+	FACEBOOK = 9;
+}
+
+message NotificationTemplate {
+	string id = 1;
+	string name = 2;
+	NotificationChannel channel = 3;
+	string subject = 4;           // For email-like channels
+	string body = 5;              // Template content (e.g. Go template, Mustache)
+	map<string, string> metadata = 6; // Optional custom data (e.g. buttons, image URLs)
+	string description = 7;
+	string owner_id = 8;
+	OwnerType owner_type = 9;
+}
+
+message CreateNotificationTemplateRequest {
+	NotificationTemplate item = 1;
+}
+  
+message CreateNotificationTemplateResponse {
+	string message = 1;
+	NotificationTemplate item = 2;
+}
+
+message ReadNotificationTemplateRequest {
+	string id = 1;
+}
+  
+message ReadNotificationTemplateResponse {
+	NotificationTemplate item = 1;
+}
+  
+message UpdateNotificationTemplateRequest {
+	NotificationTemplate item = 1;
+}
+  
+message UpdateNotificationTemplateResponse {
+	string message = 1;
+	NotificationTemplate item = 2;
+}
+
+message DeleteNotificationTemplateRequest {
+	string id = 1;
+}
+  
+message DeleteNotificationTemplateResponse {
+	bool success = 1;
+	string message = 2;
+}
+  
+message ReadNotificationTemplatesRequest {
+	int32 page = 1;
+	int32 limit = 2;
+	string owner_id = 3;
+	OwnerType owner_type = 4;
+}
+  
+message ReadNotificationTemplatesResponse {
+	repeated NotificationTemplate items = 1;
+	int64 total = 2;
+}
+
+service NotificationTemplateService {
+	rpc CreateNotificationTemplate(CreateNotificationTemplateRequest) returns (CreateNotificationTemplateResponse);
+	rpc ReadNotificationTemplate(ReadNotificationTemplateRequest) returns (ReadNotificationTemplateResponse);
+	rpc UpdateNotificationTemplate(UpdateNotificationTemplateRequest) returns (UpdateNotificationTemplateResponse);
+	rpc SyncNotificationTemplate(UpdateNotificationTemplateRequest) returns (UpdateNotificationTemplateResponse);
+	rpc DeleteNotificationTemplate(DeleteNotificationTemplateRequest) returns (DeleteNotificationTemplateResponse);
+	rpc ReadNotificationTemplates(ReadNotificationTemplatesRequest) returns (ReadNotificationTemplatesResponse);
+}

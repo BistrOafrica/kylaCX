@@ -1,0 +1,93 @@
+syntax = "proto3";
+
+package da.proto;
+option go_package = "./pb"; 
+
+message Onboarding {
+  string id = 1;
+  string timestamp = 2;
+  string status = 3;
+  string packages = 4;
+  string products = 5;
+  int32 number_of_users = 6;
+  string remarks = 7;
+  string contact_email = 8;
+  string contact_phone = 9;
+  string name = 10;
+  string metadata = 11;
+  string created_at = 12;
+  string updated_at = 13;
+}
+
+message CreateOnboardingRequest {
+  string timestamp = 1;
+  string status = 2;
+  string packages = 3;
+  string products = 4;
+  int32 number_of_users = 5;
+  string remarks = 6;
+  string contact_email = 7;
+  string contact_phone = 8;
+  string name = 9;
+  string metadata = 10;
+}
+
+message CreateOnboardingResponse {
+  Onboarding onboarding = 1;
+}
+
+message ReadOnboardingRequest {
+  string id = 1;
+}
+
+message ReadOnboardingResponse {
+  Onboarding onboarding = 1;
+}
+
+message UpdateOnboardingRequest {
+  string id = 1;
+  string timestamp = 2;
+  string status = 3;
+  string packages = 4;
+  string products = 5;
+  int32 number_of_users = 6;
+  string remarks = 7;
+  string contact_email = 8;
+  string contact_phone = 9;
+  string name = 10;
+  string metadata = 11;
+}
+
+message UpdateOnboardingResponse {
+  Onboarding onboarding = 1;
+}
+
+message DeleteOnboardingRequest {
+  string id = 1;
+}
+
+message DeleteOnboardingResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+message ListOnboardingsRequest {
+  int32 page = 1;
+  int32 page_size = 2;
+  string status = 3;
+  string sort_by = 4;
+  bool sort_desc = 5;
+}
+
+message ListOnboardingsResponse {
+  repeated Onboarding onboardings = 1;
+  int64 total = 2;
+}
+
+service OnboardingService {
+  rpc CreateOnboarding(CreateOnboardingRequest) returns (CreateOnboardingResponse);
+  rpc ReadOnboarding(ReadOnboardingRequest) returns (ReadOnboardingResponse);
+  rpc UpdateOnboarding(UpdateOnboardingRequest) returns (UpdateOnboardingResponse);
+  rpc DeleteOnboarding(DeleteOnboardingRequest) returns (DeleteOnboardingResponse);
+  rpc ListOnboardings(ListOnboardingsRequest) returns (ListOnboardingsResponse);
+}

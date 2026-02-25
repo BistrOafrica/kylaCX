@@ -1,0 +1,480 @@
+syntax="proto3";
+
+package da.proto;
+option go_package = "./pb"; 
+
+import "owner_type.proto";
+import "contact.proto";
+import "lead.proto";
+
+message Pipeline {
+    enum PipelineType {
+        UNKNOWN = 0;
+        SALES = 1;
+        MARKETING = 2;
+        CUSTOMER_SUPPORT = 3;
+        NON_PROFIT = 4;
+    }
+    string id = 1;
+    string name = 2;
+    string description = 3;
+    repeated PipelineStage pipeline_stages = 4;
+    PipelineType pipeline_type = 5;
+    string serial_number = 7;
+    string created_at = 8;
+    string updated_at = 9;
+    string created_by = 10;
+    string updated_by = 11;
+    string owner_id = 14;
+    OwnerType owner_type = 15;
+    string custom_type_name = 17;
+    string custom_type_description = 18;
+    string color = 19;
+}
+
+message PipelineStage {
+    string id = 1;
+    string name = 2;
+    string description = 3;
+    string pipeline_id = 4;
+    int32 index = 5;
+    string stage_label_id = 6;
+    StageLabel stage_label = 7;
+    string serial_number = 8;
+    string created_at = 9;
+    string updated_at = 10;
+    string created_by = 11;
+    string updated_by = 12;
+    string owner_id = 16;
+    OwnerType owner_type = 17;
+    repeated StageRequirement requirements = 19;
+    repeated StageAutomation automations = 20;
+    string previous_stage_id = 21;
+    string next_stage_id = 22;
+}
+
+message StageLabel {
+    string id = 1;
+    string name = 2;
+    string description = 3;
+    string color = 4;
+    string banner = 5;
+    string serial_number = 6;
+    string created_at = 7;
+    string updated_at = 8;
+    string created_by = 9;
+    string updated_by = 12;
+    string pipeline_id = 17;
+}
+
+
+message StageRequirement {
+    int32 index = 1;
+    KeyValue parameter = 2;
+    string value = 3;
+    KeyValue condition = 4;
+    RequirementOwnerType owner_type = 5;
+    string owner_id = 6;
+    string field_id = 7;
+}
+
+message StageAutomation{
+    int32 index = 1;
+    repeated StageRequirement requirements = 2;
+    repeated AutomationAction actions = 3;
+}
+message AutomationAction{
+    int32 index = 2;
+    string date = 3;
+    KeyValue action = 4;
+    KeyValue type = 5;
+    KeyValue template = 6;
+}
+
+message KeyValue {
+    string label = 1;
+    string value = 2;
+}
+
+message ReadPipelineRequest {
+    string id = 1;
+    Scope scope = 2;
+}
+
+message ReadPipelineResponse {
+    Pipeline pipeline = 1;
+    Status  status = 2;
+}
+
+message ReadPipelinesRequest {
+    Scope scope = 2;
+}
+
+message ReadPipelinesResponse {
+    repeated Pipeline Pipelines = 1;
+    Status  status = 2;
+}
+
+message ReadPipelineStageRequest {
+    string id = 1;
+    Scope scope = 2;
+}
+
+message ReadPipelineStageResponse {
+    PipelineStage stage = 1;
+    repeated Contact contacts = 2;
+    repeated Lead leads = 3;
+    Status  status = 4;
+}
+message ReadPipelineStagesRequest {
+    string pipeline_id = 1;
+    Scope scope = 2;
+}
+
+message ReadPipelineStagesResponse {
+    repeated PipelineStage stages = 1;
+    Status  status = 2;
+}
+
+message CreatePipelineRequest {
+    Pipeline pipeline = 1;
+    Scope scope = 2;
+}
+
+message CreatePipelineResponse {
+    Pipeline pipeline = 1;
+    Status  status = 2;
+}
+
+message CreatePipelineStageRequest {
+    PipelineStage stage = 1;
+    Scope scope = 2;
+}
+
+message CreatePipelineStageResponse {
+    PipelineStage stage = 1;
+    Status  status = 2;
+}
+
+message UpdatePipelineRequest {
+    Pipeline pipeline = 1;
+    Scope scope = 2;
+}
+
+message UpdatePipelineResponse {
+    Pipeline pipeline = 1;
+    Status  status = 2;
+}
+
+message UpdatePipelineStageRequest {
+    PipelineStage stage = 1;
+    Scope scope = 2;
+}
+
+message UpdatePipelineStageResponse {
+    PipelineStage stage = 1;
+    Status  status = 2;
+}
+
+message DeletePipelineRequest {
+    string id = 1;
+    Scope scope = 2;
+}
+
+message DeletePipelineResponse {
+    Status  status = 1;
+}
+
+message DeletePipelineStageRequest {
+    string id = 1;
+    Scope scope = 2;
+}
+
+message DeletePipelineStageResponse {
+    Status  status = 1;
+}
+
+message CreateStageLabelRequest {
+    StageLabel stage_label = 1;
+    Scope scope = 2;
+}
+
+message CreateStageLabelResponse {
+    StageLabel stage_label = 1;
+    Status  status = 2;
+}
+
+message ReadStageLabelRequest {
+    string id = 1;
+    Scope scope = 2;
+}
+
+message ReadStageLabelResponse {
+    StageLabel stage_label = 1;
+    Status  status = 2;
+}
+
+message ReadStageLabelsRequest {
+    string pipeline_id = 1;
+    Scope scope = 2;
+}   
+
+message ReadStageLabelsResponse {
+    repeated StageLabel stage_labels = 1;
+    Status  status = 2;
+}
+
+message UpdateStageLabelRequest {
+    StageLabel stage_label = 1;
+    Scope scope = 2;
+}
+
+message UpdateStageLabelResponse {
+    StageLabel stage_label = 1;
+    Status  status = 2;
+}
+
+message DeleteStageLabelRequest {
+    string id = 1;
+    Scope scope = 2;
+}
+
+message DeleteStageLabelResponse {
+    Status  status = 1;
+}
+
+message ReadAppMetaDataRequest {
+    string user_id = 1;
+    Scope scope = 2;
+}
+
+message ReadAppMetaDataResponse {
+    PipelinesMD pipeline_md = 1;
+    Status  status = 2;
+}
+
+message PipelinesMD {
+    repeated PipeMD pipelines = 1;
+}
+
+message PipeMD {
+    string name = 1;
+    string ID = 2;
+    string color = 3;
+    repeated StageMD stages = 4;
+}
+
+message StageMD{
+    string name = 1;
+    string ID = 2;
+    string pipeline_id = 3;
+    string next_stage_id = 4;
+    string previous_stage_id = 5;
+}
+
+service PipelineService {
+    rpc CreatePipeline(CreatePipelineRequest) returns (CreatePipelineResponse);
+    rpc ReadPipeline(ReadPipelineRequest) returns (ReadPipelineResponse);
+    rpc ReadPipelines(ReadPipelinesRequest) returns (ReadPipelinesResponse);
+    rpc UpdatePipeline (UpdatePipelineRequest) returns (UpdatePipelineResponse);
+    rpc DeletePipeline (DeletePipelineRequest) returns (DeletePipelineResponse);
+    rpc ReadAppMetaData(ReadAppMetaDataRequest) returns (ReadAppMetaDataResponse);
+}
+
+service PipelineStageService {
+    rpc CreatePipelineStage(CreatePipelineStageRequest) returns (CreatePipelineStageResponse);
+    rpc ReadPipelineStage(ReadPipelineStageRequest) returns (ReadPipelineStageResponse);
+    rpc ReadPipelineStages(ReadPipelineStagesRequest) returns (ReadPipelineStagesResponse);
+    rpc UpdatePipelineStage (UpdatePipelineStageRequest) returns (UpdatePipelineStageResponse);
+    rpc DeletePipelineStage (DeletePipelineStageRequest) returns (DeletePipelineStageResponse);
+}
+service StageLabelService {
+    rpc CreateStageLabel(CreateStageLabelRequest) returns (CreateStageLabelResponse);
+    rpc ReadStageLabel(ReadStageLabelRequest) returns (ReadStageLabelResponse);
+    rpc ReadStageLabels(ReadStageLabelsRequest) returns (ReadStageLabelsResponse);
+    rpc UpdateStageLabel (UpdateStageLabelRequest) returns (UpdateStageLabelResponse);
+    rpc DeleteStageLabel (DeleteStageLabelRequest) returns (DeleteStageLabelResponse);
+}
+
+message Position {
+    int32 x = 1;
+    int32 y = 2;
+}
+
+message Measured {
+    int32 width = 1;
+    int32 height = 2;
+}
+
+message FlowNodeData{
+    string pipeline_id = 1;
+    int32 index = 2;
+    bool is_first_stage = 3;
+    Pipeline pipeline = 4;
+    PipelineStage stage = 5;
+}
+
+message FlowNode {
+    string id = 1;
+    Position position = 2;
+    bool draggable = 3;
+    FlowNodeData data = 4;
+    repeated float origin = 5;
+    bool is_tail = 6;
+    bool is_head = 7;
+    repeated FlowNode next = 8;
+    FlowNode previous = 9;
+    string type = 10;
+    Measured measured = 11;
+    bool selected = 12;
+    OwnerType ownerType = 13;
+    string owner_id = 14;
+}
+
+message Flow {
+    string id = 1;
+    repeated FlowNode nodes = 2;
+    repeated Edge edges = 3;
+    OwnerType ownerType = 4;
+    string owner_id = 5;
+}
+
+message Edge {
+    string id = 1;
+    string source = 2;
+    string target = 3;
+}
+
+message CreateFlowNodeRequest {
+    FlowNode node = 1;
+    Scope scope = 2;
+}
+
+message CreateFlowNodeResponse {
+    FlowNode node = 1;
+    Status status = 2;
+}
+
+message ReadFlowNodeRequest {
+    string id = 1;
+    Scope scope = 2;
+}
+
+message ReadFlowNodeResponse {
+    FlowNode node = 1;
+    Status status = 2;
+}
+
+message UpdateFlowNodeRequest {
+    FlowNode node = 1;
+    Scope scope = 2;
+}
+
+message UpdateFlowNodeResponse {
+    FlowNode node = 1;
+    Status status = 2;
+}
+
+message DeleteFlowNodeRequest {
+    string id = 1;
+    Scope scope = 2;
+}
+
+message DeleteFlowNodeResponse {
+    Status status = 1;
+}
+
+message CreateFlowRequest {
+    Flow flow = 1;
+    Scope scope = 2;
+}
+
+message CreateFlowResponse {
+    Flow flow = 1;
+    Status status = 2;
+}
+
+message ReadFlowRequest {
+    string id = 1;
+    Scope scope = 2;
+}
+
+message ReadFlowResponse {
+    Flow flow = 1;
+    Status status = 2;
+}
+
+message UpdateFlowRequest {
+    Flow flow = 1;
+    Scope scope = 2;
+}
+
+message UpdateFlowResponse {
+    Flow flow = 1;
+    Status status = 2;
+}
+
+message DeleteFlowRequest {
+    string id = 1;
+    Scope scope = 2;
+}
+
+message DeleteFlowResponse {
+    Status status = 1;
+}
+
+message CreateEdgeRequest {
+    Edge edge = 1;
+    Scope scope = 2;
+}
+
+message CreateEdgeResponse {
+    Edge edge = 1;
+    Status status = 2;
+}
+
+message ReadEdgeRequest {
+    string id = 1;
+    Scope scope = 2;
+}
+
+message ReadEdgeResponse {
+    Edge edge = 1;
+    Status status = 2;
+}
+
+message UpdateEdgeRequest {
+    Edge edge = 1;
+    Scope scope = 2;
+}
+
+message UpdateEdgeResponse {
+    Edge edge = 1;
+    Status status = 2;
+}
+
+message DeleteEdgeRequest {
+    string id = 1;
+    Scope scope = 2;
+}
+
+message DeleteEdgeResponse {
+    Status status = 1;
+}
+
+service FlowService {
+    rpc CreateFlowNode(CreateFlowNodeRequest) returns (CreateFlowNodeResponse) {}
+    rpc ReadFlowNode(ReadFlowNodeRequest) returns (ReadFlowNodeResponse) {}
+    rpc UpdateFlowNode(UpdateFlowNodeRequest) returns (UpdateFlowNodeResponse) {}
+    rpc DeleteFlowNode(DeleteFlowNodeRequest) returns (DeleteFlowNodeResponse) {}
+
+    rpc CreateFlow(CreateFlowRequest) returns (CreateFlowResponse) {}
+    rpc ReadFlow(ReadFlowRequest) returns (ReadFlowResponse) {}
+    rpc UpdateFlow(UpdateFlowRequest) returns (UpdateFlowResponse) {}
+    rpc DeleteFlow(DeleteFlowRequest) returns (DeleteFlowResponse) {}
+
+    rpc CreateEdge(CreateEdgeRequest) returns (CreateEdgeResponse) {}
+    rpc ReadEdge(ReadEdgeRequest) returns (ReadEdgeResponse) {}
+    rpc UpdateEdge(UpdateEdgeRequest) returns (UpdateEdgeResponse) {}
+    rpc DeleteEdge(DeleteEdgeRequest) returns (DeleteEdgeResponse) {}
+}

@@ -1,0 +1,103 @@
+syntax = "proto3";
+
+package da.proto;
+
+option go_package = "./pb";
+
+import "owner_type.proto";
+
+message Wallet {
+  string id                 = 1;
+  int64  balance            = 2;
+  string currency           = 3;
+  int64  lifetime_purchased = 4;
+  int64  lifetime_spent     = 5;
+  string status             = 6;
+  bool   is_main            = 7;
+  string billing_account_id = 8;
+  string owner_type         = 9;
+  string owner_id           = 10;
+}
+
+message CreateWalletRequest {
+  OwnerType owner_type         = 1;
+  string    owner_id           = 2;
+  string    billing_account_id = 3;
+}
+
+message CreateWalletResponse {
+  Wallet wallet = 1;
+}
+
+message TopUpWalletRequest {
+  string wallet_id = 1;
+  int64  amount    = 2;
+}
+
+message TopUpWalletResponse {
+  string checkout_url = 1;
+}
+
+message ChargeWalletRequest {
+  string wallet_id = 1;
+  int64  amount    = 2;
+  string reason    = 3;
+}
+
+message ChargeWalletResponse {
+  string transaction_id = 1;
+  bool   success        = 2;
+  string reason         = 3;
+}
+
+message ReadWalletRequest {
+  string wallet_id = 1;
+}
+
+message ReadWalletResponse {
+  Wallet wallet = 1;
+}
+
+message ReadAllWalletsRequest {
+  OwnerType owner_type = 1;
+  string    owner_id   = 2;
+}
+
+message ReadAllWalletsResponse {
+  repeated Wallet wallets = 1;
+}
+
+message ReadWalletTransactionsRequest {
+  string wallet_id = 1;
+}
+
+message WalletTransaction {
+  string id               = 1;
+  string wallet_id        = 2;
+  int64  amount           = 3;
+  string transaction_type = 4;
+  string status           = 5;
+  string reference_id     = 6;
+  string description      = 7;
+  string paid_at          = 8;
+}
+
+message ReadWalletTransactionsResponse {
+  repeated WalletTransaction wallet_transactions = 1;
+}
+
+// wallets service
+service WalletsService {
+  // create wallet
+  rpc CreateWallet(CreateWalletRequest) returns (CreateWalletResponse);
+  // top up wallet
+  rpc TopUpWallet(TopUpWalletRequest) returns (TopUpWalletResponse);
+  // charge wallet
+  rpc ChargeWallet(ChargeWalletRequest) returns (ChargeWalletResponse);
+  // read wallet
+  rpc ReadWallet(ReadWalletRequest) returns (ReadWalletResponse);
+  // read all wallets
+  rpc ReadAllWallets(ReadAllWalletsRequest) returns (ReadAllWalletsResponse);
+  // read wallet transactions
+  rpc ReadWalletTransactions(ReadWalletTransactionsRequest) returns (ReadWalletTransactionsResponse);
+}

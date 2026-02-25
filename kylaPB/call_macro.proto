@@ -1,0 +1,70 @@
+syntax="proto3";
+
+package da.proto;
+option go_package = "./pb";
+
+message MacroTextBlock {
+  int32 index = 1;
+  string text = 2;
+}
+
+message MacroImageBlock {
+  int32 index = 1;
+  string url = 2;
+  bytes data = 3;
+}
+
+message CallMacro {
+  string id = 1;
+  string name = 2;
+  string description = 3;
+  string notes = 4;
+  string ownership_id = 5;
+  string created_at = 6;
+  repeated MacroTextBlock text_blocks = 7;
+  repeated MacroImageBlock image_blocks = 8; 
+}
+
+message CreateCallMacroRequest {
+  string name = 1;
+  string description = 2;
+  string notes = 3;
+  repeated MacroTextBlock text_blocks = 4;
+  repeated MacroImageBlock image_blocks = 5;
+}
+
+message UpdateCallMacroRequest {
+  string id = 1;
+  string name = 2;
+  string description = 3;
+  string notes = 4;
+  repeated MacroTextBlock text_blocks = 5;
+  repeated MacroImageBlock image_blocks = 6;
+}
+
+message ReadCallMacroRequest {
+  string id = 1;
+}
+
+message SuccessCallMacroResponse {
+  bool success = 1;
+  string id =  2;
+}
+
+message ReadCallMacrosRequest {
+  int32 page_number = 1;
+  int32 page_size = 2;
+}
+
+message ReadCallMacrosResponse {
+  int64 total = 1;
+  repeated CallMacro items = 2;
+}
+
+service CallMacroService {
+  rpc CreateMacro(CreateCallMacroRequest) returns (SuccessCallMacroResponse);
+  rpc ReadMacro(ReadCallMacroRequest) returns (CallMacro);
+  rpc UpdateMacro(UpdateCallMacroRequest) returns (SuccessCallMacroResponse);
+  rpc DeleteMacro(ReadCallMacroRequest) returns (SuccessCallMacroResponse);
+  rpc ReadMacros(ReadCallMacrosRequest) returns (ReadCallMacrosResponse);
+}

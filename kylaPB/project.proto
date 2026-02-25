@@ -1,0 +1,76 @@
+syntax="proto3";
+
+package da.proto;
+
+option go_package = "./pb";
+
+message Project {
+  string id = 1;
+  string title = 2;
+  string status = 3;
+  string description = 4;
+  string visibility = 5;
+}
+
+message CreateProjectRequest {
+  Project project = 1;
+}
+
+message CreateProjectResponse {
+  Project project = 1;
+}
+
+message ReadProjectRequest {
+  string id = 1;
+}
+
+message ReadProjectResponse {
+  Project project = 1;
+}
+
+message UpdateProjectRequest {
+  Project project = 1;
+}
+
+message UpdateProjectResponse {
+  Project project = 1;
+}
+
+message DeleteProjectRequest {
+  string id = 1;
+}
+
+message DeleteProjectResponse {
+  string id = 1;
+  bool success = 2;
+}
+
+message ReadProjectsRequest {
+  int64 page = 1;
+  int64 perPage = 2;
+}
+
+message ReadProjectsResponse {
+  repeated Project projects = 1;
+}
+
+message ArchiveProjectRequest {
+  string id = 1;
+}
+
+message ArchiveProjectResponse {
+  bool archived = 1;
+}
+
+message ReadProjectTasksRequest {
+  string id = 1;
+}
+
+service ProjectService {
+  rpc CreateProject(CreateProjectRequest) returns (CreateProjectResponse);
+  rpc ReadProject(ReadProjectRequest) returns (ReadProjectResponse);
+  rpc UpdateProject(UpdateProjectRequest) returns (UpdateProjectResponse);
+  rpc DeleteProject(DeleteProjectRequest) returns (DeleteProjectResponse);
+  rpc ReadProjects(ReadProjectsRequest) returns (ReadProjectsResponse);
+  rpc ArchiveProject(ArchiveProjectRequest) returns (ArchiveProjectResponse);
+}

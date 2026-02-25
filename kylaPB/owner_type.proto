@@ -1,0 +1,47 @@
+syntax = "proto3";
+
+package da.proto;
+option go_package = "./pb"; 
+
+enum OwnerType {
+    USERS = 0;
+    TEAMS = 1;
+    DEPARTMENTS = 2;
+    BRANCHES = 3;
+    ORGANISATIONS = 4;
+}
+
+enum RequirementOwnerType {
+    STAGES = 0;
+    AUTOMATIONS = 1;
+}
+
+message Status {
+    int32 code = 1;
+    string message = 2;
+}
+
+message Scope {
+    OwnerType ownerType = 1;
+    string ownerId = 2;
+}
+
+message AuthScope {
+    string user_id = 1;
+    repeated string teams = 2;
+    repeated string departments = 3;
+    repeated string branches = 4;
+    string current_branch = 5;
+    string organisation_id = 6;
+}
+
+
+enum TimeUnits {
+    UNKNOWN_OVERTIME_LIMIT_UNIT = 0;
+    MINUTES = 1;
+    HOURS = 2;
+    DAYS = 3;
+    WEEKS = 4;
+    MONTHS = 5;
+    YEARS = 6;
+}

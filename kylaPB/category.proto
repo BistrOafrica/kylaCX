@@ -1,0 +1,79 @@
+syntax = "proto3";
+
+package da.proto;
+option go_package = "./pb";
+import "owner_type.proto";
+
+message CategoryCustomField {
+   string id = 1;
+   string category_id = 2;
+   string custom_field_definition_id = 3;
+   string value = 4;
+   string created_at = 5;
+   string updated_at = 6;
+}
+
+message TicketCategory {
+   string id = 1;
+   string name = 2;
+   string description = 3;
+   repeated string keywords = 4;
+   string created_at = 5;
+   string updated_at = 6;
+   string created_by = 7;
+   string owner_id = 8;
+   OwnerType owner_type = 9;
+   repeated CategoryCustomField custom_fields = 10;
+}
+
+message CreateTicketCategoryRequest {
+   TicketCategory data = 1;
+}
+
+message CreateTicketCategoryResponse {
+   TicketCategory data = 1;
+}
+
+message ReadTicketCategoryRequest {
+   string id = 1;
+}
+
+message ReadTicketCategoryResponse {
+   TicketCategory data = 1;
+}
+
+message UpdateTicketCategoryRequest {
+   TicketCategory data = 1;
+}
+
+message UpdateTicketCategoryResponse {
+   TicketCategory data = 1;
+}
+
+message DeleteTicketCategoryRequest {
+   string id = 1;
+}
+
+message DeleteTicketCategoryResponse {
+   bool success =1;
+}
+
+message ReadTicketCategoriesRequest {
+   int32 page = 1;
+   int32 per_page = 2;
+   string owner_id = 3;
+   OwnerType owner_type = 4;
+}
+
+message ReadTicketCategoriesResponse {
+   int32 total_count = 1;
+   repeated TicketCategory data = 2;
+}
+
+service TicketCategoryService {
+   rpc CreateTicketCategory(CreateTicketCategoryRequest) returns (CreateTicketCategoryResponse);
+   rpc ReadTicketCategory(ReadTicketCategoryRequest) returns (ReadTicketCategoryResponse);
+   rpc UpdateTicketCategory(UpdateTicketCategoryRequest) returns (UpdateTicketCategoryResponse);
+   rpc DeleteTicketCategory(DeleteTicketCategoryRequest) returns (DeleteTicketCategoryResponse);
+   rpc ReadTicketCategories(ReadTicketCategoriesRequest) returns (ReadTicketCategoriesResponse);
+}

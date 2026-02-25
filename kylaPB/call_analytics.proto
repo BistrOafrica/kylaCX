@@ -1,0 +1,268 @@
+syntax = "proto3";
+
+package da.proto;
+option go_package = "./pb";
+
+import "google/protobuf/timestamp.proto";
+
+
+message CallAnalyticsKPI {
+  string total_calls = 1;
+  string average_handle_time = 2;
+  string first_call_resolution = 3;
+  string service_level = 4;
+  string average_speed_of_answer = 5;
+  string abandoned_rate = 6;
+  string csat_score = 7;
+  string answer_rate = 8;
+}
+
+message CallVolumeDataPoint {
+  string name = 1;
+  int32 inbound = 2;
+  int32 outbound = 3;
+  int32 total = 4;
+}
+
+message CallTypeDistribution {
+  string name = 1;
+  int32 value = 2;
+  string color = 3;
+}
+
+message CallOutcomeData {
+  string name = 1;
+  int32 value = 2;
+}
+
+message PeakHoursHeatmap {
+  repeated int32 data = 1;
+}
+
+message AnalyticsOverviewData {
+  CallAnalyticsKPI kpi_metrics = 1;
+  repeated CallVolumeDataPoint call_volume_trends = 2;
+  repeated CallTypeDistribution call_types = 3;
+  repeated CallOutcomeData call_outcomes = 4;
+  repeated PeakHoursHeatmap peak_hours = 5;
+}
+
+message CallTrafficMetrics {
+  int32 total_inbound = 1;
+  int32 total_outbound = 2;
+  int32 total_internal = 3;
+  int32 connected_calls = 4;
+  int32 missed_calls = 5;
+  float connection_rate = 6;
+  string busiest_hour = 7;
+  string slowest_hour = 8;
+}
+
+message HourlyCallVolume {
+  string hour = 1;
+  int32 inbound = 2;
+  int32 outbound = 3;
+  int32 internal = 4;
+}
+
+message CallDirectionSplit {
+  int32 inbound = 1;
+  int32 outbound = 2;
+  int32 internal = 3;
+}
+
+message CallTrafficData {
+  CallTrafficMetrics metrics = 1;
+  repeated HourlyCallVolume hourly_volume = 2;
+  CallDirectionSplit direction_split = 3;
+  repeated CallVolumeDataPoint weekly_trend = 4;
+}
+
+message CallHandlingMetrics {
+  string average_handle_time = 1;
+  string average_talk_time = 2;
+  string average_hold_time = 3;
+  string average_wrap_up_time = 4;
+  string average_speed_of_answer = 5;
+  float abandon_rate = 6;
+  float answer_rate = 7;
+  string longest_wait_time = 8;
+}
+
+message AHTBreakdown {
+  string period = 1;
+  int32 talk_time = 2;
+  int32 hold_time = 3;
+  int32 wrap_up_time = 4;
+}
+
+message ASATrend {
+  string period = 1;
+  int32 asa_seconds = 2;
+}
+
+message AbandonAnalysis {
+  string time_bucket = 1;
+  int32 count = 2;
+}
+
+message CallHandlingData {
+  CallHandlingMetrics metrics = 1;
+  repeated AHTBreakdown aht_breakdown = 2;
+  repeated ASATrend asa_trends = 3;
+  repeated AbandonAnalysis abandon_analysis = 4;
+}
+
+message QueuePerformance {
+  string queue_id = 1;
+  string queue_name = 2;
+  int32 calls_offered = 3;
+  int32 calls_answered = 4;
+  int32 calls_abandoned = 5;
+  float service_level = 6;
+  string average_wait_time = 7;
+  string longest_wait_time = 8;
+}
+
+message IVRStepMetrics {
+  string step_name = 1;
+  int32 entries = 2;
+  int32 exits = 3;
+  float drop_off_rate = 4;
+}
+
+message IVRFunnel {
+  string step_name = 1;
+  int32 count = 2;
+  float percentage = 3;
+}
+
+message TransferAnalysis {
+  string from_queue = 1;
+  string to_queue = 2;
+  int32 transfer_count = 3;
+}
+
+message QueueIVRData {
+  repeated QueuePerformance queue_performance = 1;
+  repeated IVRFunnel ivr_funnel = 2;
+  repeated IVRStepMetrics ivr_steps = 3;
+  repeated TransferAnalysis transfers = 4;
+  float overall_sla_attainment = 5;
+}
+
+message CampaignMetrics {
+  string campaign_id = 1;
+  string campaign_name = 2;
+  int32 total_attempts = 3;
+  int32 connected_calls = 4;
+  int32 no_answer = 5;
+  int32 busy = 6;
+  int32 failed = 7;
+  float contact_rate = 8;
+  string average_call_duration = 9;
+}
+
+message DialerEfficiency {
+  string period = 1;
+  float utilization = 2;
+  int32 calls_per_agent_hour = 3;
+}
+
+message CallbackMetrics {
+  int32 scheduled = 1;
+  int32 completed = 2;
+  int32 missed = 3;
+  float completion_rate = 4;
+}
+
+message CampaignData {
+  repeated CampaignMetrics campaigns = 1;
+  repeated DialerEfficiency dialer_efficiency = 2;
+  CallbackMetrics callback_metrics = 3;
+  int32 total_contacts_reached = 4;
+}
+
+message CustomerExperienceMetrics {
+  float csat_score = 1;
+  float nps_score = 2;
+  float first_call_resolution = 3;
+  int32 repeat_callers = 4;
+  float customer_effort_score = 5;
+}
+
+message CallSentimentDistribution {
+  int32 positive = 1;
+  int32 neutral = 2;
+  int32 negative = 3;
+}
+
+message CSATTrend {
+  string period = 1;
+  float score = 2;
+}
+
+message RepeatCallerAnalysis {
+  string customer_id = 1;
+  string customer_name = 2;
+  int32 call_count = 3;
+  string last_call_date = 4;
+  string primary_issue = 5;
+}
+
+message CustomerExperienceData {
+  CustomerExperienceMetrics metrics = 1;
+  repeated CSATTrend csat_trends = 2;
+  CallSentimentDistribution sentiment = 3;
+  repeated RepeatCallerAnalysis repeat_callers = 4;
+  float resolution_rate = 5;
+}
+
+message AnalyticsRequest {
+  string membership_id = 1;
+  google.protobuf.Timestamp start_date = 2;
+  google.protobuf.Timestamp end_date = 3;
+  string date_range = 4;
+  repeated string queue_ids = 5;
+  repeated string agent_ids = 6;
+  repeated string campaign_ids = 7;
+}
+
+message AnalyticsOverviewResponse {
+  AnalyticsOverviewData data = 1;
+  string message = 2;
+}
+
+message CallTrafficResponse {
+  CallTrafficData data = 1;
+  string message = 2;
+}
+
+message CallHandlingResponse {
+  CallHandlingData data = 1;
+  string message = 2;
+}
+
+message QueueIVRResponse {
+  QueueIVRData data = 1;
+  string message = 2;
+}
+
+message CampaignResponse {
+  CampaignData data = 1;
+  string message = 2;
+}
+
+message CustomerExperienceResponse {
+  CustomerExperienceData data = 1;
+  string message = 2;
+}
+
+service CallAnalyticsService {
+  rpc GetAnalyticsOverview(AnalyticsRequest) returns (AnalyticsOverviewResponse);
+  rpc GetCallTraffic(AnalyticsRequest) returns (CallTrafficResponse);  
+  rpc GetCallHandling(AnalyticsRequest) returns (CallHandlingResponse);  
+  rpc GetQueueIVR(AnalyticsRequest) returns (QueueIVRResponse);  
+  rpc GetCampaign(AnalyticsRequest) returns (CampaignResponse);  
+  rpc GetCustomerExperience(AnalyticsRequest) returns (CustomerExperienceResponse);
+}

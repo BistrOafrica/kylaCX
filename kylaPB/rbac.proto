@@ -1,0 +1,150 @@
+syntax="proto3";
+
+package da.proto;
+option go_package = "./pb";
+
+import "owner_type.proto";
+
+
+message Role {
+  string name = 1;
+  string description = 2;
+  repeated string permissions = 3;
+  string id = 4;
+  string old_id = 6;
+  string old_data = 7;
+  string created_by = 9;
+  string updated_by = 11;
+  string created_at = 12;
+  string updated_at = 13;
+  bool is_default = 17;
+  string serial_number = 21;
+  OwnerType owner_type = 22;
+  string owner_id = 23;
+}
+message Permission {
+  string name = 2;
+  string service = 4;
+  string description = 3;
+  string code_name = 5;
+  bool console = 6;
+}
+
+message CreatePermissionRequest {
+  Permission permission = 1;
+}
+
+message CreatePermissionResponse {
+  Permission permission = 1;
+}
+
+message ReadPermissionRequest {
+  string permission = 1;
+}
+
+message ReadPermissionResponse {
+  Permission permission = 1;
+}
+
+message UpdatePermissionRequest{
+  Permission permission =1;
+}
+
+message UpdatePermissionResponse{
+  Permission permission =1;
+}
+
+message DeletePermissionRequest{
+  string id =1;
+}
+
+message DeletePermissionResponse{
+  bool success =1;
+}
+
+message CreateRoleRequest {
+  Role role = 1;
+}
+
+message CreateRoleResponse {
+  Role role = 1;
+}
+
+message ReadRoleRequest {
+  string id = 1;
+  Scope scope = 2;
+}
+
+message ReadRoleResponse {
+  Role role = 1;
+}
+
+message ReadRolesRequest {
+  Scope scope = 1;
+}
+
+message ReadRolesResponse {
+  repeated Role roles = 1;
+}
+message ReadRolesInOrganisationRequest {
+  string organisationId = 1;
+}
+
+message UpdateRoleRequest{
+  Role role =1;
+}
+
+message UpdateRoleResponse{
+  Role role =1;
+}
+
+message DeleteRoleRequest{
+  string id =1;
+}
+
+message DeleteRoleResponse{
+  bool success =1;
+}
+
+message ReadPermissionsRequest{
+  
+}
+
+message ReadPermissionsResponse{
+  repeated Permission permissions =1;
+}
+
+
+
+message PermissionToRoleRequest{
+  string role_id =1;
+  repeated string permission_codenames =2;
+}
+
+message PermissionToRoleResponse{
+  Role role =1;
+}
+
+message AddUsersToRoleRequest{
+  string role_id =1;
+  repeated string user_ids =2;
+}
+
+message AddUsersToRoleResponse{
+  Role role =1;
+}
+
+service RoleService {
+  rpc CreateRole(CreateRoleRequest) returns (CreateRoleResponse) {}
+  rpc ReadRole(ReadRoleRequest) returns (ReadRoleResponse) {}
+  rpc ReadRoles(ReadRolesRequest) returns (ReadRolesResponse) {}
+  rpc UpdateRole(UpdateRoleRequest) returns (UpdateRoleResponse) {}
+  rpc DeleteRole(DeleteRoleRequest) returns (DeleteRoleResponse) {}
+  rpc AddPermissionToRole(PermissionToRoleRequest) returns (PermissionToRoleResponse) {}
+  rpc RemovePermissionFromRole(PermissionToRoleRequest) returns (PermissionToRoleResponse) {}
+  rpc ReadUserRoles(ReadRolesRequest) returns (ReadRolesResponse) {}
+}
+
+service PermissionService {
+  rpc ReadPermissions(ReadPermissionsRequest) returns (ReadPermissionsResponse) {}
+}

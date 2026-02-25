@@ -1,0 +1,108 @@
+syntax="proto3";
+
+package da.proto;
+option go_package = "./pb";
+
+import "owner_type.proto";
+
+service ResourceSharing {
+  rpc ShareResource(ShareResourceRequest) returns (ShareResourceResponse);
+  rpc RequestAccess(RequestAccessRequest) returns (RequestAccessResponse);
+  rpc GetRequests(AccessRequestsRequest) returns (AccessRequestResponse);
+  rpc GrantAccess(GrantAccessRequest) returns (GrantAccessResponse);
+  rpc GetResources(GetResourcesRequest) returns (GetResourcesResponse);
+  rpc GetOwners(GetOwnersRequest) returns (GetOwnersResponse);
+}
+
+message AccessRequestsRequest {
+}
+
+message AccessRequestResponse {
+  repeated AccessRequest requests = 1;
+}
+
+message ShareResourceRequest {
+  string resource_id = 1;
+  string from_owner_id = 2;
+  string to_entity_id = 3;
+  string roles = 4;
+  string permissions = 5;
+  string conditions = 6;
+}
+
+message ShareResourceResponse {
+  Status status = 1;
+}
+
+message RequestAccessRequest {
+  string resource_id = 1;
+  string requester_id = 2;
+  string requested_roles = 3;
+  string resource_owner = 4;
+}
+
+message RequestAccessResponse {
+  Status status = 1;
+}
+
+message GrantAccessRequest {
+  string request_id = 1;
+  string granter_id = 2;
+  string permissions = 3;
+}
+
+message GrantAccessResponse {
+  Status status = 1;
+}
+
+message GetResourcesRequest {
+  string owner_id = 1;
+}
+
+message GetResourcesResponse {
+  repeated EntityLink resources = 1;
+}
+
+message GetOwnersRequest {
+  string resource_id = 1;
+}
+
+message GetOwnersResponse {
+  repeated EntityLink owners = 1;
+}
+
+message EntityLink {
+  string id = 1;
+  string from_type = 2;
+  string from_id = 3;
+  string to_type = 4;
+  string to_id = 5;
+  Entity from = 6;
+  Entity to = 7;
+  string type = 8;
+  string shared_by = 9;
+  string roles = 10;
+  string permissions = 11;
+  string created_at = 12;
+  string updated_at = 13;
+}
+
+message Entity {
+  string id = 1;
+  string type = 2;
+  repeated EntityLink links = 3;
+  bool ownership_entity = 4 ;
+  string created_at = 5;
+  string updated_at = 6;
+}
+
+message AccessRequest {
+  string id = 1;
+  string resource_id = 2;
+  string requester_id = 3;
+  string requested_roles = 4;
+  string status = 5;
+  string timestamp = 6;
+  string created_at = 7;
+  string updated_at = 8;
+}

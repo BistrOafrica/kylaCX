@@ -1,0 +1,129 @@
+syntax = "proto3";
+
+package da.proto;
+option go_package = "./pb";
+
+import "owner_type.proto";
+import "google/protobuf/timestamp.proto";
+
+message SLAPolicy {
+    string id = 1;
+    OwnerType owner_type = 2;
+    string owner_id = 3;
+    string name = 4;
+    string description = 5;
+    int32 priority = 6;
+    bool is_active = 7;
+    repeated SLAConditionGroup condition_groups = 8;
+    repeated SLAMetric metrics = 9;
+}
+
+message SLAConditionGroup {
+    string id = 1;
+    string policy_id = 2;
+    string match_type = 3;  // "ALL" or "ANY"
+    repeated SLACondition conditions = 4;
+}
+
+message SLACondition {
+    string id = 1;
+    string group_id = 2;
+    string parameter = 3;
+    string operator = 4;
+    string first_value = 5;
+    string second_value = 6;
+}
+
+message SLAMetric {
+    string id = 1;
+    string policy_id = 2;
+    string type = 3;
+    int32 low_priority_minutes = 4;
+    int32 medium_priority_minutes = 5;
+    int32 high_priority_minutes = 6;
+    int32 critical_priority_minutes = 7;
+}
+
+message TicketSLA {
+    string id = 1;
+    string ticket_id = 2;
+    string policy_id = 3;
+    string status = 4;
+    google.protobuf.Timestamp started_at = 5;
+    google.protobuf.Timestamp last_checked_at = 6;
+    google.protobuf.Timestamp completed_at = 7;
+    google.protobuf.Timestamp first_response_due = 8;
+    google.protobuf.Timestamp resolution_due = 9;
+    google.protobuf.Timestamp next_update_due = 10;
+    google.protobuf.Timestamp first_response_met = 11;
+    google.protobuf.Timestamp resolution_met = 12;
+    google.protobuf.Timestamp last_update_at = 13;
+    string current_metrics = 14;
+    repeated SLABreach breaches = 15;
+    SLAPolicy policy = 16;
+}
+
+message SLABreach {
+    string id = 1;
+    string ticket_sla_id = 2;
+    string metric_type = 3;
+    google.protobuf.Timestamp occurred_at = 4;
+    int32 target = 5;
+    int32 actual = 6;
+    string details = 7;
+    bool notified = 8;
+}
+
+message CreateSLAPolicyRequest {
+    SLAPolicy data = 1;
+}
+
+message CreateSLAPolicyResponse {
+    bool success = 1;
+    SLAPolicy data = 2;
+}
+
+message UpdateSLAPolicyRequest {
+    SLAPolicy data = 1;
+}
+
+message UpdateSLAPolicyResponse {
+    bool success = 1;
+    SLAPolicy data = 2;
+}
+
+message DeleteSLAPolicyRequest {
+    string id = 1;
+}
+
+message DeleteSLAPolicyResponse {
+    bool success = 1;
+}
+
+message ListSLAPoliciesRequest {
+    int32 page = 1;
+    int32 per_page = 2;
+}
+
+message ListSLAPoliciesResponse {
+    repeated SLAPolicy data = 1;
+    int32 total = 2;
+}
+
+message GetTicketSLARequest {
+    string ticket_id = 1;
+}
+
+message GetTicketSLAResponse {
+    TicketSLA current_sla = 1;
+    repeated TicketSLA sla_history = 2;
+}
+
+// SLA Service
+service SLAService {
+    rpc CreateSLAPolicy(CreateSLAPolicyRequest) returns (CreateSLAPolicyResponse);
+    rpc UpdateSLAPolicy(UpdateSLAPolicyRequest) returns (UpdateSLAPolicyResponse);
+    rpc DeleteSLAPolicy(DeleteSLAPolicyRequest) returns (DeleteSLAPolicyResponse);
+    rpc ListSLAPolicies(ListSLAPoliciesRequest) returns (ListSLAPoliciesResponse);
+    rpc GetTicketSLA(GetTicketSLARequest) returns (GetTicketSLAResponse);
+}

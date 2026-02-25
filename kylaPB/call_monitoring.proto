@@ -1,0 +1,136 @@
+syntax = "proto3";
+
+package da.proto;
+option go_package = "./pb";
+
+import "call_session.proto";
+import "call_queue.proto";
+import "agents.proto";
+
+
+message OnlineAgent {
+  string agent_name = 1;
+  string extension = 2;
+  string queue_name = 3;
+  StatusType status = 4;
+}
+
+message ReadOnlineAgentsRequest {
+  int32 page_number = 1;
+  int32 page_size = 2;
+  string domain_id = 3;
+  string status = 4;
+}
+
+message ReadOnlineAgentsResponse {
+  repeated OnlineAgent items = 1;
+}
+
+
+message RecentCall {
+  string contact = 1;
+  string agent = 2;
+  string queue = 3;
+  string queue_id = 4;
+  string call_id = 5;
+  string time = 6;
+  CallDirection direction = 7;
+  CallStatus status = 8;	
+}
+
+message ReadRecentCallsRequest {
+  int32 page_number = 1;
+  int32 page_size = 2;
+  string domain_id = 3;
+  string queue_id = 4;
+}
+
+message ReadRecentCallsResponse {
+  repeated RecentCall items = 1;
+}
+
+
+message ReadAgentStatusesRequest {
+  string domain_id = 1;
+}
+
+message ReadAgentStatusesResponse {
+  repeated AgentStatus items = 1;
+}
+
+
+message QueueDescription {
+  string queue_id = 1;
+  string queue_name = 2;
+  string agents = 3;
+  string ongoing_calls = 4;
+  QueueType type = 5;
+}
+
+message ReadQueueDataRequest {
+  int32 page_number = 1;
+  int32 page_size = 2;
+  string domain_id = 3;
+}
+
+message ReadQueueDataResponse {
+  repeated QueueDescription items = 1;
+}
+
+
+message CallMetrics {
+  string inbound_calls = 1;
+  string outbound_calls = 2;
+  string missed_calls = 3;
+  string answered_calls = 4;
+  string rejected_calls = 5;
+  string average_call_duration = 6;
+  string average_wait_time = 7;
+  string average_wrap_up_time = 8;
+}
+
+message ReadCallMetricsRequest {
+  string domain_id = 1;
+}
+
+message ReadCallMetricsResponse {
+	CallMetrics items = 1;
+}
+
+message HangupCallRequest {
+  string call_id = 1;
+}
+
+message SuccessCallResponse {
+  bool success = 1;
+}
+
+message EavesdropCallRequest {
+  string call_id = 1;
+  string agent_extension = 2;
+  bool require_pin = 3;
+}
+
+message TransferCallRequest {
+  string call_id = 1;
+  string destination = 2;
+}
+
+message BargeCallRequest {
+  string call_id = 1;
+  string agent_extension = 2;
+}
+
+service CallMonitoringService {
+  rpc ReadOnlineAgents(ReadOnlineAgentsResponse) returns (stream ReadOnlineAgentsResponse);
+  rpc ReadRecentCalls(ReadRecentCallsRequest) returns (stream ReadRecentCallsResponse);
+  rpc ReadAgentStatuses(ReadAgentStatusesRequest) returns (stream ReadAgentStatusesResponse);
+  rpc ReadQueues(ReadQueueDataRequest) returns (stream ReadQueueDataResponse);
+  rpc ReadCallMetrics(ReadCallMetricsRequest) returns (stream ReadCallMetricsResponse);
+
+	// Call Control RPCs
+  rpc HangupCall(HangupCallRequest) returns (SuccessCallResponse);
+  rpc EavesdropCall(EavesdropCallRequest) returns (SuccessCallResponse);
+  rpc TransferCall(TransferCallRequest) returns (SuccessCallResponse);
+  rpc BargeCall(BargeCallRequest) returns (SuccessCallResponse);
+}

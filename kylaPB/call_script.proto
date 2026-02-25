@@ -1,0 +1,68 @@
+syntax="proto3";
+
+package da.proto;
+option go_package = "./pb";
+
+enum NoteType {
+  CUSTOMER_NOTE = 0;
+  AGENT_NOTE = 1;
+  CONTEXT_NOTE = 2;
+}
+
+message ScriptNote {
+  string id = 1;
+  string text = 2;
+  NoteType type = 3;
+}
+
+message CallScript {
+  string id = 1;
+  string name = 2;
+  string description = 3;
+  string notes = 4;
+  string ownership_id = 5;
+  string created_at = 6;
+  repeated ScriptNote script_notes = 7;
+}
+
+message CreateCallScriptRequest {
+  string name = 1;
+  string description = 2;
+  string notes = 3;
+  repeated ScriptNote script_notes = 4;
+}
+
+message UpdateCallScriptRequest {
+  string id = 1;
+  string name = 2;
+  string description = 3;
+  string notes = 4;
+  repeated ScriptNote script_notes = 5;
+}
+
+message ReadCallScriptRequest {
+  string id = 1;
+}
+
+message SuccessCallScriptResponse {
+  bool success = 1;
+  string id = 2;
+}
+
+message ReadCallScriptsRequest {
+  int32 page_number = 1;
+  int32 page_size = 2;
+}
+
+message ReadCallScriptsResponse {
+  int64 total = 1;
+  repeated CallScript items = 2;
+}
+
+service CallScriptService {
+  rpc CreateScript(CreateCallScriptRequest) returns (SuccessCallScriptResponse);
+  rpc ReadScript(ReadCallScriptRequest) returns (CallScript);
+  rpc UpdateScript(UpdateCallScriptRequest) returns (SuccessCallScriptResponse);
+  rpc DeleteScript(ReadCallScriptRequest) returns (SuccessCallScriptResponse);
+  rpc ReadScripts(ReadCallScriptsRequest) returns (ReadCallScriptsResponse);
+}

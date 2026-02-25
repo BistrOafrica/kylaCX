@@ -1,0 +1,303 @@
+syntax = "proto3";
+
+package da.proto;
+option go_package = "./pb";
+
+import "owner_type.proto";
+import "user.proto";
+
+enum RemunerationType {
+    REMUNERATION_TYPE_UNSPECIFIED = 0;
+    PAID = 1;
+	UNPAID = 2;
+	HALF_PAID = 3;
+}
+
+enum EarnedType {
+    EARNED_TYPE_UNSPECIFIED = 0;
+    UPFRONT = 1;
+    EARNED = 2;
+}
+
+enum TimeUnit {
+    TIME_UNIT_UNSPECIFIED = 0;
+    DAY = 1;
+    HOUR = 2;
+}
+
+enum TimeLimitCycle {
+    TIME_LIMIT_CYCLE_UNSPECIFIED = 0;
+    ANNUALLY = 1;
+    SEMI_ANNUALLY = 2;
+    QUARTER_ANNUALLY = 3;
+    MONTHLY = 4;
+    PER_WEEK = 5;
+}
+
+enum AccrualPolicy {
+    ACCRUAL_POLICY_UNSPECIFIED = 0;
+    CARRY_FORWARD = 1;
+    EXPIRE = 2;
+}
+
+enum LeaveStatus {
+    LEAVE_STATUS_UNSPECIFIED = 0;
+    LEAVE_PENDING = 1;
+    LEAVE_APPROVED = 2;
+    LEAVE_REJECTED = 3;
+    LEAVE_ONGOING = 4;
+    LEAVE_APPEALED = 5;
+    LEAVE_CANCELLED = 6;
+    LEAVE_ENDED = 7;
+}
+
+message EarnedLeaveCondition {
+    string id = 1;
+    string leave_type_id = 2;
+    int32 working_time = 3;
+    TimeUnit working_time_unit = 4;
+    int32 reward_time = 5;
+    TimeUnit reward_time_unit = 6;
+}
+
+message LeaveType {
+    string id = 1;
+    string name = 2;
+    string description = 3;
+    RemunerationType remuneration_type = 4;
+	EarnedType earned_type  = 5;
+	repeated EarnedLeaveCondition earned_leave_conditions = 6;
+    int32 time_limit = 7;
+    TimeUnit time_limit_unit = 8;
+    TimeLimitCycle time_limit_cycle = 9;
+    bool apply_to_working_time_only = 10;
+	AccrualPolicy accrual_policy = 11;
+    OwnerType ownerType = 12;
+    string owner_id = 13;
+	string created_at = 14;
+    string created_by = 15;
+}
+
+message LeaveBalance {
+    string id = 1;
+    string user_id = 2;
+    User user = 3;
+    string leave_type_id = 4;
+    LeaveType leave_type = 5;
+    int32 total_eligible = 6;
+    int32 used = 7;
+    int32 remaining = 8;
+    TimeUnit balance_unit = 9;
+}
+
+message LeaveRequestEvent {
+    string id = 1;
+    string leave_request_id = 2;
+    LeaveRequest leave_request = 3;
+    string action = 4;
+    string user_id = 5;
+    User user = 6;
+    string created_at = 7;
+}
+
+message LeaveRequest {
+    string id = 1;
+    string user_id = 2;
+    User user = 3;
+    string leave_type_id = 4;
+    LeaveType leave_type = 5;
+    string start_date = 6;
+    string end_date = 7;
+    string start_time = 8;
+    string end_time = 9;
+    int32 duration = 10;
+    TimeUnit duration_unit = 11;
+    string applier_comment = 12;
+    LeaveStatus status = 13;
+	repeated LeaveRequestAttachment leave_request_attachments = 14;
+    string approver_id = 15;
+    string approver_comment = 16;
+    bool is_retrospective = 17;
+    string appeal_reason = 18;
+    repeated LeaveRequestEvent leave_request_events = 19;
+    string created_at = 20;
+    string updated_at = 21;
+    string created_by = 22;
+}
+
+message LeaveRequestAttachment {
+    string id = 1;
+	string leave_request_id = 2;
+    LeaveRequest leave_request = 3;
+    string file_name = 4;
+	string file_url = 5;
+}
+
+message LeaveRequestsMetrics {
+    int32 total_count = 1;
+    LeaveStatus status = 2;
+}
+
+message CreateLeaveTypeRequest {
+    LeaveType data = 1;
+}
+
+message CreateLeaveTypeResponse {
+    LeaveType data = 1;
+}
+
+message UpdateLeaveTypeRequest {
+    LeaveType data = 2;
+}
+
+message UpdateLeaveTypeResponse {
+    LeaveType data = 2;
+}
+
+message ReadLeaveTypeRequest {
+    string id = 1;
+}
+
+message ReadLeaveTypeResponse {
+    LeaveType data = 1;
+}
+
+message ReadLeaveTypesRequest {
+    int32 page = 1;
+    int32 per_page = 2;
+    Scope scope = 3;
+}
+
+message ReadLeaveTypesResponse {
+    int32 total_count = 1;
+    repeated LeaveType data = 2;
+}
+
+message DeleteLeaveTypeRequest {
+    string id = 1;
+    Scope scope = 2;
+}
+
+message DeleteLeaveTypeResponse {
+    Status status =1;
+}
+
+message CreateLeaveRequestRequest {
+    LeaveRequest data = 1;
+}
+
+message CreateLeaveRequestResponse {
+    LeaveRequest data = 2;
+}
+
+message ReadLeaveRequestRequest {
+    string id = 1;
+}
+
+message ReadLeaveRequestResponse {
+    LeaveRequest data = 1;
+}
+
+message ReadLeaveRequestsRequest {
+    int32 page = 1;
+    int32 per_page = 2;
+    Scope scope = 3;
+}
+
+message ReadLeaveRequestsResponse {
+    int32 total_count = 1;
+    repeated LeaveRequest data = 2;
+}
+
+message ReadMyLeaveRequestsRequest {
+    int32 page = 1;
+    int32 per_page = 2;
+}
+
+message ReadMyLeaveRequestsResponse {
+    int32 total_count = 1;
+    repeated LeaveRequest data = 2;
+}
+
+message ApproveLeaveRequestRequest {
+    string leave_request_id = 1;
+    string approver_comment = 2;
+}
+
+message ApproveLeaveRequestResponse {
+    LeaveRequest data = 1;
+}
+
+message RejectLeaveRequestRequest {
+    string leave_request_id = 1;
+    string approver_comment = 2;
+}
+
+message RejectLeaveRequestResponse {
+    LeaveRequest data = 1;
+}
+
+message CancelLeaveRequestRequest {
+    string leave_request_id = 1;
+    string approver_comment = 2;
+    string end_date = 3;
+    string end_time = 4;
+}
+
+message CancelLeaveRequestResponse {
+    LeaveRequest data = 1;
+}
+
+message EndLeaveRequestRequest {
+    string leave_request_id = 1;
+    string end_date = 2;
+    string end_time = 3;
+}
+
+message EndLeaveRequestResponse {
+    LeaveRequest data = 1;
+}
+
+message AppealLeaveRequestRequest {
+    string leave_request_id = 1;
+    string appeal_comment = 2;
+}
+
+message AppealLeaveRequestResponse {
+    LeaveRequest data = 1;
+}
+
+message ReadLeaveBalanceRequest {
+    string user_id = 1;
+    string leave_type_id = 2;
+}
+
+message ReadLeaveBalanceResponse {
+    LeaveBalance data = 1;
+}
+
+message ReadLeaveRequestsMetricsRequest {
+}
+
+message ReadLeaveRequestsMetricsResponse {
+    repeated LeaveRequestsMetrics data = 1;
+}
+
+service LeaveService {
+    rpc CreateLeaveType(CreateLeaveTypeRequest) returns (CreateLeaveTypeResponse){}
+    rpc UpdateLeaveType(UpdateLeaveTypeRequest) returns (UpdateLeaveTypeResponse) {}
+    rpc ReadLeaveType(ReadLeaveTypeRequest) returns (ReadLeaveTypeResponse) {}
+    rpc ReadLeaveTypes(ReadLeaveTypesRequest) returns (ReadLeaveTypesResponse) {}
+    rpc DeleteLeaveType(DeleteLeaveTypeRequest) returns (DeleteLeaveTypeResponse) {}
+    rpc CreateLeaveRequest(CreateLeaveRequestRequest) returns (CreateLeaveRequestResponse) {}
+    rpc ReadLeaveRequest(ReadLeaveRequestRequest) returns (ReadLeaveRequestResponse) {}
+    rpc ReadLeaveRequests(ReadLeaveRequestsRequest) returns (ReadLeaveRequestsResponse) {}
+    rpc ReadMyLeaveRequests(ReadMyLeaveRequestsRequest) returns (ReadMyLeaveRequestsResponse) {}
+    rpc ApproveLeaveRequest(ApproveLeaveRequestRequest) returns (ApproveLeaveRequestResponse) {}
+    rpc RejectLeaveRequest(RejectLeaveRequestRequest) returns (RejectLeaveRequestResponse) {}
+    rpc CancelLeaveRequest(CancelLeaveRequestRequest) returns (CancelLeaveRequestResponse) {}
+    rpc EndLeaveRequest(EndLeaveRequestRequest) returns (EndLeaveRequestResponse) {}
+    rpc AppealLeaveRequest(AppealLeaveRequestRequest) returns (AppealLeaveRequestResponse) {}
+    rpc ReadLeaveBalance(ReadLeaveBalanceRequest) returns (ReadLeaveBalanceResponse) {}
+    rpc ReadLeaveRequestsMetrics(ReadLeaveRequestsMetricsRequest) returns (ReadLeaveRequestsMetricsResponse) {}
+}

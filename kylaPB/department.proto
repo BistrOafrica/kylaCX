@@ -1,0 +1,86 @@
+syntax = "proto3";
+
+package da.proto;
+option go_package = "./pb"; 
+
+import "user.proto";
+import "owner_type.proto";
+import "rbac.proto";
+
+message Department {
+  string id = 1;
+  string department_name = 2;
+  string department_bio = 3;
+  string created_at = 6;
+  string status = 8;
+  string created_by = 12;
+  string updated_at = 13;
+  string updated_by = 14;
+  repeated User users = 15;
+  repeated Role roles = 16;
+  string owner_id = 18;
+  OwnerType owner_type = 19;
+  string serial_number = 20;
+}
+
+message CreateDepartmentRequest {
+  Department department = 1;
+  Scope scope = 2;
+}
+
+message CreateDepartmentResponse {
+  Department department = 1;
+}
+
+message ReadDepartmentRequest {
+  string id = 1;
+  Scope scope = 2;
+}
+
+message ReadDepartmentResponse {
+  Department department = 1;
+}
+
+message ReadDepartmentsRequest {
+  Scope scope = 2;
+}
+
+message ReadDepartmentsResponse {
+  repeated Department departments = 1;
+}
+
+message ReadBranchDepartmentsRequest {
+  string branch_id = 1;
+  Scope scope = 2;
+}
+
+message ReadBranchDepartmentsResponse {
+  repeated Department departments = 1;
+}
+
+message UpdateDepartmentRequest {
+  Department department = 1;
+  Scope scope = 2;
+}
+
+message UpdateDepartmentResponse {
+  Department department = 1;
+}
+
+message DeleteDepartmentRequest {
+  string id = 1;
+  Scope scope = 2;
+}
+
+message DeleteDepartmentResponse {
+  Status status = 1;
+}
+
+service DepartmentService {
+  rpc CreateDepartment(CreateDepartmentRequest) returns (CreateDepartmentResponse) {}
+  rpc ReadDepartment(ReadDepartmentRequest) returns (ReadDepartmentResponse) {}
+  rpc ReadDepartments(ReadDepartmentsRequest) returns (ReadDepartmentsResponse) {}
+  rpc UpdateDepartment(UpdateDepartmentRequest) returns (UpdateDepartmentResponse) {}
+  rpc DeleteDepartment(DeleteDepartmentRequest) returns (DeleteDepartmentResponse) {}
+  rpc ReadBranchDepartments(ReadBranchDepartmentsRequest) returns (ReadBranchDepartmentsResponse) {}
+}

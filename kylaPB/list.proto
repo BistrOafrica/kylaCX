@@ -1,0 +1,83 @@
+syntax = "proto3";
+
+package da.proto;
+
+option go_package = "./pb";
+
+message List {
+  string id = 1;
+  string title = 2;
+  string description = 3;
+  string project_id = 4;
+}
+
+message CreateListRequest { 
+  List list = 1;
+}
+
+message CreateListResponse { 
+  List list = 1;
+}
+
+message ReadListRequest {
+  string id = 1;
+}
+
+message ReadListResponse {
+  List list = 1;
+}
+
+message UpdateListRequest { 
+  List list = 1;
+}
+
+message UpdateListResponse {
+  List list = 1;
+}
+
+message ReadListsRequest {
+  int64 page = 1;
+  int64 per_page = 2;
+  string project_id = 3;
+}
+
+message ReadListsResponse {
+  repeated List lists = 1;
+}
+
+message DeleteListRequest {
+  string id = 1;
+}
+
+message DeleteListResponse {
+  string id = 1;
+}
+
+message ArchiveListRequest {
+  string id = 1;
+}
+
+message ArchiveListResponse {
+  string id = 1;
+}
+
+message ReadListsByProjectIdRequest { 
+  string project_id = 1;
+  int64 page = 2;
+  int64 per_page = 3;
+}
+
+message ReadListsByProjectIdResponse { 
+  repeated List lists = 1;
+  string project_id = 2;
+}
+
+service ListService {
+  rpc CreateList(CreateListRequest) returns (CreateListResponse);
+  rpc ReadList(ReadListRequest) returns (ReadListResponse);
+  rpc UpdateList(UpdateListRequest) returns (UpdateListResponse);
+  rpc ReadLists(ReadListsRequest) returns (ReadListsResponse);
+  rpc DeleteList(DeleteListRequest) returns (DeleteListResponse);
+  rpc ArchiveList(ArchiveListRequest) returns (ArchiveListResponse);
+  rpc ReadListsByProjectId(ReadListsByProjectIdRequest) returns (ReadListsByProjectIdResponse);
+}

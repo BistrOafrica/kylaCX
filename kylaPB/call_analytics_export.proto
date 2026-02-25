@@ -1,0 +1,48 @@
+syntax = "proto3";
+
+package da.proto;
+option go_package = "./pb";
+
+import "google/protobuf/timestamp.proto";
+
+
+enum ExportFormat {
+  CSV = 0;
+  EXCEL = 1;
+  PDF = 2;
+}
+
+enum ExportType {
+  ANALYTICS_OVERVIEW = 0;
+  CALL_TRAFFIC = 1;
+  CALL_HANDLING = 2;
+  QUEUE_IVR = 3;
+  CAMPAIGN = 4;
+  CUSTOMER_EXPERIENCE = 5;
+}
+
+message ExportAnalyticsRequest {
+  string membership_id = 1;
+  google.protobuf.Timestamp start_date = 2;
+  google.protobuf.Timestamp end_date = 3;
+  string date_range = 4;
+  repeated string queue_ids = 5;
+  repeated string agent_ids = 6;
+  repeated string campaign_ids = 7;
+  ExportFormat format = 8;
+  ExportType export_type = 9;
+}
+
+message ExportChunk {
+  bytes data = 1;
+  int32 progress = 2;
+  bool is_complete = 3;
+  string filename = 4;
+  string mime_type = 5;
+  int64 total_size = 6;
+  int64 current_size = 7;
+}
+
+service CallAnalyticsExportService {
+  rpc ExportAnalytics(ExportAnalyticsRequest) returns (stream ExportChunk);
+}

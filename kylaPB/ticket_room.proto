@@ -1,0 +1,79 @@
+syntax = "proto3";
+
+package da.proto;
+option go_package = "./pb";
+import "owner_type.proto";
+
+message TicketFilter {
+    string id = 1;
+    string room_id = 2;
+    string parameter = 3;
+    string operator = 4;
+    string first_value = 5;
+    string second_value = 6;
+}
+
+message TicketRoom {
+    string id = 1;
+    string name = 2;
+    string description = 3;
+    string color_code = 4;
+    string created_by = 5;
+    string created_at = 6;
+    string updated_at = 7;
+    repeated TicketFilter filters = 8;
+    string owner_id = 9;
+    OwnerType owner_type = 10;
+}
+
+message CreateTicketRoomRequest {
+    TicketRoom data = 1;
+}
+
+message CreateTicketRoomResponse {
+    TicketRoom data = 1;
+}
+
+message UpdateTicketRoomRequest {
+    TicketRoom data = 1;
+}
+
+message UpdateTicketRoomResponse {
+    TicketRoom data = 1;
+}
+
+message ReadTicketRoomRequest {
+    string id = 1;
+}
+
+message ReadTicketRoomResponse {
+    TicketRoom data = 2;
+}
+
+message ReadTicketRoomsRequest {
+    int32 page = 1;
+    int32 per_page = 2;
+    string owner_id = 3;
+    OwnerType owner_type = 4;
+}
+
+message ReadTicketRoomsResponse {
+    int32 total_count = 1;
+    repeated TicketRoom data = 2;
+}
+
+message DeleteTicketRoomRequest {
+    string id = 1;
+}
+
+message DeleteTicketRoomResponse {
+    bool success = 1;
+}
+
+service TicketRoomService {
+    rpc CreateTicketRoom(CreateTicketRoomRequest) returns (CreateTicketRoomResponse){}
+    rpc UpdateTicketRoom(UpdateTicketRoomRequest) returns (UpdateTicketRoomResponse){}
+    rpc ReadTicketRoom(ReadTicketRoomRequest) returns (ReadTicketRoomResponse){}
+    rpc ReadTicketRooms(ReadTicketRoomsRequest) returns (ReadTicketRoomsResponse){}
+    rpc DeleteTicketRoom(DeleteTicketRoomRequest) returns(DeleteTicketRoomResponse){}
+}

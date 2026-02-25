@@ -1,0 +1,240 @@
+syntax="proto3";
+
+import "google/protobuf/empty.proto";
+import "rag_agents.proto";
+
+package da.proto;
+
+option go_package = "./pb";
+
+enum VirtualAgentType {
+  VIRTUAL_AGENT_TYPE_CHAT = 0;
+  VIRTUAL_AGENT_TYPE_VOICE = 1;
+  VIRTUAL_AGENT_TYPE_TOOLS = 2;
+  VIRTUAL_AGENT_TYPE_COPILOT = 3;
+}
+
+enum VirtualAgentStatus {
+  VIRTUAL_AGENT_STATUS_ACTIVE = 0;
+  VIRTUAL_AGENT_STATUS_INACTIVE = 1;
+}
+
+message VirtualAgent {
+  string id = 1;
+  string name = 2;
+  string description = 3;
+  VirtualAgentType type = 4;
+  VirtualAgentStatus status = 5;
+  string task_definition = 6;
+  bool is_internal = 7;
+}
+  
+message CreateVirtualAgentRequest {
+  VirtualAgent agent = 1;
+}
+
+message CreateVirtualAgentResponse {
+  VirtualAgent agent = 1;
+}
+
+message ReadVirtualAgentRequest {
+  string id = 1;
+}
+
+message ReadVirtualAgentResponse {
+  VirtualAgent agent = 1;
+}
+
+message ReadAllVirtualAgentsRequest {
+  int32 limit = 1;
+  int32 offset = 2;
+}
+
+message ReadAllVirtualAgentsResponse {
+  repeated VirtualAgent agents = 1;
+  int32 total_count = 2;
+}
+
+message UpdateVirtualAgentRequest {
+  VirtualAgent agent = 1;
+}
+
+message UpdateVirtualAgentResponse {
+  VirtualAgent agent = 1;
+}
+
+message DeleteVirtualAgentRequest {
+  string id = 1;
+}
+
+message DeleteVirtualAgentResponse {
+  string id = 1;
+}
+
+message VirtualAgentActionDefinition {
+  string id = 1;
+  string action_id = 2;
+  string display_name = 3;
+  string description = 4;
+  string target_method_name = 5;
+  string is_enabled_by_default = 6;
+  string tool_definition_id = 7;
+}
+
+
+message VirtualAgentToolDefinition {
+  string id = 1;
+  string tool_id = 2;
+  string display_name = 3;
+  string definition = 4;
+  string category = 5;
+  string provider_service_name = 6;
+  string version = 7;
+  bool is_globally_enabled = 8;
+}
+
+message ReadAllToolDefinitionsRequest {
+  int32 limit = 1;
+  int32 offset = 2;
+}
+
+message ReadAllToolDefinitionsResponse {
+  repeated VirtualAgentToolDefinition tool_definitions = 1;
+}
+
+
+message AssignToolsToVirtualAgentRequest  {
+  string virtual_agent_id = 1;
+  repeated string tool_definitions_ids = 2;
+}
+
+message AssignToolsToVirtualAgentsResponse {
+  bool success = 1;
+}
+
+message PromptVirtualAgentRequest {
+  ChatUserMessage user_message = 1;
+  string namespace = 2;
+  string thread_id = 3;
+}
+
+message PromptVirtualAgentResponse {
+  RAGAgentMessage agent_message = 1;
+  string thread_id = 2;
+}
+
+message EnableCopilotResponse {
+  string copilot_id = 1;
+}
+
+message DisableCopilotResponse {
+  bool success = 1;
+}
+
+message GetCopilotStatusRequest {
+  string copilot_id = 1;
+}
+message GetCopilotStatusResponse {
+  bool is_enabled = 1;
+  string status_message = 2;
+}
+
+message ThreadHistory {
+  string id = 1;
+}
+
+message ReadThreadHistoryRequest {
+  int32 limit = 1;
+  int32 offset = 2;
+}
+
+message ReadThreadHistoryResponse {
+  repeated ThreadHistory history = 1;
+  int32 total_count = 2;
+}
+
+message ThreadMessage {
+  string id = 1;
+  string message = 2;
+  string user_id = 3;
+  string message_by = 4;
+  string thread_id = 5;
+  bool is_helpful = 6;
+  string sent_at = 7;
+}
+
+message ReadThreadMessagesRequest {
+  string thread_id = 1;
+  int32 limit = 2;
+  int32 offset = 3;
+}
+
+message ReadThreadMessagesResponse {
+  repeated ThreadMessage messages = 1;
+  int32 total_count = 2;
+}
+
+
+message RateMessageRequest {
+  string message_id = 1;
+  bool is_helpful = 2;
+}
+
+
+message ShareMessageRequest {
+  string message_id = 1;
+}
+
+message ShareMessageResponse {
+  string shareable_link = 1;
+}
+
+message ShareThreadRequest {
+  string thread_id = 1;
+}
+
+message ShareThreadResponse {
+  string shareable_link = 1;
+}
+
+message ConfigureAgentCredentialsRequest {
+  string agent_id = 1;
+  string app_id = 2;
+  string app_secret = 3;
+}
+
+message ConfigureAgentIntegrationRequest {
+  string agent_id = 1;
+  string integration_id  = 2;
+}
+
+message AgentConfigurationResponse {
+  bool success = 1;
+}
+
+service VirtualAgentService {
+  rpc CreateVirtualAgent(CreateVirtualAgentRequest) returns (CreateVirtualAgentResponse);
+  rpc ReadVirtualAgent(ReadVirtualAgentRequest) returns (ReadVirtualAgentResponse);
+  rpc ReadAllVirtualAgents(ReadAllVirtualAgentsRequest) returns (ReadAllVirtualAgentsResponse);
+  rpc UpdateVirtualAgent(UpdateVirtualAgentRequest) returns (UpdateVirtualAgentResponse);
+  rpc DeleteVirtualAgent(DeleteVirtualAgentRequest) returns (DeleteVirtualAgentResponse);
+
+  rpc ReadAllToolDefinitions(ReadAllToolDefinitionsRequest) returns (ReadAllToolDefinitionsResponse);
+  rpc AssignToolsToVirtualAgent(AssignToolsToVirtualAgentRequest) returns (AssignToolsToVirtualAgentsResponse);
+
+  rpc EnableCopilot(google.protobuf.Empty) returns (EnableCopilotResponse);
+  rpc DisableCopilot(google.protobuf.Empty) returns (DisableCopilotResponse);
+  rpc GetCopilotStatus(GetCopilotStatusRequest) returns (GetCopilotStatusResponse);
+
+  rpc PromptVirtualAgent(PromptVirtualAgentRequest) returns (PromptVirtualAgentResponse);
+  rpc ReadThreadHistory(ReadThreadHistoryRequest) returns (ReadThreadHistoryResponse);
+  rpc ReadThreadMessages(ReadThreadMessagesRequest) returns (ReadThreadMessagesResponse);
+
+
+  rpc RateMessage(RateMessageRequest) returns (google.protobuf.Empty);
+  rpc ShareMessage(ShareMessageRequest) returns (ShareMessageResponse);
+  rpc ShareThread(ShareThreadRequest) returns (ShareThreadResponse);
+
+  rpc ConfigureAgentCredentials(ConfigureAgentCredentialsRequest) returns (AgentConfigurationResponse);
+  rpc ConfigureAgentIntegration(ConfigureAgentIntegrationRequest) returns (AgentConfigurationResponse);
+}

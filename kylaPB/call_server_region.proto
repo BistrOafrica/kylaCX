@@ -1,0 +1,51 @@
+syntax="proto3";
+
+package da.proto;
+option go_package = "./pb";
+
+message CallServerRegion {
+  string id = 1;
+  string name = 2;
+  string description = 3;
+  string country_code = 4;
+  string created_at = 5;
+}
+
+message CreateServerRegionRequest {
+  string name = 1;
+  string description = 2;
+  string country_code = 3;
+}
+
+message UpdateServerRegionRequest {
+  string id = 1;
+  string name = 2;
+  string description = 3;
+  string country_code = 4;
+}
+
+message ReadServerRegionRequest {
+  string id = 1;
+}
+
+message SuccessServerRegionResponse {
+  bool success = 1;
+}
+
+message ReadServerRegionsRequest {
+  int32 page_number = 1;
+  int32 page_size = 2;
+}
+
+message ReadServerRegionsResponse {
+  int64 total = 1;
+  repeated CallServerRegion items = 2;
+}
+
+service CallServerRegionService {
+  rpc CreateRegion(CreateServerRegionRequest) returns (SuccessServerRegionResponse);
+  rpc ReadRegion(ReadServerRegionRequest) returns (CallServerRegion);
+  rpc UpdateRegion(UpdateServerRegionRequest) returns (SuccessServerRegionResponse);
+  rpc DeleteRegion(ReadServerRegionRequest) returns (SuccessServerRegionResponse);
+  rpc ReadRegions(ReadServerRegionsRequest) returns (ReadServerRegionsResponse);
+}

@@ -1,0 +1,61 @@
+services:
+  core-svc:
+    build: 
+      context: ..
+      dockerfile: deploy/Dockerfile.dev
+      target: development
+    ports: 
+      - "50050:50050"
+    volumes:
+      - ../:/app
+      - /app/tmp
+    env_file: 
+      - ../envs/.env
+    environment:
+      - GO_ENV=development
+      - REDIS_HOST=redis
+      - REDIS_PORT=6378
+      - REDIS_PASSWORD=${REDIS_PASSWORD:-kyla_redis}
+    # command: air -c deploy/.air.toml
+    depends_on:
+      - redis
+    networks:
+      - kyla-network
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6378:6378"
+    volumes:
+      - redis_data:/data
+      - ./redis.conf:/usr/local/etc/redis/redis.conf
+    command: redis-server /usr/local/etc/redis/redis.conf
+    networks:
+      - kyla-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD:-kyla_redis}", "ping"]
+      interval: 5s
+      timeout: 30s
+      retries: 50
+
+  envoy-proxy: 
+    image: envoyproxy/envoy:v1.25-latest # Envoy proxy image version 
+    volumes: 
+      - ../envoy.yaml:/etc/envoy/envoy.yaml # Mounting envoy.yaml file to the container 
+    ports: 
+      - "0.0.0.0:8081:8081"
+      - "9090:9090"
+    networks:
+      - kyla-network
+    depends_on:
+       - core-svc
+    command: ["envoy", "-c", "/etc/envoy/envoy.yaml"]
+
+volumes:
+  redis_data:
+    driver: local
+
+networks:
+  kyla-network:
+    driver: bridge
+    external: true

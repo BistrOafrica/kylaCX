@@ -1,0 +1,29 @@
+# Development stage
+FROM golang:1.24-alpine AS development
+
+# Install build dependencies and Air
+RUN apk add --no-cache git curl && \
+    curl -sSfL https://raw.githubusercontent.com/cosmtrek/air/master/install.sh | sh -s
+
+# Set the working directory
+WORKDIR /app
+
+# Create tmp directory for Air with correct permissions
+RUN mkdir -p /app/tmp && \
+    chmod 777 /app/tmp
+
+# Copy go mod and sum files
+COPY go.mod go.sum ./
+RUN go mod download
+
+# Copy the source code
+COPY . .
+
+# Ensure correct permissions
+RUN chmod -R 777 /app/tmp
+
+# Expose the port the app runs on
+EXPOSE 50050
+
+# Command to run the application with Air for hot reloading
+CMD ["air", "--build.cmd", "go build -o /app/tmp/coreServices cmd/server/main.go", "--build.bin", "/app/tmp/coreServices"]

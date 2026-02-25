@@ -1,0 +1,155 @@
+syntax = "proto3";
+
+package da.proto;
+option go_package = "./pb";
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/empty.proto";
+
+// InvitationService provides methods for managing user invitations
+service InvitationService {
+  // CreateInvitation creates a new invitation
+  rpc CreateInvitation(CreateInviteRequest) returns (Invitation);
+  
+  // GetInvitation retrieves an invitation by ID
+  rpc GetInvitation(GetInviteRequest) returns (Invitation);
+  
+  // ListInvitations lists invitations with filters
+  rpc ListInvitations(ListInvitationsRequest) returns (ListInvitationsResponse);
+  
+  // UpdateInvitation updates an invitation
+  rpc UpdateInvitation(UpdateInviteRequest) returns (Invitation);
+  
+  // DeleteInvitation deletes an invitation
+  rpc DeleteInvitation(DeleteInviteRequest) returns (google.protobuf.Empty);
+  
+  // AcceptInvitation accepts an invitation
+  rpc AcceptInvitation(AcceptInviteRequest) returns (Invitation);
+  
+  // RejectInvitation rejects an invitation
+  rpc RejectInvitation(RejectInviteRequest) returns (Invitation);
+  
+  // CancelInvitation cancels an invitation
+  rpc CancelInvitation(CancelInviteRequest) returns (Invitation);
+}
+
+// InvitationType represents the type of invitation
+enum InvitationType {
+  INVITATION_TYPE_UNSPECIFIED = 0;
+  INVITATION_TYPE_NEW_USER = 1;      // For new users to join the platform
+  INVITATION_TYPE_EXISTING_USER = 2;  // For existing users to join another org/branch/dept/team
+}
+
+// InvitationStatus represents the current status of an invitation
+enum InvitationStatus {
+  INVITATION_STATUS_UNSPECIFIED = 0;
+  INVITATION_STATUS_PENDING = 1;
+  INVITATION_STATUS_ACCEPTED = 2;
+  INVITATION_STATUS_REJECTED = 3;
+  INVITATION_STATUS_EXPIRED = 4;
+}
+
+// Invitation represents a user invitation in the system
+message Invitation {
+  string id = 1;
+  string email = 2;
+  string invited_by = 3;  // ID of the user who sent the invitation
+  InvitationType type = 4;
+  InvitationStatus status = 5;
+  string organisation_id = 6;
+  string branch_id = 7;      // Optional
+  string department_id = 8;  // Optional
+  string team_id = 9;        // Optional
+  string user_id = 10;       // Only set for INVITATION_TYPE_EXISTING_USER
+  repeated string role_ids = 11;
+  google.protobuf.Timestamp created_at = 12;
+  google.protobuf.Timestamp updated_at = 13;
+  google.protobuf.Timestamp expires_at = 14;
+}
+
+// CreateInviteRequest represents a request to create a new invitation
+message CreateInviteRequest {
+  string email = 1;
+  string invited_by = 2;
+  InvitationType type = 3;
+  // Target organization details
+  string organisation_id = 4;
+  string branch_id = 5;      // Optional
+  string department_id = 6;  // Optional
+  string team_id = 7;        // Optional
+  // For existing users
+  string user_id = 8;        // Only set for INVITATION_TYPE_EXISTING_USER
+  // Assigned roles
+  repeated string role_ids = 9;
+  // Expiration in hours (default 72 hours)
+  int32 expiration_hours = 10;
+}
+
+// GetInviteRequest represents a request to get an invitation by ID
+message GetInviteRequest {
+  string id = 1;
+}
+
+// ListInvitationsRequest represents a request to list invitations with filters
+message ListInvitationsRequest {
+  string email = 1;
+  string invited_by = 2;
+  InvitationType type = 3;
+  InvitationStatus status = 4;
+  string organisation_id = 5;
+  string branch_id = 6;
+  string department_id = 7;
+  string team_id = 8;
+  string user_id = 9;
+  int32 page_size = 10;
+  string page_token = 11;
+}
+
+// ListInvitationsResponse represents a response containing a list of invitations
+message ListInvitationsResponse {
+  repeated Invitation invitations = 1;
+  string next_page_token = 2;
+  int32 total_count = 3;
+}
+
+// UpdateInviteRequest represents a request to update an invitation
+message UpdateInviteRequest {
+  string id = 1;
+  string email = 2;
+  InvitationType type = 3;
+  InvitationStatus status = 4;
+  string organisation_id = 5;
+  string branch_id = 6;
+  string department_id = 7;
+  string team_id = 8;
+  string user_id = 9;
+  repeated string role_ids = 10;
+  google.protobuf.Timestamp expires_at = 11;
+}
+
+// DeleteInviteRequest represents a request to delete an invitation
+message DeleteInviteRequest {
+  string id = 1;
+}
+
+// AcceptInviteRequest represents a request to accept an invitation
+message AcceptInviteRequest {
+  string id = 1;
+  string user_id = 2;
+  string organisation_id = 3; // Organisation ID to join
+  string first_name = 4; // Optional first name for new users
+  string last_name = 5;  // Optional last name for new users
+  string phone_number = 6; // Optional phone number for new users
+  string password = 7; // Optional password for new users
+  string username = 8; // Optional username for new users
+}
+
+// RejectInviteRequest represents a request to reject an invitation
+message RejectInviteRequest {
+  string id = 1;
+}
+
+// CancelInviteRequest represents a request to cancel an invitation
+message CancelInviteRequest {
+  string id = 1;
+} 

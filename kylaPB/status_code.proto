@@ -1,0 +1,58 @@
+syntax="proto3";
+
+package da.proto;
+option go_package = "./pb"; 
+
+message StatusCode {
+  string  id = 1;
+  string  name = 2;
+  string  description = 3;
+}
+
+message CreateStatusCodeRequest {
+  StatusCode statusCode = 1;
+}
+
+message CreateStatusCodeResponse {
+  StatusCode statusCode = 1;
+}
+
+message ReadStatusCodeRequest {
+  string id = 1;
+}
+
+message ReadStatusCodeResponse {
+  repeated StatusCode statusCode = 1;
+}
+
+message ReadStatusCodesRequest {
+  string organisation_id = 1;
+}
+
+message ReadStatusCodesResponse {
+  repeated StatusCode statusCodes = 1;
+}
+
+message UpdateStatusCodeRequest {
+  StatusCode statusCode = 1;
+}
+
+message UpdateStatusCodeResponse {
+  StatusCode statusCode = 1;
+}
+
+message DeleteStatusCodeRequest {
+  string id = 1;
+}
+
+message DeleteStatusCodeResponse {
+  bool success = 1;
+}
+
+service StatusCodeService {
+  rpc CreateStatusCode(CreateStatusCodeRequest) returns (CreateStatusCodeResponse);
+  rpc ReadStatusCode(ReadStatusCodeRequest) returns (ReadStatusCodeResponse);
+  rpc ReadStatusCodes(ReadStatusCodesRequest) returns (ReadStatusCodesResponse);
+  rpc UpdateStatusCode(UpdateStatusCodeRequest) returns (UpdateStatusCodeResponse);
+  rpc DeleteStatusCode(DeleteStatusCodeRequest) returns (DeleteStatusCodeResponse);
+}

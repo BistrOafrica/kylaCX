@@ -1,0 +1,63 @@
+syntax="proto3";
+
+package da.proto;
+
+option go_package = "./pb";
+
+message CalendarLabel {
+  string id = 1;
+  string title = 2;
+  string description = 3;
+}
+
+message CreateCalendarLabelRequest {
+  CalendarLabel label = 1;
+}
+
+message CreateCalendarLabelResponse {
+  CalendarLabel label = 1;
+}
+
+message ReadCalendarLabelRequest {
+  string id = 1;
+}
+
+message ReadCalendarLabelResponse {
+  CalendarLabel label = 1;
+}
+
+message ReadCalendarLabelsRequest {
+  int64 page = 1;
+  int64 per_page = 2;
+}
+
+message ReadCalendarLabelsResponse {
+  repeated CalendarLabel labels = 1;
+  int64 total = 2;
+  int64 page = 3;
+  int64 per_page = 4;
+}
+
+message UpdateCalendarLabelRequest {
+  CalendarLabel label = 1;
+}
+
+message UpdateCalendarLabelResponse {
+  CalendarLabel label = 1;
+}
+
+message DeleteCalendarLabelRequest {
+  string id = 1;
+}
+
+message DeleteCalendarLabelResponse {
+  string id = 1;
+}
+
+service CalendarLabelService {
+  rpc CreateCalendarLabel(CreateCalendarLabelRequest) returns (CreateCalendarLabelResponse);
+  rpc ReadCalendarLabel(ReadCalendarLabelRequest) returns (ReadCalendarLabelResponse);
+  rpc ReadCalendarLabels(ReadCalendarLabelsRequest) returns (ReadCalendarLabelsResponse);
+  rpc UpdateCalendarLabel(UpdateCalendarLabelRequest) returns (UpdateCalendarLabelResponse);
+  rpc DeleteCalendarLabel(DeleteCalendarLabelRequest) returns (DeleteCalendarLabelResponse);
+}

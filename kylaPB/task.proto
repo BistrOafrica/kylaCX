@@ -1,0 +1,90 @@
+syntax = "proto3";
+
+package da.proto;
+
+option go_package = "./pb";
+
+import "calendar_label.proto";
+
+message Assignee {
+  string id = 1;
+}
+
+message Link {
+  string id = 1;
+  int32 type = 2;
+  string uuid = 3;
+}
+
+message Task {
+  string id = 1;
+  string title = 2;
+  string note = 3;
+  string scope = 4;
+  string due_date = 5;
+  string list_id = 6;
+  repeated Assignee assignees = 7;
+  repeated CalendarLabel labels = 8;
+  repeated Link links = 9;
+}
+
+message CreateTaskRequest { 
+  Task task = 1;
+}
+
+message CreateTaskResponse { 
+  Task task = 1;
+}
+
+message ReadTaskRequest {
+  string id = 1; 
+}
+
+message ReadTaskResponse { 
+  Task task = 1; 
+}
+
+message UpdateTaskRequest { 
+  Task task = 1; 
+}
+
+message UpdateTaskResponse { 
+  Task task = 1; 
+}
+
+message ReadTasksRequest {
+  string scope = 1; 
+  int64 page = 2;
+  int64 per_page = 3;
+}
+
+message ReadTasksByListIdRequest {
+  string list_id = 1;
+  int64 page = 2;
+  int64 per_page = 3;
+}
+
+message UpdateTaskListRequest {
+  string task_id = 1;
+  string list_id = 2;
+}
+
+message UpdateTaskListResponse {
+  bool success = 1;
+}
+
+message ReadTasksResponse { repeated Task tasks = 1; }
+
+message DeleteTaskRequest { string id = 1; }
+
+message DeleteTaskResponse { string id = 1; }
+
+service TaskService {
+  rpc CreateTask(CreateTaskRequest) returns (CreateTaskResponse);
+  rpc ReadTask(ReadTaskRequest) returns (ReadTaskResponse);
+  rpc UpdateTask(UpdateTaskRequest) returns (UpdateTaskResponse);
+  rpc ReadTasks(ReadTasksRequest) returns (ReadTasksResponse);
+  rpc DeleteTask(DeleteTaskRequest) returns (DeleteTaskResponse);
+  rpc ReadTasksByListId(ReadTasksByListIdRequest) returns (ReadTasksResponse);
+  rpc UpdateTaskList(UpdateTaskListRequest) returns (UpdateTaskListResponse);
+}

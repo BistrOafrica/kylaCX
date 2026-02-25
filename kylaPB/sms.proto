@@ -1,0 +1,109 @@
+syntax = "proto3";
+
+package da.proto;
+
+option go_package = "./pb";
+
+message SMSTemplate {
+  string id = 1;
+  string name = 2;
+  string body = 3;
+}
+
+message SMSCampaign {
+  string id = 1;
+  string name = 2;
+  string template_id = 3;
+  string contacts = 4;
+  string frequency = 5;
+  string status = 6;
+  string start_date = 7;
+  string end_date = 8;
+  string description = 9;
+  string shortcode = 10;
+  string message = 11;
+}
+
+message SmsCampaignResponse{
+  SMSCampaign campaign = 1;
+}
+
+message SmsAnalytics{
+  string id = 1;
+  string contact = 2;
+  string message_id = 3;
+  string shortcode = 4;
+  string status = 5;
+  string failure_reason = 6;
+  string retry_count = 7;
+  string campaign_id = 8;
+}
+
+message SmsAnalyticsCount{
+  int64 sent = 1;
+  int64 failed = 2;
+}
+
+// message SmsCampaignResponse{
+//   string recipient = 1;
+//   string reason = 2;
+//   string status = 3;
+// }
+
+message CreateSMSTemplateRequest {
+  string name = 1;
+  string body = 2;
+}
+
+message CreateSMSTemplateResponse {
+  string name = 1;
+  string body = 2;
+}
+
+message ViewSmsTemplateRequest{
+  string id = 1;
+}
+
+message ViewSmsTemplateResponse{
+  SMSTemplate template = 1;
+}
+
+message ListSmsTemplateRequest{}
+
+message ListSmsTemplateResponse{
+  repeated SMSTemplate templates = 1;
+}
+
+message ViewSmsCampaignRequest{
+  string id = 1;
+}
+
+message ViewSmsCampaignResponse{
+  SMSCampaign campaign = 1;
+}
+
+message ListSmsCampaignRequest{}
+
+message ListSmsCampaignResponse{
+  repeated SMSCampaign campaign = 1;
+}
+
+message ViewSmsCampaignAnalyticsRequest {
+  string campaign_id = 1;
+}
+
+message ViewSmsCampaignAnalyticsResponse{
+  repeated SmsAnalytics smsAnalytics = 1;
+  SmsAnalyticsCount count = 2;
+}
+
+service SMSService {
+  rpc CreateSMSTemplate(CreateSMSTemplateRequest) returns (CreateSMSTemplateResponse);
+  rpc ViewSmsTemplate(ViewSmsTemplateRequest) returns (ViewSmsTemplateResponse);
+  rpc ListSmsTemplate(ListSmsTemplateRequest) returns (ListSmsTemplateResponse);
+
+  rpc SendMessageCampaign(SMSCampaign) returns (SmsCampaignResponse);
+  rpc ViewSmsCampaign(ViewSmsCampaignRequest) returns (ViewSmsCampaignResponse);
+  rpc ListSmsCampaign(ListSmsCampaignRequest) returns (ListSmsCampaignResponse);
+  rpc ViewSmsCampaignAnalytics(ViewSmsCampaignAnalyticsRequest) returns (ViewSmsCampaignAnalyticsResponse);
+}

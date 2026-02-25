@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package da.proto;
+option go_package = "./pb";
+
+message NewIncomingChatdeskMessageRequest {
+    string source = 1;
+    string message_type = 2;
+    map<string, string> payload = 3;
+}
+
+message NewIncomingChatdeskMessageResponse {
+    bool success = 1;
+}
+
+service ChatdeskMessagingService {
+    rpc NewIncomingChatdeskMessage(NewIncomingChatdeskMessageRequest) returns (NewIncomingChatdeskMessageResponse){}
+}

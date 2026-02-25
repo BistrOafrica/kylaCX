@@ -1,0 +1,55 @@
+syntax = "proto3";
+
+package da.proto;
+option go_package = "./pb";
+
+
+message CallIvrTrigger {
+	string id = 1;
+	string name = 2;
+	string template_id = 3;
+	string trigger = 4;
+	string description = 5;
+	string created_at = 6;
+}
+
+message CreateIvrTriggerRequest {
+  string name = 1;
+  string template_id = 2;
+  string trigger = 3;
+  string description = 4;
+}
+
+message UpdateIvrTriggerRequest {
+  string id = 1;
+  string name = 2;
+  string template_id = 3;
+  string trigger = 4;
+  string description = 5;
+}
+
+message ReadIvrTriggerRequest {
+  string id = 1;
+}
+
+message SuccessIvrTriggerResponse {
+  bool success = 1;
+}
+
+message ReadIvrTriggersRequest {
+  int32 page_number = 1;
+  int32 page_size = 2;
+}
+
+message ReadIvrTriggersResponse {
+  int64 total = 1;
+  repeated CallIvrTrigger items = 2;
+}
+
+service CallIvrTriggerService {
+  rpc CreateIvrTrigger(CreateIvrTriggerRequest) returns (SuccessIvrTriggerResponse);
+  rpc ReadIvrTrigger(ReadIvrTriggerRequest) returns (CallIvrTrigger);
+  rpc UpdateIvrTrigger(UpdateIvrTriggerRequest) returns (SuccessIvrTriggerResponse);
+  rpc DeleteIvrTrigger(ReadIvrTriggerRequest) returns (SuccessIvrTriggerResponse);
+  rpc ReadIvrTriggers(ReadIvrTriggersRequest) returns (ReadIvrTriggersResponse);
+}

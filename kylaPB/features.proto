@@ -1,0 +1,11 @@
+syntax="proto3";
+
+package da.proto;
+option go_package = "./pb"; 
+
+message Features {
+  string id = 1;
+  string name = 2;
+  string description = 3;
+  string module = 4;
+}

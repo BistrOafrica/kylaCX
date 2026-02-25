@@ -1,0 +1,64 @@
+syntax="proto3";
+
+package da.proto;
+
+option go_package = "./pb";
+
+enum VoiceEngine {
+  POLLY_STANDARD = 0;
+  POLLY_NEUTRAL = 1;
+  POLLY_LONG_FORM = 2;
+  POLLY_GENERATIVE = 3;
+}
+
+
+message Voice {
+  string gender = 1;
+  string id = 2;
+  string language_code = 3;
+  string language_name = 4;
+  string name = 5;
+}
+
+message ReadPollyVoicesRequest {
+  VoiceEngine engine = 1;
+  string language_code = 2;
+  string next_token = 3;
+}
+
+message ReadPollyVoicesResponse {
+  repeated Voice voices = 1;
+}
+
+message SynthesizeSpeechRequest {
+  VoiceEngine engine = 1;
+  string language_code = 2;
+  repeated string lexicon_names = 3;
+  string output_format = 4;
+  string sample_rate = 5;
+  string text = 7;
+  string text_type = 8;
+  string voice_id = 9;
+}
+
+message AudioChunk {
+  bytes audio_data = 1;
+}
+
+message TranscriptionChunk {
+  string text = 1;
+  bool is_final = 2;
+}
+
+message TranscriptResponse {
+  string text = 1;
+}
+
+service SpeechSynthesisService {
+  rpc ReadVoices(ReadPollyVoicesRequest) returns (ReadPollyVoicesResponse);
+  rpc SynthesizeSpeech(SynthesizeSpeechRequest) returns (stream AudioChunk);
+  rpc TranscribeStreamAudio(stream AudioChunk) returns (stream TranscriptionChunk);
+  rpc TranscribeAudio(stream AudioChunk) returns (TranscriptResponse);
+  rpc TranscribeUnaryStream(AudioChunk) returns (stream TranscriptionChunk);
+}
+

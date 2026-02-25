@@ -1,0 +1,106 @@
+syntax = "proto3";
+
+package da.proto;
+option go_package = "./pb"; 
+
+import "google/protobuf/empty.proto";
+import "owner_type.proto";
+
+enum ExecutionType {
+  IMMEDIATE = 0;
+  SCHEDULED = 1;
+}
+
+message AutomationCondition {
+	string parameter = 1;
+	string operator = 2;
+	string value = 3;
+}
+
+message AutomationTrigger {
+  string id = 1;
+  string event = 2;
+  map<string, string> payload = 3;
+  string created_at = 4;
+  string service = 5;
+}
+
+message AutomationResultAction {
+  string id = 1;
+  string service = 2;
+  string method = 3;
+  map<string, string> payload = 4;
+  string created_at = 5;
+}
+
+message Automation {
+  string id = 1;
+  string name = 2;
+  string trigger_id = 3;
+  repeated string action_ids = 4;
+  string description = 5;
+  string owner_id = 6;
+  OwnerType owner_type = 7;
+  ExecutionType execution_type = 8;
+  string created_at = 9;
+  string created_by = 10;
+  string execution_time = 13;
+  repeated AutomationCondition conditions = 14;
+  bool is_billable = 15;
+  string parent_id = 16;
+}
+
+
+message ReadAutomationRequest {
+  string id = 1;
+}
+
+message AutomationRequest {
+  Automation item = 1;
+}
+
+message AutomationResponse {
+  Automation item = 1;
+}
+
+message SuccessAutomationResponse {
+  bool success = 1;
+}
+
+message ReadAutomationsRequest {
+  int32 page_number = 1;
+  int32 page_size = 2;
+}
+
+message ReadAutomationsResponse {
+  repeated Automation items = 1;
+  int64 total = 2;
+}
+
+message AutomationTriggerRequest {
+  AutomationTrigger item = 1;
+}
+
+message AutomationTriggersResponse {
+  repeated AutomationTrigger items = 1;
+}
+
+message AutomationActionRequest {
+  AutomationResultAction item = 1;
+}
+
+message AutomationActionsResponse {
+  repeated AutomationResultAction items = 1;
+}
+
+service AutomationService {
+  rpc CreateAutomation(AutomationRequest) returns (AutomationResponse);
+  rpc ReadAutomation(ReadAutomationRequest) returns (AutomationResponse);
+  rpc UpdateAutomation(AutomationRequest) returns (AutomationResponse);
+  rpc DeleteAutomation(ReadAutomationRequest) returns (SuccessAutomationResponse);
+  rpc ReadAutomations(ReadAutomationsRequest) returns (ReadAutomationsResponse);
+  rpc SaveTrigger(AutomationTriggerRequest) returns (SuccessAutomationResponse);
+  rpc ReadTriggers(google.protobuf.Empty) returns (AutomationTriggersResponse);
+  rpc SaveAction(AutomationActionRequest) returns (SuccessAutomationResponse);
+  rpc ReadActions(google.protobuf.Empty) returns (AutomationActionsResponse);
+}

@@ -1,0 +1,43 @@
+syntax = "proto3";
+
+package da.proto;
+
+option go_package = "./pb";
+
+message PaymentMethod {
+  string id           = 1;
+  string bin          = 2;
+  string last4        = 3;
+  string exp_month    = 4;
+  string exp_year     = 5;
+  string channel      = 6;
+  string card_type    = 7;
+  string brand        = 8;
+  string country      = 9;
+  bool   reusable     = 10;
+  string account_name = 11;
+}
+
+message AddPaymentMethodRequest {}
+
+message AddPaymentMethodResponse {
+  string check_out_url = 1;
+}
+
+message RemovePaymentMethod {
+  
+}
+
+message ReadPaymentMethodsRequest {}
+
+message ReadPaymentMethodsResponse {
+  repeated PaymentMethod payment_methods = 1;
+}
+
+// payment methods management service
+service PaymentMethodsService {
+  // add payment method
+  rpc AddPaymentMethod(AddPaymentMethodRequest) returns (AddPaymentMethodResponse);
+  // read all payments methods
+  rpc ReadAllPaymentMethods(ReadPaymentMethodsRequest) returns (ReadPaymentMethodsResponse);
+}

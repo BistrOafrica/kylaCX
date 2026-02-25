@@ -1,0 +1,58 @@
+syntax = "proto3";
+
+package da.proto;
+
+option go_package = "./pb";
+
+import "billing_wallets.proto";
+import "billing_subscription.proto";
+
+message TaxDetails   {
+  string country    = 1;
+  string tax_number = 2;
+}
+
+message BillingAccount {
+  string     id          = 1;
+  string     name        = 2;
+  string     address     = 3;
+  string     country     = 4;
+  string     email       = 5;
+  string     currency    = 6;
+  string     postal_code = 7;
+  string     city        = 8;
+  string     phone       = 9;
+  TaxDetails tax_details = 10;
+}
+
+message CreateBillingAccountRequest {
+  BillingAccount billing_account = 1;
+}
+
+message CreateBillingAccountResponse {
+  BillingAccount billing_account = 1;
+}
+
+message ReadBillingAccountRequest {}
+
+message ReadBillingAccountResponse {
+  BillingAccount        billing_account = 1;
+  repeated Wallet       wallets         = 2;
+  repeated Subscription subscriptions   = 3;
+}
+
+message ValidateSubscriptionRequest {
+  string service_identifier = 1;
+}
+
+message ValidateSubscriptionResponse {
+
+}
+
+// billing accounts service
+service BillingAccountsService {
+  // create billing account
+  rpc CreateBillingAccount(CreateBillingAccountRequest) returns (CreateBillingAccountResponse);
+  // read billing account
+  rpc ReadBillingAccount(ReadBillingAccountRequest) returns (ReadBillingAccountResponse);
+}

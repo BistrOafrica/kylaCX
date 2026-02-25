@@ -1,0 +1,65 @@
+syntax = "proto3";
+
+package da.proto;
+option go_package = "./pb";
+import "call_session.proto";
+
+
+message IvrMenuOption {
+  string id = 1;
+  string dtmf_option = 2;
+  string destination_id = 3;
+  Destination destination_type = 4;
+}
+
+message CallIvrMenu {
+	string id = 1;
+	string audio_id = 2;
+	string name = 3;
+	string description = 4;
+  string domain_id = 5;
+  repeated IvrMenuOption options = 6;
+}
+
+message CreateIvrMenuRequest {
+  string name = 1;
+  string audio_id = 2;
+  string description = 3;
+  string domain_id = 4;
+  repeated IvrMenuOption options = 5;
+}
+
+message UpdateIvrMenuRequest {
+  string id = 1;
+  string name = 2;
+  string audio_id = 3;
+  string description = 4;
+  repeated IvrMenuOption options = 5;
+}
+
+message ReadIvrMenuRequest {
+  string id = 1;
+}
+
+message SuccessIvrMenuResponse {
+  bool success = 1;
+}
+
+message ReadIvrMenusRequest {
+  int32 page_number = 1;
+  int32 page_size = 2;
+  string domain_id = 3;
+}
+
+message ReadIvrMenusResponse {
+  int64 total = 1;
+  repeated CallIvrMenu items = 2;
+}
+
+service CallIvrMenuService {
+  rpc CreateIvrMenu(CreateIvrMenuRequest) returns (SuccessIvrMenuResponse);
+  rpc ReadIvrMenu(ReadIvrMenuRequest) returns (CallIvrMenu);
+  rpc UpdateIvrMenu(UpdateIvrMenuRequest) returns (SuccessIvrMenuResponse);
+  rpc DeleteIvrMenu(ReadIvrMenuRequest) returns (SuccessIvrMenuResponse);
+  rpc ReadIvrMenus(ReadIvrMenusRequest) returns (ReadIvrMenusResponse);
+}

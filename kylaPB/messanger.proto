@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+package da.proto;
+option go_package = "./pb";
+
+message MessangerPayload {
+    string organisation_id = 1;
+    string model = 2;
+    string model_id = 3;
+    repeated string triggers = 4;
+    repeated string actions = 5;
+}

@@ -1,0 +1,72 @@
+syntax="proto3";
+
+package da.proto;
+option go_package = "./pb";
+import "owner_type.proto";
+import "notification_template.proto";
+
+enum NotificationDeliveryStatus {
+	NOTIFICATION_STATUS_UNSPECIFIED = 0;
+	NOTIFICATION_STATUS_QUEUED = 1;
+	NOTIFICATION_STATUS_SENT = 2;
+	NOTIFICATION_STATUS_FAILED = 3;
+	NOTIFICATION_STATUS_DELIVERED = 4;
+}
+
+message Notification {
+	string id = 1;
+	NotificationChannel channel = 2;
+	NotificationDeliveryStatus status = 3;
+	string template_id = 4;
+	map<string, string> data = 5;     // Template data (e.g. {{.UserName}})
+	map<string, string> metadata = 6; // Optional: channel-specific additions (e.g. buttons, URLs)
+	string reference_id = 7;          // Optional external reference (e.g. ticket ID)
+	string owner_id = 8;
+	OwnerType owner_type = 9;
+}
+
+message SendNotificationRequest {
+	Notification item = 1;
+}
+
+message SendNotificationResponse {
+	string message = 1;
+	Notification item = 2;
+}
+
+message ReadNotificationRequest {
+	string id = 1;
+}
+
+message ReadNotificationResponse {
+	Notification item = 1;
+}
+
+message ChangeNotificationStatusRequest {
+	string id = 1;
+	NotificationDeliveryStatus status = 2;
+}
+
+message ChangeNotificationStatusResponse {
+	string message = 1;
+	Notification item = 2;
+}
+
+message ReadNotificationsRequest {
+	int32 page = 1;
+	int32 limit = 2;
+	string owner_id = 3;
+	OwnerType owner_type = 4;
+}
+
+message ReadNotificationsResponse {
+ repeated Notification items = 1;
+ int64 total = 2; // Total number of notifications for pagination
+}
+
+service NotificationService {
+	rpc SendNotification (SendNotificationRequest) returns (SendNotificationResponse);
+	rpc ReadNotification (ReadNotificationRequest) returns (ReadNotificationResponse);
+	rpc ReadNotifications (ReadNotificationsRequest) returns (ReadNotificationsResponse);
+	rpc ChangeNotificationStatus (ChangeNotificationStatusRequest) returns (ChangeNotificationStatusResponse);
+}

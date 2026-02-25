@@ -1,0 +1,68 @@
+syntax="proto3";
+
+package da.proto;
+option go_package = "./pb";
+
+import "owner_type.proto";
+
+message Tag {
+  string id = 1;
+  string name = 2;
+  string color_code = 3;
+  string created_at = 5;
+  string updated_at = 6;
+  string created_by = 7;
+  OwnerType owner_type = 8;
+  string owner_id = 9;
+}
+
+message CreateTagRequest {
+  Tag tag = 1;
+  Scope scope = 2;
+}
+
+message CreateTagResponse {
+  Tag tag = 1;
+}
+
+message ReadTagRequest {
+  string id = 1;
+  Scope scope = 2;
+}
+
+message ReadTagResponse {
+  Tag tag = 1;
+}
+
+message ReadTagsRequest {
+  Scope scope = 2;
+}
+
+message ReadTagsResponse {
+  repeated Tag tags = 1;
+}
+message UpdateTagRequest {
+  Tag tag = 1;
+  Scope scope = 2;
+}
+
+message UpdateTagResponse {
+  Tag tag = 1;
+}
+
+message DeleteTagRequest {
+  string id = 1;
+  Scope scope = 2;
+}
+
+message DeleteTagResponse {
+  bool success = 1;
+}
+
+service TagService {
+  rpc CreateTag(CreateTagRequest) returns (CreateTagResponse) {}
+  rpc ReadTag(ReadTagRequest) returns (ReadTagResponse) {}
+  rpc ReadTags(ReadTagsRequest) returns (ReadTagsResponse) {}
+  rpc UpdateTag(UpdateTagRequest) returns (UpdateTagResponse) {}
+  rpc DeleteTag(DeleteTagRequest) returns (DeleteTagResponse) {}
+}

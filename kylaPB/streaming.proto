@@ -1,0 +1,96 @@
+syntax="proto3";
+
+package da.proto;
+
+option go_package = "./pb";
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/empty.proto";
+import "encryption.proto";
+
+// StreamingService provides real-time messaging capabilities
+service StreamingService {
+  // Message Streaming
+  rpc StreamMessages(StreamMessagesRequest) returns (stream MessageStreamResponse) {}
+  
+  // Presence Management
+  rpc StreamPresence(StreamPresenceRequest) returns (stream PresenceUpdate) {}
+  rpc UpdatePresence(UpdatePresenceRequest) returns (google.protobuf.Empty) {}
+  
+  // Typing Indicators
+  rpc StreamTypingIndicators(StreamTypingRequest) returns (stream TypingIndicator) {}
+  rpc UpdateTypingStatus(UpdateTypingRequest) returns (google.protobuf.Empty) {}
+}
+
+message MessageStreamResponse {
+  Message message = 1;
+  Heartbeat heartbeat = 2;
+  bool is_alive = 3;
+}
+// Request/Response Messages
+message StreamMessagesRequest {
+  string user_id = 1;
+  repeated string chat_ids = 2; // Can be direct chat IDs or group IDs
+}
+
+message PresenceState {
+  enum Status {
+    ONLINE = 0;
+    OFFLINE = 1;
+    AWAY = 2;
+    DO_NOT_DISTURB = 3;
+  }
+  enum Activity {
+    UNSET = 0; // Default activity
+    IN_MEETING = 1;
+    IN_CALL = 2;
+    PRESENTING = 3;
+    CUSTOM = 4; // Custom activity
+  }
+  string user_id = 1;
+  Status status = 2;                    // "ONLINE", "OFFLINE", "AWAY", "DO_NOT_DISTURB"
+  Activity activity = 3;                  // "IN_MEETING", "IN_CALL", "PRESENTING", etc.
+  string custom_status = 4;             // Custom status message
+  string device_type = 5;               // "MOBILE", "WEB", "DESKTOP"
+  google.protobuf.Timestamp last_seen = 6;
+  bool is_invisible = 7;                // User appears offline to others
+}
+
+message PresenceUpdate {
+  string user_id = 1;
+  PresenceState presence = 2;
+  google.protobuf.Timestamp timestamp = 3;
+}
+
+message StreamPresenceRequest {
+  string user_id = 1;
+  repeated string watch_user_ids = 2;  // Users whose presence to monitor
+}
+
+message UpdatePresenceRequest {
+  string user_id = 1;
+  PresenceState presence = 2;
+}
+
+message TypingIndicator {
+  string user_id = 1;
+  string chat_id = 2;          // Can be direct chat or group chat ID
+  bool is_typing = 3;
+  google.protobuf.Timestamp timestamp = 4;
+}
+
+message StreamTypingRequest {
+  string user_id = 1;
+  repeated string chat_ids = 2;
+}
+
+message UpdateTypingRequest {
+  string user_id = 1;
+  string chat_id = 2;
+  bool is_typing = 3;
+} 
+
+message Heartbeat {
+  string server_id = 1;
+  google.protobuf.Timestamp timestamp = 2;
+}

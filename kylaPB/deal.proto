@@ -1,0 +1,60 @@
+syntax = "proto3";
+
+package da.proto;
+option go_package = "./pb"; 
+
+message Deal {
+  string id = 1;
+  string deal_status = 2;
+  double amount = 4;
+  string currency = 5;
+  string organisation_id = 6;
+}
+
+message CreateDealRequest {
+  Deal deal = 1;
+}
+
+message CreateDealResponse {
+  Deal deal = 1;
+}
+
+message ReadDealRequest{
+  string deal_id = 1;
+}
+
+message ReadDealResponse {
+  Deal deal = 1;
+}
+
+message ReadDealsRequest{
+  string organisation_id = 1;
+}
+
+message ReadDealsResponse {
+  repeated Deal deals = 1;
+}
+
+message UpdateDealRequest {
+  string deal_id = 1;
+}
+
+message UpdateDealResponse {
+  Deal deal = 1;
+}
+
+message DeleteDealRequest {
+  string deal_id = 1;
+}
+
+message DeleteDealResponse {
+  bool success = 1;
+}
+
+service DealService {
+  rpc CreateDeal(CreateDealRequest) returns (CreateDealResponse) {}
+  rpc ReadDeal(ReadDealRequest) returns (ReadDealResponse) {}
+  rpc ReadDeals(ReadDealsRequest) returns (ReadDealsResponse) {}
+  rpc UpdateDeal(UpdateDealRequest) returns (UpdateDealResponse) {}
+  rpc DeleteDeal(DeleteDealRequest) returns (DeleteDealResponse) {}
+}

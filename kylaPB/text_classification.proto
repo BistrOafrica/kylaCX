@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+package da.proto;
+
+option go_package = "./pb";
+
+message Sentiment {
+    string label = 1;
+    float score = 2;
+}
+
+message AnalyzeSentimentRequest {
+    string text = 1;
+}
+
+message AnalyzeSentimentResponse {
+    Sentiment sentiment = 1;
+}
+
+service SentimentAnalysis {
+    rpc AnalyzeSentiment (AnalyzeSentimentRequest) returns (AnalyzeSentimentResponse);
+}
+

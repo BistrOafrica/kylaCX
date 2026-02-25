@@ -1,0 +1,53 @@
+syntax = "proto3";
+
+package da.proto;
+option go_package = "./pb";
+
+import "google/protobuf/timestamp.proto";
+
+message RealtimeAnalyticsRequest {
+  string member_id = 1;
+  repeated string queue_ids = 2;
+  repeated string agent_ids = 3;
+  repeated string campaign_ids = 4;
+  int32 update_interval_seconds = 5;
+}
+
+message RealtimeMetricUpdate {
+  google.protobuf.Timestamp timestamp = 1;
+  
+  int32 active_calls = 2;
+  int32 waiting_calls = 3;
+  int32 available_agents = 4;
+  int32 busy_agents = 5;
+  int32 calls_today = 6;
+  
+  string avg_wait_time = 7;
+  string avg_handle_time = 8;
+  float service_level = 9;
+  float abandon_rate = 10;
+  
+  repeated RealtimeCallEvent recent_calls = 11;
+  repeated RealtimeAgentStatus agent_statuses = 12;
+}
+
+message RealtimeCallEvent {
+  string call_id = 1;
+  string queue_name = 2;
+  string agent_name = 3;
+  string status = 4;
+  google.protobuf.Timestamp event_time = 5;
+  int32 duration_seconds = 6;
+}
+
+message RealtimeAgentStatus {
+  string agent_id = 1;
+  string agent_name = 2;
+  string status = 3;
+  google.protobuf.Timestamp status_since = 4;
+  int32 calls_handled_today = 5;
+}
+
+service CallAnalyticsRealtimeService {
+  rpc StreamRealtimeAnalytics(RealtimeAnalyticsRequest) returns (stream RealtimeMetricUpdate);
+}

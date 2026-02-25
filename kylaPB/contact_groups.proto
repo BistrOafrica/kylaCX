@@ -1,0 +1,73 @@
+syntax = "proto3";
+
+package da.proto;
+option go_package = "./pb"; 
+import "contact.proto";
+import "group.proto";
+import "owner_type.proto";
+
+message CreateGroupRequest {
+  Group group = 1;
+}
+
+message CreateGroupResponse {
+  Group group = 1;
+}
+
+message ReadGroupRequest {
+  string id = 1;
+  Scope scope = 2;
+}
+
+message ReadGroupResponse {
+  Group group = 1;
+}
+
+message ReadGroupsRequest {
+  int32 page = 1;
+  int32 per_page = 2;
+  Scope scope = 3;
+}
+
+message ReadGroupsResponse {
+  repeated Group groups = 1;
+  int32 count = 2;
+}
+
+message UpdateGroupRequest{
+  Group group = 1;
+}
+
+message UpdateGroupResponse{
+  Group group = 1;
+}
+
+message DeleteGroupRequest{
+  string id = 1;
+  Scope scope = 2;
+}
+
+message DeleteGroupResponse{
+  bool success = 1;
+}
+
+message ReadGroupContactsRequest {
+  string group_id = 1;
+  Scope scope = 2;
+  int32 page = 3;
+  int32 per_page = 4;
+}
+
+message ReadGroupContactsResponse {
+  repeated Contact contacts = 1;
+  int32 count = 2;
+}
+
+service GroupService {
+  rpc CreateGroup(CreateGroupRequest) returns (CreateGroupResponse);
+  rpc ReadGroup(ReadGroupRequest) returns (ReadGroupResponse);
+  rpc ReadGroups(ReadGroupsRequest) returns (ReadGroupsResponse);
+  rpc UpdateGroup(UpdateGroupRequest) returns (UpdateGroupResponse);
+  rpc DeleteGroup(DeleteGroupRequest) returns (DeleteGroupResponse);
+  rpc ReadGroupContacts(ReadGroupContactsRequest) returns (ReadGroupContactsResponse);
+}

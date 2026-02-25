@@ -1,0 +1,66 @@
+syntax="proto3";
+
+package da.proto;
+
+option go_package = "./pb";
+
+message Audio {
+  string filename = 1;
+  bytes data = 2;
+}
+
+message AudioRecord {
+  string id = 1;
+  string name = 3;
+  string type = 4;
+  string key = 5;
+  string durartion = 6;
+}
+
+message UploadAudioChunkRequest {
+  Audio audio_file = 1;
+}
+
+message UploadAudioChunkResponse {
+  AudioRecord record = 1;
+}
+
+message ReadAudioRequest {
+  string id = 1;
+}
+
+message ReadAudioResponse {
+  AudioRecord record = 1;
+}
+
+message DeleteAudioRequest {
+  string id = 1;
+}
+
+message DeleteAudioResponse {
+  bool success = 1;
+}
+
+message ReadAudioListRequest {
+  string id = 1;
+}
+
+message ReadAudioListResponse {
+  repeated AudioRecord records = 1;
+}
+
+message DownloadAudioRequest {
+  string id = 1;
+}
+
+message DownloadAudioResponse {
+  Audio audio_file = 1;
+}
+
+service AudioManagerService {
+  rpc UploadAudioChunk(UploadAudioChunkRequest) returns (UploadAudioChunkResponse);
+  rpc ReadAudio(ReadAudioRequest) returns (ReadAudioResponse);
+  rpc DeleteAudio(DeleteAudioRequest) returns (DeleteAudioResponse);
+  rpc ReadAudioList(ReadAudioListRequest) returns (ReadAudioListResponse);
+  rpc DownloadAudio(DownloadAudioRequest) returns (DownloadAudioResponse);
+}

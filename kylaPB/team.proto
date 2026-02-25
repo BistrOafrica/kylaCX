@@ -1,0 +1,120 @@
+syntax = "proto3";
+
+package da.proto;
+option go_package = "./pb"; 
+import "owner_type.proto";
+import "user.proto";
+import "rbac.proto";
+
+
+message Team {
+    string id = 1;
+    string name = 2;
+    string description = 3;
+    string created_at = 7;
+    string updated_at = 8;
+    string created_by = 9;
+    string updated_by = 10;
+    string organisation_id = 11;
+    string serial_number = 12;
+    string owner_id = 13;
+    OwnerType owner_type = 14;
+    repeated User users = 15;
+    repeated Role Roles = 16;
+}
+
+message ReadTeamRequest {
+    string id = 1;
+    Scope scope = 2;
+}
+
+message ReadTeamResponse {
+    Team team = 1;
+}
+
+message CreateTeamRequest {
+    Team team = 1;
+    Scope scope = 2;
+}
+
+message CreateTeamResponse {
+    Team team = 1;
+}
+
+message UpdateTeamRequest {
+    Team team = 1;
+    Scope scope = 2;
+}
+
+message UpdateTeamResponse {
+    Team team = 1;
+}
+
+message DeleteTeamRequest {
+    string id = 1;
+    Scope scope = 2;
+}
+
+message DeleteTeamResponse {
+    Status status = 1;
+}
+
+message ReadTeamListRequest {
+    string page = 1;
+    string page_size = 2;
+    Scope scope = 3;
+}
+
+message ReadTeamListResponse {
+    repeated Team teams = 1;
+    int32 total = 2;
+}
+
+message AddUserToTeamRequest {
+    string team_id = 1;
+    string user_id = 2;
+    Scope scope = 3;
+}
+
+message AddUserToTeamResponse {
+    Team team = 1;
+    Status status = 2;
+}
+
+message RemoveUserFromTeamRequest {
+    string team_id = 1;
+    string user_id = 2;
+    Scope scope = 3;
+}
+
+message RemoveUserFromTeamResponse {
+    Team team = 1;
+    Status status = 2;
+}
+
+message ReadTeamUsersRequest {
+    string team_id = 1;
+    string role_id = 2;
+    Scope scope = 3;
+}
+
+message ReadTeamUsersResponse {
+    repeated User users = 1;
+    int32 total = 2;
+}
+
+service TeamService{
+    rpc ReadTeam(ReadTeamRequest) returns (ReadTeamResponse) {}
+    rpc CreateTeam(CreateTeamRequest) returns (CreateTeamResponse) {}
+    rpc UpdateTeam(UpdateTeamRequest) returns (UpdateTeamResponse) {}
+    rpc DeleteTeam(DeleteTeamRequest) returns (DeleteTeamResponse) {}
+    rpc ReadTeamList(ReadTeamListRequest) returns (ReadTeamListResponse) {}
+    rpc ReadTeamsByorganisationId(ReadTeamListRequest) returns (ReadTeamListResponse) {}
+    rpc ReadTeamsByBranchID(ReadTeamListRequest) returns (ReadTeamListResponse) {}
+    rpc ReadTeamsByDepartmentID(ReadTeamListRequest) returns (ReadTeamListResponse) {}
+    rpc ReadTeamsByUserID(ReadTeamListRequest) returns (ReadTeamListResponse) {}
+
+    rpc AddUserToTeam(AddUserToTeamRequest) returns (AddUserToTeamResponse) {}
+    rpc RemoveUserFromTeam(RemoveUserFromTeamRequest) returns (RemoveUserFromTeamResponse) {}
+    rpc ReadTeamUsers(ReadTeamUsersRequest) returns (ReadTeamUsersResponse) {}
+}

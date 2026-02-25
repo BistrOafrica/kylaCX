@@ -1,0 +1,219 @@
+syntax = "proto3";
+
+package da.proto;
+option go_package = "./pb"; 
+
+import "owner_type.proto";
+import "user.proto";
+import "organisations.proto";
+
+
+message IdNameMapping {
+  string id = 1;
+  string name = 2;
+}
+
+message RequestMetadata {
+  string authorization = 1;
+  string organisation_id = 2;
+  string user_id = 3;
+  string branch_id = 4;
+  string request_auth = 5;
+  repeated string roles = 6;
+  AuthScope auth_scope = 7;
+  repeated IdNameMapping id_name_mappings = 8;
+  User user = 9;
+}
+
+message LoginRequest {
+  string username = 1;
+  string email = 2;
+  string password = 3;
+}
+
+message LoginResponse {
+  string access_token = 1;
+  string refresh_token = 2;
+  User user = 3;
+  UserSession user_session = 4;
+  Organisation organisation = 5;
+}
+
+message LogoutRequest {
+  string access_token = 1;
+}
+
+message LogoutResponse {
+  bool success = 1;
+}
+
+message ValidateTokenRequest {
+  string access_token = 1;
+}
+
+message ValidateTokenResponse {
+  bool valid = 1;
+}
+
+message RefreshTokenRequest {
+  string refresh_token = 1;
+}
+
+message RefreshTokenResponse {
+  string access_token = 1;
+  string refresh_token = 2;
+}
+
+message ForgotPasswordRequest {
+  oneof identity {
+    string username = 1;
+    string email = 2;
+    string user_id = 3;
+  }
+}
+
+message ForgotPasswordResponse {
+  string message = 2;
+}
+
+message ChangePasswordRequest {
+  string old_password = 2;
+  string new_password = 3;
+}
+
+message ChangePasswordResponse {
+  Status status = 1;
+}
+
+message ReadAuthContextRequest {
+  string access_token = 1;
+  string method_name = 2;
+}
+
+message ReadAuthContextResponse {
+  RequestMetadata metadata = 1;
+}
+
+message ReadUserPermissionsRequest {}
+
+message ReadUserPermissionsResponse {
+  repeated string permissions = 1;
+}
+
+message GoogleSignInRequest {
+  string id_token = 1;
+  string user_id = 2;
+}
+
+message MicrosoftSignInRequest {
+  string id_token = 1;
+  string user_id = 2;
+}
+
+message FacebookSignInRequest {
+  string id_token = 1;
+  string user_id = 2;
+}
+
+
+message MFASetupRequest {
+  string user_id = 1;
+}
+
+message MFASetupResponse {
+  string secret = 1;
+  string qr_code = 2;
+  repeated string recovery_codes = 3;
+}
+
+message MFAVerifyRequest {
+  string user_id = 1;
+  string code = 2;
+}
+
+message MFAVerifyResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+message PasskeyRegistrationRequest {
+  string user_id = 1;
+  string challenge = 2;
+}
+
+message PasskeyRegistrationResponse {
+  string credential_id = 1;
+  string public_key = 2;
+}
+
+message LoginWithPasskeyRequest {
+  string user_id = 1;
+  string credential_id = 2;
+  string challenge = 3;
+}
+
+message LoginWithMFARequest {
+  string user_id = 1;
+  string code = 2;
+}
+
+message UserDevice {
+  string id = 1;
+  string user_id = 2;
+  string device_mac_id = 3;
+  string device_type = 4;
+  string os_type = 5;
+  string device_name = 6;
+  string user_agent = 7;
+  bool is_trusted = 8;
+  bool is_browser = 9;
+  bool is_active = 10;
+}
+
+message UserSession {
+  string id = 1;
+  string user_id = 2;
+  string device_id = 3;
+  string start_time = 4;
+  string end_time = 5;
+  bool is_valid = 6;
+}
+
+message CheckUserPermissionRequest {
+  string user_id = 1;
+  string permission = 2;
+}
+
+message CheckUserPermissionResponse {
+  bool granted = 1;
+  repeated Scope scopes = 2;
+}
+
+service AuthService {
+  rpc Login(LoginRequest) returns (LoginResponse) {}
+  rpc Logout(LogoutRequest) returns (LogoutResponse) {}
+  rpc Validate(ValidateTokenRequest) returns (ValidateTokenResponse) {}
+  rpc RefreshToken(RefreshTokenRequest) returns (RefreshTokenResponse) {}
+  rpc ForgotPassword(ForgotPasswordRequest) returns (ForgotPasswordResponse) {}
+  rpc ChangePassword(ChangePasswordRequest) returns (ChangePasswordResponse) {}
+  rpc ReadAuthContext(ReadAuthContextRequest) returns (ReadAuthContextResponse) {}
+  rpc ReadUserPermissions(ReadUserPermissionsRequest) returns (ReadUserPermissionsResponse) {}
+  rpc CheckUserPermission(CheckUserPermissionRequest) returns (CheckUserPermissionResponse) {}
+
+  // Social login methods
+  rpc GoogleSignIn(GoogleSignInRequest) returns (LoginResponse) {}
+  rpc MicrosoftSignIn(MicrosoftSignInRequest) returns (LoginResponse) {}
+  rpc FacebookSignIn(FacebookSignInRequest) returns (LoginResponse) {}
+
+  // MFA methods
+  rpc SetupMFA(MFASetupRequest) returns (MFASetupResponse) {}
+  rpc VerifyMFA(MFAVerifyRequest) returns (MFAVerifyResponse) {}
+  rpc RegisterPasskey(PasskeyRegistrationRequest) returns (PasskeyRegistrationResponse) {}
+
+  // login with passkey
+  rpc LoginWithPasskey(LoginWithPasskeyRequest) returns (LoginResponse) {}
+
+  // login with mfa
+  rpc LoginWithMFA(LoginWithMFARequest) returns (LoginResponse) {}
+  
+} 

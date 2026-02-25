@@ -1,0 +1,62 @@
+syntax = "proto3";
+
+package da.proto;
+
+option go_package = "./pb";
+
+message AutoDialerCampaign {
+  string id = 1;
+  string name = 2;
+  string start_date = 3;
+  string end_date = 4;
+  string target_type = 5;
+  string target = 6;
+  string frequency = 7;
+  string contacts = 8;
+}
+
+message CreateAutoDialerCampaignRequest {
+  AutoDialerCampaign campaign = 1;
+}
+
+message CreateAutoDialerCampaignResponse {
+  AutoDialerCampaign campaign = 1;
+}
+
+message ReadAutoDialerCampaignRequest {
+  string id = 1;
+}
+
+message ReadAutoDialerCampaignResponse {
+  AutoDialerCampaign campaign = 1;
+}
+
+message ReadAutoDialerCampaignsRequest {}
+
+message ReadAutoDialerCampaignsResponse {
+  repeated AutoDialerCampaign campaigns = 1;
+}
+
+message UpdateAutoDialerCampaignRequest {
+  AutoDialerCampaign campaign = 1;
+}
+
+message UpdateAutoDialerCampaignResponse {
+  AutoDialerCampaign campaign = 1;
+}
+
+message DeleteAutoDialerCampaignRequest {
+  string id = 1;
+}
+
+message DeleteAutoDialerCampaignResponse {
+  bool success = 1;
+}
+
+service AutoDialerService {
+  rpc CreateAutoDialerCampaign(CreateAutoDialerCampaignRequest) returns (CreateAutoDialerCampaignResponse);
+  rpc ReadAutoDialerCampaign(ReadAutoDialerCampaignRequest) returns (ReadAutoDialerCampaignResponse);
+  rpc ReadAutoDialerCampaigns(ReadAutoDialerCampaignsRequest) returns (ReadAutoDialerCampaignsResponse);
+  rpc UpdateAutoDialerCampaign(UpdateAutoDialerCampaignRequest) returns (UpdateAutoDialerCampaignResponse);
+  rpc DeleteAutoDialerCampaign(DeleteAutoDialerCampaignRequest) returns (DeleteAutoDialerCampaignResponse);
+}

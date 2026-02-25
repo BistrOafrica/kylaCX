@@ -1,0 +1,421 @@
+syntax="proto3";
+
+package da.proto;
+option go_package = "./pb";
+
+import "owner_type.proto";
+import "user.proto";
+import "agents.proto";
+
+service ShiftService {
+  // Shift Operations
+  rpc CreateShift(CreateShiftRequest) returns (CreateShiftResponse) {}
+  rpc ReadShift(ReadShiftRequest) returns (ReadShiftResponse) {}
+  rpc UpdateShift(UpdateShiftRequest) returns (UpdateShiftResponse) {}
+  rpc DeleteShift(DeleteShiftRequest) returns (DeleteShiftResponse) {}
+  rpc ListShifts(ListShiftsRequest) returns (ListShiftsResponse) {}
+  rpc GetUserShifts(GetUserShiftsRequest) returns (GetUserShiftsResponse) {}
+
+  // User Assignment Operations
+  rpc AssignUsersToShift(AssignUsersToShiftRequest) returns (AssignUsersToShiftResponse) {}
+  rpc RemoveUsersFromShift(RemoveUsersFromShiftRequest) returns (RemoveUsersFromShiftResponse) {}
+  rpc ListShiftUsers(ListShiftUsersRequest) returns (ListShiftUsersResponse) {}
+}
+
+service ShiftScheduleService {
+  rpc CreateSchedule(CreateScheduleRequest) returns (CreateScheduleResponse) {}
+  rpc ReadSchedule(ReadScheduleRequest) returns (ReadScheduleResponse) {}
+  rpc UpdateSchedule(UpdateScheduleRequest) returns (UpdateScheduleResponse) {}
+  rpc DeleteSchedule(DeleteScheduleRequest) returns (DeleteScheduleResponse) {}
+  rpc ListSchedules(ListSchedulesRequest) returns (ListSchedulesResponse) {}
+
+  // Clock in
+  rpc ClockIn(ClockInRequest) returns (ClockInResponse) {}
+  rpc ClockOut(ClockOutRequest) returns (ClockOutResponse) {}
+}
+
+service BreakService {
+  rpc CreateBreak(CreateBreakRequest) returns (CreateBreakResponse) {}
+  rpc ReadBreak(ReadBreakRequest) returns (ReadBreakResponse) {}
+  rpc UpdateBreak(UpdateBreakRequest) returns (UpdateBreakResponse) {}
+  rpc DeleteBreak(DeleteBreakRequest) returns (DeleteBreakResponse) {}
+  rpc ListBreaks(ListBreaksRequest) returns (ListBreaksResponse) {}
+
+  // Take Break
+  rpc TakeBreak(TakeBreakRequest) returns (TakeBreakResponse) {}
+  rpc ResumeBreak(ResumeBreakRequest) returns (ResumeBreakResponse) {}
+}
+
+// Shift Messages
+message Shift {
+  string id = 1;
+  string serial_number = 2;
+  string name = 3;
+  string description = 4;
+  string start_time = 5;
+  string end_time = 6;
+  string shift_type = 7;
+  ShiftPeriod shift_period = 8;
+  string shift_status = 9;
+  int32 min_users_per_shift = 10;
+  int32 max_users_per_shift = 11;
+  bool overtime_allowed = 12;
+  int32 overtime_limit = 13;
+  string overtime_limit_unit = 14;
+  SchedulingType scheduling_type = 15;
+  float hourly_rate = 16;
+  string hourly_rate_currency = 17;
+  CurrencySymbol hourly_rate_currency_symbol = 18;
+  string color = 19;
+  string banner = 20;
+  OwnerType owner_type = 21;
+  string owner_id = 22;
+  repeated User users = 23;
+  repeated string days = 24;
+  repeated ShiftSchedule schedules = 27;
+}
+
+enum ShiftScheduleType {
+  UNKNOWN_SCHEDULE_TYPE = 0;
+  WEEKLY_SCHEDULE = 1;
+  MONTHLY_SCHEDULE = 2;
+  MONDAY_SCHEDULE = 3;
+  TUESDAY_SCHEDULE = 4;
+  WEDNESDAY_SCHEDULE = 5;
+  THURSDAY_SCHEDULE = 6;
+  FRIDAY_SCHEDULE = 7;
+  SATURDAY_SCHEDULE = 8;
+  SUNDAY_SCHEDULE = 9;
+}
+
+enum SchedulingType {
+  UNKNOWN_SCHEDULING_TYPE = 0;
+  DAILY_SCHEDULING = 1;
+  WEEKLY_SCHEDULING = 2;
+  MONTHLY_SCHEDULING = 3;
+  QUARTERLY_SCHEDULING = 4;
+  YEARLY_SCHEDULING = 5;
+}
+
+message CreateShiftRequest {
+  Shift shift = 1;
+  Scope scope = 2;
+}
+
+message CreateShiftResponse {
+  Shift shift = 1;
+  Status status = 2;
+}
+
+message ReadShiftRequest {
+  string id = 1;
+  Scope scope = 2;
+}
+
+message ReadShiftResponse {
+  Shift shift = 1;
+  Status status = 2;
+}
+
+message UpdateShiftRequest {
+  Shift shift = 1;
+  Scope scope = 2;
+}
+
+message UpdateShiftResponse {
+  Shift shift = 1;
+  Status status = 2;
+}
+
+message DeleteShiftRequest {
+  string id = 1;
+  Scope scope = 2;
+}
+
+message DeleteShiftResponse {
+  Status status = 1;
+}
+
+message ListShiftsRequest {
+  Scope scope = 1;
+}
+
+message ListShiftsResponse {
+  repeated Shift shifts = 1;
+  Status status = 2;
+}
+
+// Schedule Messages
+message ShiftSchedule {
+  string id = 1;
+  string serial_number = 2;
+  string shift_id = 3;
+  string start_date = 4;
+  string end_date = 5;
+  string start_time = 6;
+  string end_time = 7;
+  int32 min_users = 8;
+  int32 max_users = 9;
+  string shift_status = 10;
+  OwnerType owner_type = 11;
+  string owner_id = 12;
+  repeated ScheduleBreak breaks = 13;
+  ShiftScheduleType schedule_type = 14;
+}
+
+message CreateScheduleRequest {
+  ShiftSchedule schedule = 1;
+  Scope scope = 2;
+}
+
+message CreateScheduleResponse {
+  ShiftSchedule schedule = 1;
+  Status status = 2;
+}
+
+message ReadScheduleRequest {
+  string id = 1;
+  Scope scope = 2;
+}
+
+message ReadScheduleResponse {
+  ShiftSchedule schedule = 1;
+  Status status = 2;
+}
+
+message UpdateScheduleRequest {
+  ShiftSchedule schedule = 1;
+  Scope scope = 2;
+}
+
+message UpdateScheduleResponse {
+  ShiftSchedule schedule = 1;
+  Status status = 2;
+}
+
+message DeleteScheduleRequest {
+  string id = 1;
+  Scope scope = 2;
+}
+
+message DeleteScheduleResponse {
+  Status status = 1;
+}
+
+message ListSchedulesRequest {
+  string shift_id = 1;
+  Scope scope = 2;
+}
+
+message ListSchedulesResponse {
+  repeated ShiftSchedule schedules = 1;
+  Status status = 2;
+}
+
+// Break Messages
+message ScheduleBreak {
+  string id = 1;
+  string serial_number = 2;
+  string schedule_id = 3;
+  string start_time = 4;
+  string end_time = 5;
+  string break_period = 6;
+  TimeUnits break_period_unit = 15;
+  ShiftScheduleType shift_schedule_type = 7;
+  int32 min_users_required = 8;
+  string agent_status_id = 9;
+  StatusChange agent_status_change = 10;
+  OwnerType owner_type = 11;
+  string owner_id = 12;
+  bool partial = 13;
+  bool mandatory = 14;
+}
+
+message CreateBreakRequest {
+  ScheduleBreak break = 1;
+  Scope scope = 2;
+}
+
+message CreateBreakResponse {
+  ScheduleBreak break = 1;
+  Status status = 2;
+}
+
+message ReadBreakRequest {
+  string id = 1;
+  Scope scope = 2;
+}
+
+message ReadBreakResponse {
+  ScheduleBreak break = 1;
+  Status status = 2;
+}
+
+message UpdateBreakRequest {
+  ScheduleBreak break = 1;
+  Scope scope = 2;
+}
+
+message UpdateBreakResponse {
+  ScheduleBreak break = 1;
+  Status status = 2;
+}
+
+message DeleteBreakRequest {
+  string id = 1;
+  Scope scope = 2;
+}
+
+message DeleteBreakResponse {
+  Status status = 1;
+}
+
+message ListBreaksRequest {
+  string schedule_id = 1;
+  Scope scope = 2;
+}
+
+message ListBreaksResponse {
+  repeated ScheduleBreak breaks = 1;
+  Status status = 2;
+}
+
+// User Assignment Messages
+message AssignUsersToShiftRequest {
+  string shift_id = 1;
+  repeated string user_ids = 2;
+  Scope scope = 3;
+}
+
+message AssignUsersToShiftResponse {
+  Status status = 1;
+}
+
+message RemoveUsersFromShiftRequest {
+  string shift_id = 1;
+  repeated string user_ids = 2;
+  Scope scope = 3;
+}
+
+message RemoveUsersFromShiftResponse {
+  Status status = 1;
+}
+
+message ListShiftUsersRequest {
+  string shift_id = 1;
+  Scope scope = 2;
+}
+
+message ListShiftUsersResponse {
+  repeated User users = 1;
+  Status status = 2;
+}
+
+enum ShiftPeriod {
+  UNKNOWN_SHIFT_TYPE = 0;
+  PERMANENT = 1;
+  TEMPORARY = 2;
+}
+
+enum CurrencySymbol {
+  UNKNOWN_CURRENCY_SYMBOL = 0;
+  USD = 1;
+  EUR = 2;
+  GBP = 3;
+  NGN = 4;
+  KES = 5;
+  UGX = 6;
+  ZAR = 7;
+  TSH = 8;
+}
+
+message BreakRecord {
+  string id = 1;
+  string user_id = 2;
+  string break_id = 3;
+  string user_shift_record_id = 4;
+  string start_time = 5;
+  string end_time = 6;
+  string created_by = 7;
+  string updated_by = 8;
+  string created_at = 9;
+  string updated_at = 10;
+}
+
+message UserShiftRecord {
+  string id = 1;
+  string user_id = 2;
+  string shift_id = 3;
+  string start_time = 4;
+  string end_time = 5;
+  string created_by = 6;
+  string updated_by = 7;
+  repeated BreakRecord breaks = 8;
+  string created_at = 9;
+  string updated_at = 10;
+}
+
+message ClockInRequest {
+  string user_id = 1;
+  string shift_id = 2;
+  Scope scope = 3;
+}
+
+message ClockInResponse {
+  Status status = 1;
+  UserShiftRecord shift_record = 2;
+}
+
+message ClockOutRequest {
+  string user_id = 1;
+  string shift_id = 2;
+  UserShiftRecord shift_record = 3;
+  Scope scope = 4;
+}
+
+message ClockOutResponse {
+  Status status = 1;
+  UserShiftRecord shift_record = 2;
+}
+
+message TakeBreakRequest {
+  string user_id = 1;
+  string break_id = 2;
+  string user_shift_record_id = 3;
+  Scope scope = 4;
+}
+
+message TakeBreakResponse {
+  Status status = 1;
+  BreakRecord break_record = 2;
+}
+
+message ResumeBreakRequest {
+  string user_id = 1;
+  string break_id = 2;
+  BreakRecord break_record = 3;
+  Scope scope = 4;
+}
+
+message ResumeBreakResponse {
+  Status status = 1;
+  BreakRecord break_record = 2;
+}
+
+message GetUserShiftsRequest {
+  string user_id = 1;
+  Scope scope = 2;
+}
+
+message ShiftMD{
+  string id = 1;
+  string name = 2;
+  string color = 3;
+  string start_time = 4;
+  string end_time = 5;
+}
+
+message GetUserShiftsResponse {
+  repeated ShiftMD shifts = 1;
+  Status status = 2;
+}

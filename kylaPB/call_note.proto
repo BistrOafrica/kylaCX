@@ -1,0 +1,51 @@
+syntax="proto3";
+
+package da.proto;
+option go_package = "./pb";
+
+message CallNote {
+	string id = 1;
+	string name = 2;
+	string session_id = 3;
+	string content = 4;
+	string created_at = 5;
+}
+
+message CreateCallNoteRequest {
+  string name = 1;
+  string session_id = 2;
+  string content = 3;
+}
+
+message UpdateCallNoteRequest {
+	string id = 1;
+	string name = 2;
+	string content = 3;
+}
+
+message ReadCallNoteRequest {
+	string id = 1;
+}
+
+message SuccessCallNoteResponse {
+	bool success = 1;
+}
+
+message ReadCallNotesRequest {
+  int32 page_number = 1;
+  int32 page_size = 2;
+  string session_id = 3;
+}
+
+message ReadCallNotesResponse {
+  int64 total = 1;
+  repeated CallNote items = 2;
+}
+
+service CallNoteService {
+  rpc CreateNote(CreateCallNoteRequest) returns (SuccessCallNoteResponse);
+  rpc ReadNote(ReadCallNoteRequest) returns (CallNote);
+  rpc UpdateNote(UpdateCallNoteRequest) returns (SuccessCallNoteResponse);
+  rpc DeleteNote(ReadCallNoteRequest) returns (SuccessCallNoteResponse);
+  rpc ReadNotes(ReadCallNotesRequest) returns (ReadCallNotesResponse);
+}

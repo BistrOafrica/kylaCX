@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <style>
+            html{
+                height: fit-content;
+                min-height: max-content;
+                width: 100%;
+            }
+            body {
+                font-family: Arial, Helvetica, sans-serif;
+                background-color: #f5f5f5;
+                display: grid;
+                width: 100%;
+                height: fit-content;
+                justify-content: center;
+                align-items: stretch;
+            }
+            .container {
+                width: fit-content;
+                height: 100%;
+                margin: auto auto;
+                background-color: #ffffff;
+                padding: 60px 30px;
+                border-radius: 3px;
+                border: 1px solid #e1e1e1;
+            }
+            h1 {
+                color: #333333;
+            }
+            p {
+                color: #5c5c5c;
+            }
+            .button {
+                background-color: #4CAF50;
+                color: white;
+                padding: 10px 20px;
+                text-align: center;
+                text-decoration: none;
+                display: inline-block;
+                border-radius: 4px;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div style="text-align: left; width: min-content;">
+                <img src="https://kyla.cx/_next/image?url=%2Flogo-color.png&w=384&q=75" alt="Company Logo" style="display: block; margin: 0 auto; width: 150px;">
+            </div>
+            <!-- caution emoji -->
+            <div style="text-align: center; font-size: 30px; color: #ff8c00;"></div>
+            <h1>Woohoo! Your App Was Created successfully! 🌟</h1>
+            <br/>
+            <p>Hi {{.Name}},</p>
+            <p>
+                You are receiving this email because you have successfully created an app on your organisation. <br/>
+                Below are the details of your app:
+            <br/>
+            <div style="background-color: #e3e3e3; padding: 10px; border-radius: 4px; margin: 10px 0;">
+                <p><strong>App ID:</strong> {{.AppID}}</p> 
+                <p><strong>App Name:</strong> {{.AppName}}</p> 
+                <p><strong>App Token:</strong> {{.Token}}</p> 
+                <p><strong>App Secret:</strong> {{.Secret}}</p> 
+            </div>
+            <br/>
+            <p>Kindly keep these details safe and secure. You will need them to authenticate your app with kyla API.</p>
+            <p>For more information on how to authenticate your app, please contact our support team at <a href="mailto:{{.SupportEmail}}" style="color: #be7012; text-decoration: none;">{{.SupportEmail}}</a></p>
+            <br/>
+            <p>Thank you!</p>
+            <p>Team kyla</p>
+
+            <hr style="margin: 20px 0; border: 1px solid #e1e1e1;">
+			<p style="text-align: center; color: #b2b2b2;">This message was sent to {{.ClientEmail}} by kyla Accounts Service for password recovery</p>
+            <p style="text-align: center; color: #b2b2b2;">If you have any questions, please contact us at <a href="mailto:{{.SupportEmail}}" style="color: #be7012; text-decoration: none;">{{.SupportEmail}}</a></p>
+            <p style="text-align: center; color: #b2b2b2;">&copy; {{.Year}} kyla.Inc All rights reserved.</p>
+        </div>       
+    </body>
+    </html>

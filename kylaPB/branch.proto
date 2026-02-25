@@ -1,0 +1,83 @@
+syntax = "proto3";
+
+package da.proto;
+option go_package = "./pb"; 
+
+import "owner_type.proto";
+
+
+message Branch {
+  string id = 1;
+  string name = 2;
+  string description = 3;
+  string parent_id = 5;
+  string created_at = 6;
+  string updated_at = 7;
+  string status = 8;
+  string child_id = 11;
+  string created_by = 12;
+  string serial_number = 13;
+  bool is_default = 14;
+  repeated string user_ids = 15;
+  repeated string role_ids = 16;
+  repeated string department_ids = 17; // Departments associated with the branch
+  string updated_by = 18;
+  OwnerType ownerType = 19;
+  string owner_id = 20;
+  string location = 21;
+  string address = 22;
+  repeated string team_ids = 23; // Teams associated with the branch
+  string image = 24;
+}
+
+message CreateBranchRequest {
+  Branch branch = 1;
+  Scope scope = 2;
+}
+
+message CreateBranchResponse {
+  Branch branch = 1;
+}
+
+message ReadBranchRequest {
+  string id = 1;
+  Scope scope = 2;
+}
+
+message ReadBranchResponse {
+  Branch branch = 1;
+}
+
+message ReadBranchesRequest {
+  Scope scope = 1;
+}
+
+message ReadBranchesResponse {
+  repeated Branch branches = 1;
+}
+
+message UpdateBranchRequest {
+  Branch branch = 1;
+  Scope scope = 2;
+}
+
+message UpdateBranchResponse {
+  Branch branch = 1;
+}
+
+message DeleteBranchRequest {
+  string id = 1;
+  Scope scope = 2;
+}
+
+message DeleteBranchResponse {
+  Status status = 1;
+}
+
+service BranchService {
+  rpc CreateBranch(CreateBranchRequest) returns (CreateBranchResponse) {}
+  rpc ReadBranch(ReadBranchRequest) returns (ReadBranchResponse) {}
+  rpc ReadBranches(ReadBranchesRequest) returns (ReadBranchesResponse) {}
+  rpc UpdateBranch(UpdateBranchRequest) returns (UpdateBranchResponse) {}
+  rpc DeleteBranch(DeleteBranchRequest) returns (DeleteBranchResponse) {}
+}

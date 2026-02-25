@@ -1,0 +1,426 @@
+syntax = "proto3";
+
+package da.proto;
+option go_package = "./pb";
+import "owner_type.proto";
+
+enum WhatsAppEventType {
+   WA_EVENT_TYPE_UNSPECIFIED = 0;
+   WA_EVENT_TYPE_FINISH = 1;
+   WA_EVENT_TYPE_CANCEL = 2;
+}
+
+
+enum BackendType {
+   BACKEND_TYPE_UNSPECIFIED = 0;
+   BACKEND_TYPE_NIA = 1;
+   BACKEND_TYPE_CHATDESK = 2;
+}
+ 
+message WhatsAppFinishEventData {
+   string phone_number_id = 1;
+   string waba_id = 2;
+}
+ 
+message WhatsAppCancelEventData {
+   string current_step = 1;
+}
+ 
+message WhatsAppEvent {
+   oneof data {
+     WhatsAppFinishEventData finish_data = 1;
+     WhatsAppCancelEventData cancel_data = 2;
+   }
+   WhatsAppEventType type = 3;
+   string event = 4;
+   string version = 5;
+   string code = 6;
+}
+ 
+message SendEmbeddedSignUpEventRequest {
+   WhatsAppEvent event_data = 1;
+   OwnerType owner_type = 2;
+   string owner_id = 3;
+}
+ 
+message SendEmbeddedSignUpEventResponse {
+   bool success = 1;
+   string reason = 2;
+}
+
+enum FacebookMessageType {
+   FACEBOOK_MESSAGE_TYPE_UNSPECIFIED = 0;
+   RESPONSE = 1;
+   UPDATE = 2;
+   MESSAGE_TAG = 3;
+   UTILITY = 4;
+}
+
+enum FacebookMessageTag {
+   FACEBOOK_MESSAGE_TAG_UNSPECIFIED = 0;
+   ACCOUNT_UPDATE = 1;
+   CONFIRMED_EVENT_UPDATE = 2;
+   CUSTOMER_FEEDBACK = 3;
+   HUMAN_AGENT = 4;
+   POST_PURCHASE_UPDATE = 5;
+}
+
+enum FacebookNotificationType {
+   FACEBOOK_NOTIFICATION_UNSPECIFIED = 0;
+   REGULAR = 1;
+   SILENT_PUSH = 2;
+   NO_PUSH = 3;
+}
+
+enum FacebookSenderActionType {
+   FACEBOOK_SENDER_ACTION_UNSPECIFIED = 0;
+   MARK_SEEN = 1;
+   TYPING_ON = 2;
+   TYPING_OFF = 3;
+   REACT = 4;
+   UNREACT = 5;
+}
+
+message ImapEmailIntegrationConfig {
+   string email = 1;
+    string imap_host = 2;
+    int32 imap_port = 3;
+    string imap_user = 4;
+    string imap_password = 5;
+    bool imap_tls = 6;
+    string smtp_host = 7;
+    int32 smtp_port = 8;
+    string smtp_user = 9;
+    string smtp_password = 10;
+    bool smtp_tls = 11;
+}
+
+message Integration {
+    string id = 1;
+    string name = 2;
+    string config = 3;
+    string source_id = 4;
+    string access_token = 5;
+    string refresh_token = 6;
+    string created_by = 7;
+    string created_at = 8;
+    string updated_at = 9;
+    string owner_id = 10;
+    OwnerType owner_type = 11;
+    bool is_active = 12;
+    string team_id = 13;
+    string role_id = 14;
+    ImapEmailIntegrationConfig full_imap_config = 15;
+}
+
+message IntegrationAttachment {
+      bytes data = 1;
+      string name = 2;
+      string type = 3;
+      int64 size = 4;
+}
+
+message FacebookIntegrationAttachment {
+   string type = 1;
+   string url = 2;
+}
+
+message UpdateIntegrationRequest {
+   Integration data = 1;
+}
+
+message UpdateIntegrationResponse {
+   Integration data = 1;
+}
+
+message DeleteIntegrationRequest {
+   string id = 1;
+}
+
+message DeleteIntegrationResponse {
+   bool success =1;
+}
+
+message ReadIntegrationRequest {
+   string id = 1;
+}
+
+message ReadIntegrationResponse {
+   Integration data = 1;
+}
+
+message ReadIntegrationsRequest {
+   int32 page = 1;
+   int32 per_page = 2;
+   string owner_id = 3;
+   OwnerType owner_type = 4;
+}
+
+message ReadIntegrationsResponse {
+   int32 total_count = 1;
+   repeated Integration data = 2;
+}
+
+message SendEmailRequest {
+   string integration_id = 1;
+   repeated string to = 2;
+   repeated string cc = 3;
+   string subject = 4;
+   string html_body = 5;
+   string in_reply_to = 6;
+   string references = 7;
+   repeated IntegrationAttachment attachments = 8;
+   string owner_id = 9;
+   OwnerType owner_type = 10;
+}
+
+message SendEmailResponse {
+   bool success = 1;
+   string message_id = 2;
+}
+
+message CreateFacebookIntegrationRequest {
+   Integration data = 1;
+}
+
+message CreateFacebookIntegrationResponse {
+   bool success = 1;
+}
+
+message SendFacebookMessageRequest {
+   string integration_id = 1;
+   string text = 2;
+   FacebookIntegrationAttachment attachment = 3;
+   string owner_id = 4;
+   OwnerType owner_type = 5;
+   string sender_psid = 6;
+   string post_id = 7;
+   FacebookMessageType type = 8;
+   FacebookMessageTag tag = 9;
+   FacebookNotificationType notification_type = 10;
+   FacebookSenderActionType sender_action = 11;
+}
+
+message SendFacebookMessageResponse {
+   bool success = 1;
+   string text_message_id = 2;
+   string attachment_message_id = 3;
+}
+
+message SendFacebookCommentRequest {
+   string integration_id = 1;
+   string text = 2;
+   FacebookIntegrationAttachment attachment = 3;
+   string owner_id = 4;
+   OwnerType owner_type = 5;
+   string id_to_reply_to = 6;
+}
+
+message SendFacebookCommentResponse {
+   bool success = 1;
+   string message_id = 2;
+}
+
+message EditFacebookCommentRequest {
+   string integration_id = 1;
+   string text = 2;
+   string message_id = 3;
+   string owner_id = 4;
+   OwnerType owner_type = 5; 
+}
+
+message EditFacebookCommentResponse {
+   bool success = 1;
+}
+
+message DeleteFacebookCommentRequest {
+   string integration_id = 1;
+   string message_id = 2;
+   string owner_id = 3;
+   OwnerType owner_type = 4;
+}
+
+message DeleteFacebookCommentResponse {
+   bool success = 1;
+}
+
+message CreateAfricasTalkingSmsIntegrationRequest {
+   Integration data = 1;
+}
+
+message CreateAfricasTalkingSmsIntegrationResponse {
+   bool success = 1;
+}
+
+message SendSingleRecipientSmsRequest {
+   string integration_id = 1;
+   string text = 2;
+   string recipient = 3;
+   string owner_id = 4;
+   OwnerType owner_type = 5;
+}
+
+message SendSingleRecipientSmsResponse {
+   bool success = 1;
+   string message_id = 2;
+}
+
+message SendBulkSmsRequest {
+   string integration_id = 1;
+   string text = 2;
+   repeated string recipients = 3;
+   string owner_id = 4;
+   OwnerType owner_type = 5;
+}
+
+message BulkSmsRecipient {
+   string recipient = 1;
+   string message_id = 2;
+   bool success = 3;
+}
+
+message SendBulkSmsResponse {
+   repeated BulkSmsRecipient data = 1;
+}
+
+message ReadIntegrationsByOwnerIdsFromServiceRequest {
+   repeated string owner_ids = 1;
+ }
+ 
+message ReadIntegrationsByOwnerIdsFromServiceResponse {
+   repeated Integration data = 1;
+}
+
+message CreateWebChatIntegrationRequest {
+   string website = 1;
+   string brand_color = 2;
+   string font_color = 3;
+   string brand_color_dark_mode = 4;
+   string font_color_dark_mode = 5;
+   string font = 6;
+   bytes logo = 7;
+   string owner_id = 8;
+   OwnerType owner_type = 9;
+}
+
+message CreateWebChatIntegrationResponse {
+   bool success = 1;
+}
+
+message SendWebChatMessageRequest {
+   string integration_id = 1;
+   string text = 2;
+   bytes attachment = 3;
+   string thread_id = 4;
+   string session_id = 5;
+   BackendType backend = 6;
+}
+
+message SendWebChatMessageResponse {
+   string message_id = 1;
+   bool success = 2;
+}
+
+message SendInstagramMessageRequest {
+   string integration_id = 1;
+   string text = 2;
+   string owner_id = 3;
+   OwnerType owner_type = 4;
+   string sender_psid = 5;
+}
+
+message SendInstagramMessageResponse {
+   bool success = 1;
+   string text_message_id = 2;
+}
+
+message SendInstagramCommentRequest {
+   string integration_id = 1;
+   string text = 2;
+   string owner_id = 3;
+   OwnerType owner_type = 4;
+   string id_to_reply_to = 5;
+}
+
+message SendInstagramCommentResponse {
+   bool success = 1;
+   string message_id = 2;
+}
+
+message CreateImapIntegrationRequest {
+   Integration data = 1;
+}
+
+message CreateImapIntegrationResponse {
+   bool success = 1;
+   string integration_id = 2;
+   string message = 3;
+}
+
+message TestImapConnectionRequest {
+    string imap_host = 1;
+    int32 imap_port = 2;
+    string imap_user = 3;
+    string imap_password = 4;
+    bool imap_tls = 5;
+}
+
+message TestImapConnectionResponse {
+    bool success = 1;
+    string message = 2;
+}
+
+message TestSmtpConnectionRequest {
+    string smtp_host = 1;
+    int32 smtp_port = 2;
+    string smtp_user = 3;
+    string smtp_password = 4;
+    bool smtp_tls = 5;
+}
+
+message TestSmtpConnectionResponse {
+    bool success = 1;
+    string message = 2;
+}
+
+message UpdateImapIntegrationRequest {
+   Integration data = 1;
+}
+
+message UpdateImapIntegrationResponse {
+   bool success = 1;
+   string message = 2;
+}
+
+service IntegrationService {
+    rpc UpdateIntegration(UpdateIntegrationRequest) returns (UpdateIntegrationResponse){}
+    rpc DeleteIntegration(DeleteIntegrationRequest) returns (DeleteIntegrationResponse){}
+    rpc ReadIntegration(ReadIntegrationRequest) returns (ReadIntegrationResponse){}
+    rpc ReadIntegrations(ReadIntegrationsRequest) returns (ReadIntegrationsResponse){}
+    rpc SendEmail(SendEmailRequest) returns (SendEmailResponse);
+    rpc CreateFacebookIntegration(CreateFacebookIntegrationRequest) returns (CreateFacebookIntegrationResponse){}
+    rpc SendFacebookMessage(SendFacebookMessageRequest) returns (SendFacebookMessageResponse){}
+    rpc SendFacebookComment(SendFacebookCommentRequest) returns (SendFacebookCommentResponse){}
+    rpc EditFacebookComment(EditFacebookCommentRequest) returns (EditFacebookCommentResponse){}
+    rpc DeleteFacebookComment(DeleteFacebookCommentRequest) returns (DeleteFacebookCommentResponse){}
+    rpc SendInstagramMessage(SendInstagramMessageRequest) returns (SendInstagramMessageResponse){}
+    rpc SendInstagramComment(SendInstagramCommentRequest) returns (SendInstagramCommentResponse){}
+    rpc CreateAfricasTalkingSmsIntegration(CreateAfricasTalkingSmsIntegrationRequest) returns (CreateAfricasTalkingSmsIntegrationResponse){}
+    rpc SendSingleRecipientSms(SendSingleRecipientSmsRequest) returns (SendSingleRecipientSmsResponse){}
+    rpc SendBulkSms(SendBulkSmsRequest) returns (SendBulkSmsResponse){}
+    rpc ReadIntegrationsByOwnerIdsFromService(ReadIntegrationsByOwnerIdsFromServiceRequest) returns (ReadIntegrationsByOwnerIdsFromServiceResponse) {}
+    rpc CreateWebChatIntegration(CreateWebChatIntegrationRequest) returns (CreateWebChatIntegrationResponse){};
+    rpc CreateImapIntegration(CreateImapIntegrationRequest) returns (CreateImapIntegrationResponse){};
+    rpc UpdateImapIntegration(UpdateImapIntegrationRequest) returns (UpdateImapIntegrationResponse){};
+    rpc TestImapConnection(TestImapConnectionRequest) returns (TestImapConnectionResponse){};
+    rpc TestSmtpConnection(TestSmtpConnectionRequest) returns (TestSmtpConnectionResponse){};
+}
+
+service WhatsAppEmbeddedSignUpService {
+   rpc SendSignUpEvent(SendEmbeddedSignUpEventRequest) returns (SendEmbeddedSignUpEventResponse){}
+}
+
+service WebChatService {
+   rpc SendWebchatMessage(SendWebChatMessageRequest) returns (SendWebChatMessageResponse);
+
+}

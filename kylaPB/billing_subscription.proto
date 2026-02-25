@@ -1,0 +1,67 @@
+syntax = "proto3";
+
+package da.proto;
+
+option go_package = "./pb";
+
+enum SubscriptionStatus{
+  SUBSCRIPTION_STATUS_UNSPECIFIED     = 0;
+  SUBSCRIPTION_STATUS_ACTIVE          = 1;
+  SUBSCRIPTION_STATUS_CANCELLED       = 2;
+  SUBSCRIPTION_STATUS_EXPIRED         = 3;
+  SUBSCRIPTION_STATUS_PAST_DUE        = 4;
+  SUBSCRIPTION_STATUS_TRIALING        = 5;
+  SUBSCRIPTION_STATUS_PENDING_PAYMENT = 6;
+}
+
+message Subscription {
+  string             id                   = 1;
+  string             plan_name            = 2;
+  string             plan_id              = 3;
+  SubscriptionStatus status               = 4;
+  string             current_period_start = 5;
+  string             current_period_end   = 6;
+  string             trial_start          = 7;
+  string             trial_end            = 8;
+  string             created_at           = 9;
+}
+
+message CheckoutInfo {
+  string checkout_url = 1;
+}
+
+message SubscribeToPlanRequest {
+  string plan_id     = 1;
+  int64  users_count = 2;
+}
+
+message UpdateSubscriptionRequest {
+  int64  user_count      = 1;
+  string subscription_id = 2;
+}
+
+message UpdateSubscriptionResponse {
+  bool success = 1;
+}
+
+message SubscribeToPlanResponse {
+  CheckoutInfo checkout_info = 1;
+}
+
+message CancelSubscriptionRequest{
+  string subscription_id = 1;
+}
+
+message CancelSubscriptionResponse{
+  bool success = 1;
+}
+
+// subscription service server
+service SubscriptionService {
+  // subscribe to plan
+  rpc SubscribeToPlan(SubscribeToPlanRequest) returns (SubscribeToPlanResponse);
+  // update subscription
+  rpc UpdateSubscription(UpdateSubscriptionRequest) returns (UpdateSubscriptionResponse);
+  // cancel subscription
+  rpc CancelSubscription(CancelSubscriptionRequest) returns (CancelSubscriptionResponse);
+}

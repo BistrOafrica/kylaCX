@@ -1,0 +1,28 @@
+syntax="proto3";
+
+package da.proto;
+option go_package = "./pb";
+import "owner_type.proto";
+
+message CallMembership {
+  string id = 1;
+  string name = 2;
+  string org_id = 3;
+  string description = 4;
+  string domain = 5;
+  string ip_address = 6;
+  string owner_id = 7;
+  OwnerType owner_type = 8;
+}
+message ReadMembershipRequest {
+  string id = 1;
+}
+
+message SuccessMembershipResponse {
+  bool success = 1;
+}
+
+service CallMembershipService {
+  rpc SaveMembership(CallMembership) returns (SuccessMembershipResponse);
+  rpc DeleteMembership(ReadMembershipRequest) returns (SuccessMembershipResponse);
+}

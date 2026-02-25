@@ -1,0 +1,172 @@
+syntax = "proto3";
+
+package da.proto;
+
+option go_package = "./pb";
+
+import "owner_type.proto";
+
+enum NodeType {
+    StartNode = 0;
+    EndNode = 1;
+    MessageNode = 2;
+    BUttonsNode = 3;
+    YesNoNode = 4;
+    QuestionNode = 5;
+    FormNode = 6;
+    RatingNode = 7;
+    AgentHandoverNode = 8;
+    ApiRequestNode = 9;
+    CommerceNode = 10;
+    WebhookNode = 11;
+    AIAgentNode = 12;
+    QuickReplyNode = 13;
+}
+
+message BotFlow {
+    message Position {
+        float x = 1;
+        float y = 2;
+    }
+
+    message Option {
+        string id = 1;
+        string label = 2;
+    }
+
+    message Data {
+        string id = 1;
+        string name = 4;
+        string description = 5;
+        string message = 6;
+        repeated Option options = 7;
+        NodeType type = 8;
+        string variable = 9;
+    }
+
+    message PositionAbsolute {
+        float x = 1;
+        float y = 2;
+    }
+
+    message Nodes {
+        uint32 width = 1;
+        uint32 height = 2;
+        string id = 3;
+        Position position = 4;
+        Data data = 5;
+        bool selected = 7;
+        PositionAbsolute positionAbsolute = 8;
+        bool dragging = 9;
+        string type = 10;
+    }
+
+    message Edges {
+        string source = 1;
+        string sourceHandle = 2;
+        string target = 3;
+        string targetHandle = 4;
+        string id = 5;
+    }
+
+    message Viewport {
+        float x = 1;
+        float y = 2;
+        float zoom = 3;
+    }
+
+    repeated Nodes nodes = 1;
+    repeated Edges edges = 2;
+    Viewport viewport = 3;
+    string name = 4;
+    string id = 5;
+    string description = 6;
+}
+
+message CreateBotFlowRequest {
+    BotFlow bot_flow = 1;
+    Scope scope = 2;
+}
+
+message CreateBotFlowResponse {
+    BotFlow bot_flow = 1;
+}
+
+
+message ReadBotFlowRequest {
+    string id = 1;
+    Scope scope = 2;
+}
+
+message ReadBotFlowResponse {
+    BotFlow bot_flow = 1;
+}
+
+message ReadAllBotFlowRequest {
+    int32 page = 1;
+    int32 per_page = 2;
+    Scope scope = 3;
+}
+
+message BotFlowInfo {
+    string id = 1;
+    string name = 2;
+    string description = 3;
+}
+
+message ReadAllBotFlowResponse {
+    repeated BotFlowInfo bot_flows = 1;
+}
+
+message UpdateBotFlowRequest {
+    BotFlow bot_flow = 1;
+    Scope scope = 2;
+}
+
+message UpdateBotFlowResponse {
+    BotFlow bot_flow = 1;
+}
+
+message SyncBotFlowRequest {
+    string id = 1;
+    Scope scope = 2;
+}
+
+message SyncBotFlowResponse {
+    BotFlow bot_flow = 1;
+}
+
+message DeleteBotFlowRequest {
+    string id = 1;
+    Scope scope = 2;
+}
+
+message DeleteBotFlowResponse {
+    string id = 1;
+}
+
+message IntegrationConfig {
+    string integration_id = 1;
+    bool is_active = 2;
+}
+
+message AssignIntegrationToFlowRequest {
+    string flow_id = 1;
+    repeated IntegrationConfig integration_configs = 2;
+    Scope scope = 3;
+}
+
+message AssignIntegrationToFlowResponse {
+    string flow_id = 1;
+    repeated string integration_ids = 2;
+}
+
+service BotFlowService {
+    rpc CreateBotFlow(CreateBotFlowRequest) returns (CreateBotFlowResponse);
+    rpc ReadBotFlow(ReadBotFlowRequest) returns (ReadBotFlowResponse);
+    rpc ReadBotFlows(ReadAllBotFlowRequest) returns (ReadAllBotFlowResponse);
+    rpc UpdateBotFlow(UpdateBotFlowRequest) returns (UpdateBotFlowResponse);
+    rpc SyncBotFlow(SyncBotFlowRequest) returns (SyncBotFlowResponse);
+    rpc DeleteBotFlow(DeleteBotFlowRequest) returns (DeleteBotFlowResponse);
+    rpc AssignIntegrationToFlow(AssignIntegrationToFlowRequest) returns (AssignIntegrationToFlowResponse);
+}

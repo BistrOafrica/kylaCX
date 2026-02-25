@@ -1,0 +1,127 @@
+syntax="proto3";
+
+package da.proto;
+option go_package = "./pb";
+import "owner_type.proto";
+
+message App {
+    string id = 1;
+    string name = 2;
+    string description = 3;
+    string secret = 4;
+    repeated string permissions_codenames = 6;
+    string status = 7;
+    string created_by = 8;
+    string updated_by = 9;
+    string created_at = 10;
+    string updated_at = 11;
+    string approved_by = 12;
+    string approved_at = 13;
+    string token = 14;
+    string rejected_by = 15;
+    string rejected_at = 16;
+    bool is_template = 19;
+    string serial_number = 20;
+    OwnerType ownerType = 21;
+    string owner_id = 22;
+}
+
+message CreateAppRequest {
+    App app = 1;
+    Scope scope = 2;
+}
+
+message CreateAppResponse {
+    App app = 1;
+}
+
+message ReadAppRequest {
+    string id = 1;
+    Scope scope = 2;
+}
+
+message ReadAppResponse {
+    App app = 1;
+}
+
+message ReadAppsRequest {
+    Scope scope = 2;
+}
+
+message ReadAppsResponse {
+    repeated App apps = 1;
+}
+
+message UpdateAppRequest {
+    App app = 1;
+    Scope scope = 2;
+}
+
+message DeleteAppRequest {
+    string id = 1;
+    Scope scope = 2;
+}
+
+message UpdateAppResponse {
+    App app = 1;
+}
+
+message DeleteAppResponse {
+    Status status = 1;
+}
+
+message ApproveAppRequest {
+    App app = 1;
+}
+
+message ApproveAppResponse {
+    App app = 1;
+}
+
+message CreateTemplateAppRequest {
+    App app = 1;
+    Scope scope = 2;
+}
+
+message CreateTemplateAppResponse {
+    App app = 1;
+}
+
+message CreateAppWithTemplateRequest {
+    string template_app_id = 1;
+    Scope scope = 2;
+}
+
+message CreateAppWithTemplateResponse {
+    App app = 1;
+}
+
+message ReadAppTemplatesRequest {}
+
+message ReadAppTemplatesResponse {
+    repeated App app_templates = 1;
+}
+
+message ReadConsoleAppsRequest {}
+
+message ReadConsoleAppsResponse {
+    repeated App console_apps = 1;
+}
+
+
+service AppService {
+    rpc CreateApp(CreateAppRequest) returns (CreateAppResponse) {}
+    rpc ReadApp(ReadAppRequest) returns (ReadAppResponse) {}
+    rpc ReadApps(ReadAppsRequest) returns (ReadAppsResponse) {}
+    rpc UpdateApp(UpdateAppRequest) returns (UpdateAppResponse) {}
+    rpc DeleteApp(DeleteAppRequest) returns (DeleteAppResponse) {}
+    rpc RegenerateAppKeyAndSecret(UpdateAppRequest) returns (UpdateAppResponse) {}
+    rpc ApproveApp(ApproveAppRequest) returns (ApproveAppResponse) {}
+    rpc RejectApp(ApproveAppRequest) returns (ApproveAppResponse) {}
+
+    rpc CreateTemplateApp(CreateTemplateAppRequest) returns (CreateTemplateAppResponse) {}
+    rpc CreateAppWithTemplate(CreateAppWithTemplateRequest) returns (CreateAppWithTemplateResponse) {}
+    rpc ReadAppTemplates(ReadAppTemplatesRequest) returns (ReadAppTemplatesResponse) {}
+
+    rpc ReadConsoleApps(ReadConsoleAppsRequest) returns (ReadConsoleAppsResponse) {}
+}   

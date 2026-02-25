@@ -1,0 +1,168 @@
+syntax = "proto3";
+
+package da.proto;
+
+option go_package = "./pb";
+
+message WhatsappTemplate {
+  string id = 1;
+  string name = 2;
+  string body = 3;
+  string language = 4;
+  string category = 5;
+  string header = 6;
+  string footer = 7;
+  string status = 8;
+  string integration_id = 9;
+  string template_id = 10;
+  string reason = 11;
+  string phone_number_id = 12;
+  string waba_id = 13;
+}
+
+message WhatsappCampaign {
+  string id = 1;
+  string name = 2;
+  string start_date = 3;
+  string end_date = 4;
+  string contacts = 5;
+  string frequency = 6;
+  string description = 7;
+  string template_id = 8;
+  string status = 9;
+}
+
+message StatusEvent {
+  string event = 1;
+  string message_template_id = 2;
+  string message_template_language = 3;
+  string reason = 4;
+}
+
+message MessageStatusEvent {
+  string wa_id = 1;
+  string timestamp = 2;
+  string status = 3;
+}
+
+message WhatsappAnalytics {
+  string id = 1;
+  string contact = 2;
+  string status = 3;
+  string sent_at = 4;
+  string delivered_at = 5;
+  string read_at = 6;
+  string reason = 7;
+  bool sent = 8;
+  bool read = 9;
+  bool delivered = 10;
+  bool failed = 11;
+  string wa_id = 12;
+}
+
+message AnalyticsCount {
+  int64 sent = 1;
+  int64 delivered = 2;
+  int64 read = 3;
+  int64 failed = 4;
+}
+
+message CreateWhatsappTemplateRequest {
+  WhatsappTemplate template = 1;
+}
+
+message CreateWhatsappTemplateResponse {
+  WhatsappTemplate template = 1;
+}
+
+message ViewWhatsappTemplateRequest {
+  string id = 1;
+}
+
+message ViewWhatsappTemplateResponse {
+  WhatsappTemplate template = 1;
+}
+
+message ListWhatsappTemplateRequest {}
+
+message ListWhatsappTemplateResponse {
+  repeated WhatsappTemplate templates = 1;
+}
+
+message UpdateWhatsappTemplateRequest {
+  WhatsappTemplate template = 1;
+}
+
+message UpdateWhatsappTemplateResponse {
+  WhatsappTemplate template = 1;
+}
+
+message CreateWhatsappCampaignRequest {
+  WhatsappCampaign campaign = 1;
+}
+
+message CreateWhatsappCampaignResponse {
+  WhatsappCampaign campaign = 1;
+}
+
+message ViewWhatsappCampaignRequest {
+  string id = 1;
+}
+
+message ViewWhatsappCampaignResponse {
+  WhatsappCampaign campaign = 1;
+}
+
+message ListWhatsappCampaignRequest {}
+
+message ListWhatsappCampaignResponse {
+  repeated WhatsappCampaign campaigns = 1;
+}
+
+message WhatsappTemplateStatusUpdateRequest {
+  StatusEvent event = 1;
+}
+
+message ViewWhatsappCampaignAnalyticsRequest {
+  string campaign_id = 1;
+  string status = 2;
+}
+
+message ViewWhatsappCampaignAnalyticsResponse {
+  repeated WhatsappAnalytics analytics = 1;
+  AnalyticsCount count = 2;
+
+}
+
+message UpdateWhatsappAnalyticsRequest {
+  MessageStatusEvent analytics = 1;
+}
+
+message UpdateWhatsappAnalyticsResponse {
+  WhatsappAnalytics analytics = 1;
+}
+
+message DeleteWhatsappTemplateRequest {
+  string id = 1;
+}
+
+message DeleteWhatsappTemplateResponse {
+  bool success = 1;
+}
+
+service WhatsappService {
+  rpc CreateWhatsappTemplate(CreateWhatsappTemplateRequest) returns (CreateWhatsappTemplateResponse);
+  rpc ViewWhatsappTemplate(ViewWhatsappTemplateRequest) returns (ViewWhatsappTemplateResponse);
+  rpc ListWhatsappTemplates(ListWhatsappTemplateRequest) returns (ListWhatsappTemplateResponse);
+  rpc CreateWhatsappCampaign(CreateWhatsappCampaignRequest) returns (CreateWhatsappCampaignResponse);
+  rpc ViewWhatsappCampaign(ViewWhatsappCampaignRequest) returns (ViewWhatsappCampaignResponse);
+  rpc ListWhatsappCampaigns(ListWhatsappCampaignRequest) returns (ListWhatsappCampaignResponse);
+  rpc ViewWhatsappCampaignAnalytics(ViewWhatsappCampaignAnalyticsRequest) returns (ViewWhatsappCampaignAnalyticsResponse);
+  rpc DeleteWhatsappTemplate(DeleteWhatsappTemplateRequest) returns (DeleteWhatsappTemplateResponse);
+  rpc UpdateWhatsappTemplate(UpdateWhatsappTemplateRequest) returns (UpdateWhatsappTemplateResponse);
+}
+
+service WebhookService {
+  rpc UpdateTemplateStatus(WhatsappTemplateStatusUpdateRequest) returns (UpdateWhatsappTemplateResponse);
+  rpc UpdateWhatsappCamapignAnalytics(UpdateWhatsappAnalyticsRequest) returns (UpdateWhatsappAnalyticsResponse);
+}

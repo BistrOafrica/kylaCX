@@ -1,0 +1,158 @@
+syntax="proto3";
+
+package da.proto;
+option go_package = "./pb"; 
+
+import "department.proto";
+import "branch.proto";
+import "rbac.proto";
+import "user.proto";
+
+message Organisation{
+  string id = 1;
+  string organisation_name = 2;
+  string serial_number = 3;
+  string organisation_bio = 4;
+  string status = 5;
+  string referral_code = 6;
+  string created_at = 7;
+  string created_by = 8;
+  string short_code = 9;
+  repeated Department departments = 10;
+  repeated Branch branches = 11;
+  repeated Role roles = 12;
+  repeated User users = 13;
+  string email = 14;
+  string phone = 16;
+  string dialer_integration_link = 17;
+  string crm_redirect_link = 18;
+  string redirect_fallback_link = 19;
+  string size = 20;
+  string country = 21;
+  string industry = 22;
+  string sub_industry = 23;
+  string country_code = 24;
+}
+
+message CreateOrganisationRequest {
+  Organisation organisation = 1;
+}
+
+message CreateOrganisationResponse {
+  Organisation organisation = 1;
+}
+
+message ReadOrganisationRequest {
+  string organisation_id = 1;
+}
+
+message ReadOrganisationResponse {
+  Organisation organisation = 1;
+}
+
+message ReadOrganisationsRequest {
+
+}
+
+message ReadOrganisationsResponse {
+  repeated Organisation organisations = 1;
+}
+
+message UpdateOrganisationRequest{
+  Organisation organisation =1;
+}
+
+message UpdateOrganisationResponse{
+  Organisation organisation =1;
+}
+
+message DeleteOrganisationRequest{
+  string id =1;
+}
+
+message DeleteOrganisationResponse{
+  bool success =1;
+}
+
+// Organization template messages
+message TeamTemplate {
+  string name = 1;
+  string description = 2;
+}
+
+message DepartmentTemplate {
+  string name = 1;
+  string description = 2;
+  repeated TeamTemplate teams = 3;
+}
+
+message BranchTemplate {
+  string name = 1;
+  string description = 2;
+  repeated DepartmentTemplate departments = 3;
+  repeated TeamTemplate teams = 4; // Teams directly under a branch
+}
+
+message OrganizationTemplate {
+  string industry = 1;
+  string subindustry = 2;
+  string template_name = 3;
+  string template_description = 4;
+  repeated BranchTemplate branches = 5;
+}
+
+message ReadTemplatesRequest {
+  string industry = 1; // Optional - if provided, return templates for this industry only
+}
+
+message IndustryTemplates {
+  string industry = 1;
+  map<string, OrganizationTemplate> subindustry_templates = 2;
+}
+
+message ReadTemplatesResponse {
+  repeated IndustryTemplates industry_templates = 1;
+}
+
+message CreateDefaultStructureRequest {
+  string organisation_id = 1;
+}
+
+message CreateDefaultStructureResponse {
+  Organisation organisation = 1;
+}
+
+message CreateStructureWithTemplateRequest {
+  string organisation_id = 1;
+  string industry = 2;
+  string subindustry = 3; // Optional - if not provided, use the first available subindustry
+}
+
+message CreateStructureWithTemplateResponse {
+  Organisation organisation = 1;
+}
+
+message ReadMeRequest {
+  string user = 1;
+}
+
+message ReadMeResponse {
+  User user = 1;
+  Organisation organisation = 2;
+}
+
+service OrganisationService {
+  rpc CreateOrganisation(CreateOrganisationRequest) returns (CreateOrganisationResponse) {}
+  rpc ReadOrganisation(ReadOrganisationRequest) returns (ReadOrganisationResponse) {}
+  rpc ReadOrganisations(ReadOrganisationsRequest) returns (ReadOrganisationsResponse) {}
+  rpc UpdateOrganisation(UpdateOrganisationRequest) returns (UpdateOrganisationResponse) {}
+  rpc DeleteOrganisation(DeleteOrganisationRequest) returns (DeleteOrganisationResponse) {}
+
+  rpc ReadMe(ReadMeRequest) returns (ReadMeResponse) {}
+
+  
+  // Template-related methods
+  rpc ReadTemplates(ReadTemplatesRequest) returns (ReadTemplatesResponse) {}
+  rpc CreateDefaultStructure(CreateDefaultStructureRequest) returns (CreateDefaultStructureResponse) {}
+  rpc CreateStructureWithTemplate(CreateStructureWithTemplateRequest) returns (CreateStructureWithTemplateResponse) {}
+}

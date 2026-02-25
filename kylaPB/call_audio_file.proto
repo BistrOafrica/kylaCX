@@ -1,0 +1,64 @@
+syntax="proto3";
+
+package da.proto;
+option go_package = "./pb";
+
+enum FileOrigin {
+	UPLOADED_FILE = 0;
+	GENERATED_FILE = 1;
+}
+
+message CallAudioFile {
+  string id = 1;
+  string name = 2;
+  FileOrigin origin = 3;
+  string message = 4;
+  string filename = 5;
+  string duration = 6;
+  string format = 7;
+  string url = 8;
+  bytes chunks = 9;
+  string recording_uuid = 10;
+  string created_at = 11;
+  string domain_id = 12;
+  string description = 13;
+}
+
+message CreateAudioFileRequest {
+  string name = 1;
+  FileOrigin origin = 2;
+  string message = 3;
+  bytes chunks = 4;
+  string description = 5;
+}
+
+message SuccessAudioFileResponse {
+  bool success = 1;
+}
+
+message ReadAudioFileRequest {
+  string id = 1;
+}
+
+message DownloadAudioFileResponse {
+  bytes chunks = 1;
+}
+
+message ReadAudioFilesRequest {
+  int32 page_number = 1;
+  int32 page_size = 2;
+  string domain_id = 3;
+}
+
+message ReadAudioFilesResponse {
+  int64 total = 1;
+  repeated CallAudioFile items = 2;
+}
+
+service CallAudioFileService {
+  rpc UploadFile(stream CreateAudioFileRequest) returns (SuccessAudioFileResponse);
+  rpc ReadFile(ReadAudioFileRequest) returns (CallAudioFile);
+  rpc DownloadFile(ReadAudioFileRequest) returns (stream DownloadAudioFileResponse);
+  rpc DeleteFile(ReadAudioFileRequest) returns (SuccessAudioFileResponse);
+  rpc ReadFiles(ReadAudioFilesRequest) returns (ReadAudioFilesResponse);
+}

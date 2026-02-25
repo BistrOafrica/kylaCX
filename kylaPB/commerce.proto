@@ -1,0 +1,392 @@
+syntax = "proto3";
+
+package da.proto;
+option go_package = "./pb";
+
+message Shop {
+  string id = 1;
+  string name = 2;
+  string description = 3;
+  string contactName = 4;
+  string contactPhone = 5;
+  string contactEmail = 6;
+  string contactAddress = 7;
+}
+
+message CreateShopRequest { Shop shop = 1; }
+
+message CreateShopResponse { Shop shop = 1; }
+
+message ReadShopRequest { string id = 1; }
+
+message ReadShopResponse { Shop shop = 1; }
+
+message UpdateShopRequest { Shop shop = 1; }
+
+message UpdateShopResponse { Shop shop = 1; }
+
+message DeleteShopRequest { string id = 1; }
+
+message DeleteShopResponse { bool success = 1; }
+
+message ListShopRequest {
+  int32 page = 1;
+  int32 pageSize = 2;
+}
+
+message ListShopResponse {
+  repeated Shop shops = 1;
+  int32 page = 2;
+  int32 pageSize = 3;
+  int32 total = 4;
+}
+
+message Catalog {
+  string id = 1;
+  string name = 2;
+  string description = 3;
+  string shopId = 4;
+}
+
+message CreateCatalogRequest { Catalog catalog = 1; }
+
+message CreateCatalogResponse { Catalog catalog = 1; }
+
+message ReadCatalogRequest { string id = 1; }
+
+message ReadCatalogResponse { Catalog catalog = 1; }
+
+message ListCatalogsRequest {
+  string shopId = 1;
+  int32 page = 2;
+  int32 pageSize = 3;
+}
+
+message ListCatalogsResponse {
+  repeated Catalog catalogs = 1;
+  int32 page = 2;
+  int32 pageSize = 3;
+  int64 count = 4;
+}
+
+message UpdateCatalogRequest { Catalog catalog = 1; }
+
+message UpdateCatalogResponse { Catalog catalog = 1; }
+
+message DeleteCatalogRequest { string id = 1; }
+
+message DeleteCatalogResponse { bool success = 1; }
+
+message Category {
+  string id = 1;
+  string title = 2;
+}
+
+message CreateCategoryRequest { Category category = 1; }
+
+message CreateCategoryResponse { Category category = 1; }
+
+message ReadCategoryRequest { string id = 1; }
+
+message ReadCategoryResponse { Category category = 1; }
+
+message ListCategoriesRequest {
+  int32 page = 1;
+  int32 pageSize = 2;
+}
+
+message ListCategoriesResponse {
+  repeated Category categories = 1;
+  int32 page = 2;
+  int32 pageSize = 3;
+  int64 count = 4;
+}
+
+message UpdateCategoryRequest { Category category = 1; }
+
+message UpdateCategoryResponse { Category category = 1; }
+
+message DeleteCategoryRequest { string id = 1; }
+
+message DeleteCategoryResponse { bool success = 1; }
+
+message Product {
+  string id = 1;
+  string name = 2;
+  string description = 3;
+  double price = 4;
+  string currency = 5;
+  int32 stock = 6;
+  string sku = 7;
+  string imageUrl = 8;
+  string brand = 9;
+  string catalog = 10;
+  int32 availability = 11;
+  int32 condition = 12;
+  string category = 13;
+  string catalogId = 14;
+  string categoryId = 15;
+}
+
+message CreateProductRequest { Product product = 1; }
+
+message CreateProductResponse { Product product = 1; }
+
+message ReadProductRequest { string id = 1; }
+
+message ReadProductResponse { Product product = 1; }
+
+message ListProductsRequest {
+  string catalogId = 1;
+  string categoryId = 2;
+  string brand = 3;
+  string currency = 4;
+  string availability = 5;
+  string condition = 6;
+  string search = 7;
+  int32 page = 8;
+  int32 pageSize = 9;
+}
+message ListProductsResponse {
+  repeated Product products = 1;
+  int32 page = 2;
+  int32 pageSize = 3;
+  int64 count = 4;
+}
+
+message UpdateProductRequest { Product product = 1; }
+
+message UpdateProductResponse { Product product = 1; }
+
+message DeleteProductRequest { string id = 1; }
+
+message DeleteProductResponse { bool success = 1; }
+
+message OrderItem {
+  string id = 1;
+  string orderId = 2;
+  string productId = 3;
+  int32 quantity = 6;
+}
+
+message Customer {
+  string id = 1;
+  string firstName = 2;
+  string lastName = 3;
+  string phone = 4;
+  string email = 5;
+}
+
+message Order {
+  string id = 1;
+  string orderNumber = 2;
+  string statusId = 3;
+  double amount = 4;
+  string status = 5;
+  string statusCode = 6;
+  Customer customer = 7;
+  repeated OrderItem orderItems = 8;
+}
+
+message CreateOrderRequest { Order order = 1; }
+
+message CreateOrderResponse { Order order = 1; }
+
+message ReadOrderRequest { string id = 1; }
+
+message ReadOrderResponse { Order order = 1; }
+
+message ListOrdersRequest {
+  int32 page = 1;
+  int32 pageSize = 2;
+  string statusId = 3;
+  string statusCode = 4;
+  string customerId = 5;
+}
+
+message ListOrdersResponse {
+  repeated Order orders = 1;
+  int32 page = 2;
+  int32 pageSize = 3;
+  int64 count = 4;
+}
+
+message UpdateOrderRequest { Order order = 1; }
+
+message UpdateOrderResponse { Order order = 1; }
+
+message Availability {
+  string code = 1;
+  string description = 2;
+}
+
+message ListAvailabilityRequest {}
+
+message ListAvailabilityResponse { repeated Availability availabilities = 1; }
+
+message Condition {
+  string code = 1;
+  string description = 2;
+}
+
+message ListConditionsRequest {}
+
+message ListConditionsResponse { repeated Condition conditions = 1; }
+
+message Taxon {
+  string id = 1;
+  string name = 2;
+  string parent_id = 3;
+
+  repeated Taxon children = 4;
+}
+
+message CreateTaxonRequest { Taxon taxon = 1; }
+
+message CreateTaxonResponse { Taxon taxon = 1; }
+
+message ReadTaxonRequest { string id = 1; }
+
+message ReadTaxonResponse { Taxon taxon = 1; }
+
+message UpdateTaxonRequest { Taxon taxon = 1; }
+
+message UpdateTaxonResponse { Taxon taxon = 1; }
+
+message DeleteTaxonRequest { string id = 1; }
+
+message DeleteTaxonResponse { string id = 1; }
+
+message ListTaxonRequest { string parent_id = 1; }
+
+message ListTaxonResponse { repeated Taxon taxonomies = 1; }
+
+message CreateCustomerRequest { Customer customer = 1; }
+
+message CreateCustomerResponse { Customer customer = 1; }
+
+message ListCustomersRequest {
+  int32 page = 1;
+  int32 pageSize = 2;
+}
+
+message ListCustomersResponse {
+  repeated Customer customers = 1;
+  int32 page = 2;
+  int32 pageSize = 3;
+  int64 count = 4;
+}
+
+message ReadCustomerRequest { string id = 1; }
+
+message ReadCustomerResponse { Customer customer = 1; }
+
+message UpdateCustomerRequest { Customer customer = 1; }
+
+message UpdateCustomerResponse { Customer customer = 1; }
+
+message DeleteCustomerRequest { string id = 1; }
+
+message DeleteCustomerResponse { string id = 1; }
+
+
+message OrderStatus {
+  string id = 1;
+  string description = 2;
+  string code = 3;
+  string organisation_id = 4;
+}
+
+message CreateOrderStatusRequest { OrderStatus order_status = 1; }
+
+message CreateOrderStatusResponse { OrderStatus order_status = 1; }
+
+message ReadOrderStatusRequest { string id = 1; }
+
+message ReadOrderStatusResponse { OrderStatus order_status = 1; }
+
+message UpdateOrderStatusRequest { OrderStatus order_status = 1; }
+
+message UpdateOrderStatusResponse { OrderStatus order_status = 1; }
+
+message DeleteOrderStatusRequest { string id = 1; }
+
+message DeleteOrderStatusResponse { string id = 1; }
+
+message ListOrderStatusRequest { }
+
+message ListOrderStatusResponse {
+  repeated OrderStatus order_statuses = 1;
+}
+
+service OrderStatusService {
+  rpc ListOrderStatus(ListOrderStatusRequest) returns (ListOrderStatusResponse);
+  rpc CreateOrderStatus(CreateOrderStatusRequest) returns (CreateOrderStatusResponse);
+  rpc ReadOrderStatus(ReadOrderStatusRequest) returns (ReadOrderStatusResponse);
+  rpc UpdateOrderStatus(UpdateOrderStatusRequest) returns (UpdateOrderStatusResponse);
+  rpc DeleteOrderStatus(DeleteOrderStatusRequest) returns (DeleteOrderStatusResponse);
+}
+
+service ShopService {
+  rpc CreateShop(CreateShopRequest) returns (CreateShopResponse);
+  rpc ReadShop(ReadShopRequest) returns (ReadShopResponse);
+  rpc UpdateShop(UpdateShopRequest) returns (UpdateShopResponse);
+  rpc DeleteShop(DeleteShopRequest) returns (DeleteShopResponse);
+  rpc ListShop(ListShopRequest) returns (ListShopResponse);
+}
+
+service ProductService {
+  rpc CreateProduct(CreateProductRequest) returns (CreateProductResponse);
+  rpc ReadProduct(ReadProductRequest) returns (ReadProductResponse);
+  rpc ListProducts(ListProductsRequest) returns (ListProductsResponse);
+  rpc UpdateProduct(UpdateProductRequest) returns (UpdateProductResponse);
+  rpc DeleteProduct(DeleteProductRequest) returns (DeleteProductResponse);
+}
+
+service OrderService {
+  rpc CreateOrder(CreateOrderRequest) returns (CreateOrderResponse);
+  rpc ReadOrder(ReadOrderRequest) returns (ReadOrderResponse);
+  rpc ListOrders(ListOrdersRequest) returns (ListOrdersResponse);
+  rpc UpdateOrder(UpdateOrderRequest) returns (UpdateOrderResponse);
+}
+
+service CategoryService {
+  rpc CreateCategory(CreateCategoryRequest) returns (CreateCategoryResponse);
+  rpc ReadCategory(ReadCategoryRequest) returns (ReadCategoryResponse);
+  rpc ListCategories(ListCategoriesRequest) returns (ListCategoriesResponse);
+  rpc UpdateCategory(UpdateCategoryRequest) returns (UpdateCategoryResponse);
+  rpc DeleteCategory(DeleteCategoryRequest) returns (DeleteCategoryResponse);
+}
+
+service CatalogService {
+  rpc CreateCatalog(CreateCatalogRequest) returns (CreateCatalogResponse);
+  rpc ReadCatalog(ReadCatalogRequest) returns (ReadCatalogResponse);
+  rpc ListCatalogs(ListCatalogsRequest) returns (ListCatalogsResponse);
+  rpc UpdateCatalog(UpdateCatalogRequest) returns (UpdateCatalogResponse);
+  rpc DeleteCatalog(DeleteCatalogRequest) returns (DeleteCatalogResponse);
+}
+
+service TaxonService {
+  rpc CreateTaxon(CreateTaxonRequest) returns (CreateTaxonResponse);
+  rpc ReadTaxon(ReadTaxonRequest) returns (ReadTaxonResponse);
+  rpc UpdateTaxon(UpdateTaxonRequest) returns (UpdateTaxonResponse);
+  rpc DeleteTaxon(DeleteTaxonRequest) returns (DeleteTaxonResponse);
+  rpc ListTaxon(ListTaxonRequest) returns (ListTaxonResponse);
+}
+
+service ConditionService {
+  rpc ListConditions(ListConditionsRequest) returns (ListConditionsResponse);
+}
+
+service AvailabilityService {
+  rpc ListAvailability(ListAvailabilityRequest)
+      returns (ListAvailabilityResponse);
+}
+
+service CustomerService {
+  rpc CreateCustomer(CreateCustomerRequest) returns (CreateCustomerResponse);
+  rpc ReadCustomer(ReadCustomerRequest) returns (ReadCustomerResponse);
+  rpc ListCustomers(ListCustomersRequest) returns (ListCustomersResponse);
+  rpc UpdateCustomer(UpdateCustomerRequest) returns (UpdateCustomerResponse);
+  rpc DeleteCustomer(DeleteCustomerRequest) returns (DeleteCustomerResponse);
+}

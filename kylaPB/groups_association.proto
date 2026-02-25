@@ -1,0 +1,43 @@
+syntax = "proto3";
+
+package da.proto;
+option go_package = "./pb"; 
+
+message GroupAssociation {
+  string id = 1;
+  string group_id = 2;
+  string contact_id = 3;
+}
+
+message CreateGroupAssociationRequest {
+  GroupAssociation group_association = 1;
+}
+
+message CreateGroupAssociationResponse {
+  GroupAssociation group_association = 1;
+}
+
+message ReadGroupAssociationRequest {
+  string contact_id = 1;
+}
+
+message ReadGroupAssociationResponse {
+  repeated GroupAssociation group_associations = 1;
+}
+
+message UpdateGroupAssociationRequest {
+  GroupAssociation group_association = 1;
+}
+
+message UpdateGroupAssociationResponse {
+
+}
+
+message DeleteGroupAssociationRequest {
+  string contact_id = 1;
+  string group_id = 2;
+}
+
+message DeleteGroupAssociationResponse {
+  bool success = 1;
+}

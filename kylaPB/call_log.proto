@@ -1,0 +1,67 @@
+syntax="proto3";
+
+package da.proto;
+option go_package = "./pb";
+import "google/protobuf/timestamp.proto"; 
+import "call_session.proto";
+
+message CallLog {
+  string id = 1;
+  string caller_id_name = 2;
+  string caller_id_number = 3;
+  string destination_number = 4;
+  CallDirection direction = 5;
+  CallStatus status = 6;
+  google.protobuf.Timestamp start_time = 7;
+  google.protobuf.Timestamp end_time = 8;
+  int64 duration = 9;
+  string contact_id = 10;
+  string agent_id = 11;
+  string queue_id = 12;
+  string call_id = 13;
+  string cdr_uuid = 14;
+  string tag_id = 15;
+  string domain_id = 16;
+}
+
+message SaveCallLogRequest {
+  CallLog item = 1;
+}
+
+message ReadCallLogRequest {
+  string id = 1;
+}
+
+message SuccessCallLogResponse {
+  bool success = 1;
+}
+
+message CallLogFilter {
+  string agent_id = 1;
+  string contact_id = 2;
+  string queue_id = 3;
+  string tag_id = 4;
+  google.protobuf.Timestamp start_time = 5;
+  google.protobuf.Timestamp end_time = 6;
+  CallStatus status = 7;
+  CallDirection direction = 8;
+  string domain_id = 9;
+}
+
+message ReadCallLogsRequest {
+  CallLogFilter filters = 3;
+  int32 page_number = 1;
+  int32 page_size = 2;
+}
+
+message ReadCallLogsResponse {
+  repeated CallLog items = 1;
+  int64 total = 2;
+}
+
+service CallLogService {
+  rpc CreateLog(SaveCallLogRequest) returns (SuccessCallLogResponse);
+  rpc ReadLog(ReadCallLogRequest) returns (CallLog);
+  rpc ReadLogByCallId(ReadCallLogRequest) returns (CallLog);
+  rpc ReadLogs(ReadCallLogsRequest) returns (ReadCallLogsResponse);
+}

@@ -1,0 +1,135 @@
+syntax = "proto3";
+package da.proto;
+option go_package = "./pb";
+
+message SendChatMessageRequest{
+  string type = 1;
+  string from = 2;
+  string to = 3;
+  string subject = 4;
+  string body = 5;
+}
+
+message SendMessageResponse{
+  string send_confirmation = 1;
+}
+
+// this is to initiate session
+message InitiateSessionRequest{
+  string jid = 10;
+  string server = 2;
+  string password = 3;
+  string username = 1;
+}
+
+
+
+message ReceivedMessage{
+  string message = 1;
+  string presence = 2;
+  string from = 3;
+  string status = 4;
+}
+
+// v2
+
+message ThreadDetails {
+  string thread = 1;
+  string parent_id = 2;
+}
+message InitiateRequest{
+  string jid = 1;
+  string password = 2;
+}
+
+message SentMessage{
+  string id = 1;
+  string to = 2;
+  string from = 3;
+  string body = 4;
+  string type = 5;
+  int64 reaction_id = 6;
+  SentMessage forwarded = 7;
+  ThreadDetails thread = 8;
+  string attachment_url = 9;
+}
+
+message InitiateResponse{
+  SentMessage message = 1;
+}
+
+message ReactionRequest{
+  string message_id = 1;
+  string username = 2; // of the one reacting to the message
+  string reaction_id = 3;
+}
+
+// the reaction the user created
+message ReactionResponse{
+  int64 reaction_id = 1;
+  string reaction_code = 2;
+  string reaction_name = 3;
+}
+
+
+// users
+
+message Registered{
+  string username = 1;
+  string createdAt = 2;
+}
+
+message RegisteredUsersRequest{}
+
+message RegisteredUsersResponse{
+  repeated Registered users = 1;
+}
+
+message LastSeenRequest{
+  string username = 1;
+}
+
+message LastSeenResponse{
+	string username = 1;
+	string seconds = 2;
+  string state = 3;
+}
+
+message JoinMucRequest{
+  string jid = 1;
+}
+
+message JoinMucResponse{
+  int64 int = 1;
+}
+
+// sending an invitation
+message InvitationRequest{
+  string continue = 1;
+  string jid = 2;
+  string password = 3;
+  string reason = 4;
+  string thread = 5;
+}
+
+message RegisterOrganisationDomainRequest{
+  string orgId = 1;
+}
+
+message RegisterOrganisationDomainResponse{
+  string orgDomainName = 1;
+}
+
+service MessageService{
+  rpc SendMessage (SendChatMessageRequest) returns (SendMessageResponse){}
+  rpc InitiateSession(InitiateSessionRequest) returns (stream ReceivedMessage) {};
+  rpc Initiate(InitiateRequest) returns (stream InitiateResponse){};
+  rpc React(ReactionRequest) returns (stream ReactionResponse){};
+	
+	rpc RegisteredUsers (RegisteredUsersRequest) returns (RegisteredUsersResponse){};
+	rpc LastSeen (LastSeenRequest) returns (LastSeenResponse){};
+
+  rpc JoinMuc(JoinMucRequest) returns(stream InitiateResponse){}
+
+  rpc RegisterOrganisationDomain(RegisterOrganisationDomainRequest) returns(RegisterOrganisationDomainResponse){};
+}

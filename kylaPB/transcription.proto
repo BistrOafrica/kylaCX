@@ -1,0 +1,56 @@
+syntax="proto3";
+
+package da.proto;
+
+option go_package = "./pb";
+
+message SourceConfig {
+    string file = 1;
+    string url = 2;
+}
+
+message Segment {
+    string speaker = 1;
+    string text = 2;
+    string start = 3;
+    string end = 4;
+}
+
+message TranscriptionNotification {
+    string id = 1;
+    string status = 2;
+    string created_on = 3;
+}
+
+message TranscriptionResponse {
+    string id = 1;
+    string status = 2;
+    string created_on = 3;
+    repeated Segment segments = 4;
+}
+
+message TranscribeRequest {
+    SourceConfig source = 1;
+}
+
+message TranscribeResponse {
+    string id = 1;
+    string status = 2;
+    string created_on = 3;
+}
+
+message RetrieveTranscriptionRequest {
+    string id = 1;
+}
+
+message RetrieveTranscriptionResponse {
+    oneof response {
+        TranscriptionResponse transcription = 1;
+        TranscriptionNotification notification = 2;
+    }
+}
+
+service Transcription {
+    rpc Transcribe(TranscribeRequest) returns (TranscribeResponse);
+    rpc RetrieveTranscription(RetrieveTranscriptionRequest) returns (RetrieveTranscriptionResponse);
+}

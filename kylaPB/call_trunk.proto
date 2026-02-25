@@ -1,0 +1,86 @@
+syntax="proto3";
+
+package da.proto;
+option go_package = "./pb";
+
+enum Transport {
+  UDP = 0;
+  TCP = 1;
+  TLS = 2;
+}
+
+enum TrunkAuthentication {
+  AUTH_IP = 0;
+  AUTH_ACCOUNT = 1;
+}
+
+message TrunkCredentials {
+	string username = 1;
+	string password = 2;
+}
+
+message CallTrunk {
+  string id = 1;
+  string name = 2;
+  string server_id = 3;
+  string proxy = 4;
+  string media_proxy = 5;
+  Transport transport = 6;
+  TrunkAuthentication authentication = 7;
+  TrunkCredentials credentials = 8;
+  int32 retry_seconds = 9;
+  string description = 10;
+  string gateway_id = 11;
+  string created_at = 12;
+}
+
+message CreateTrunkRequest {
+  string name = 1;
+  string server_id = 2;
+  string proxy = 3;
+  string media_proxy = 4;
+  Transport transport = 5;
+  TrunkAuthentication authentication = 6;
+  TrunkCredentials credentials = 7;
+  int32 retry_seconds = 8;
+  string description = 9;
+}
+
+message UpdateTrunkRequest {
+  string id = 1;
+  string name = 2;
+  string proxy = 3;
+  string media_proxy = 4;
+  Transport transport = 5;
+  TrunkAuthentication authentication = 6;
+  TrunkCredentials credentials = 7;
+  int32 retry_seconds = 8;
+  string description = 9;
+}
+
+message ReadTrunkRequest {
+  string id = 1;
+}
+
+message SuccessTrunkResponse {
+  bool success = 1;
+}
+
+message ReadTrunksRequest {
+  int32 page_number = 1;
+  int32 page_size = 2;
+  string server_id = 3;
+}
+
+message ReadTrunksResponse {
+  int64 total = 1;
+  repeated CallTrunk items = 2;
+}
+
+service CallTrunkService {
+  rpc CreateTrunk(CreateTrunkRequest) returns (SuccessTrunkResponse);
+  rpc ReadTrunk(ReadTrunkRequest) returns (CallTrunk);
+  rpc UpdateTrunk(UpdateTrunkRequest) returns (SuccessTrunkResponse);
+  rpc DeleteTrunk(ReadTrunkRequest) returns (SuccessTrunkResponse);
+  rpc ReadTrunks(ReadTrunksRequest) returns (ReadTrunksResponse);
+}

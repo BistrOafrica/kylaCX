@@ -1,0 +1,44 @@
+services:
+
+  grpc-server:
+    build: 
+      context: ..
+      dockerfile: deploy/Dockerfile.dev
+      target: development
+    ports: 
+      - "50050:50050"
+    volumes:
+      - ../:/app
+      - /app/tmp
+    env_file: 
+      - ../envs/.env
+    # depends_on:
+    #   - database
+    # links: 
+    #   - db
+
+  envoy-proxy: 
+    image: envoyproxy/envoy:v1.25-latest # Envoy proxy image version 
+    volumes: 
+      - ../envoy.yaml:/etc/envoy/envoy.yaml # Mounting envoy.yaml file to the container 
+    ports: 
+      - "8000:8000"
+      - "9903:9903"
+    depends_on:
+       - grpc-server
+    command: ["envoy", "-c", "/etc/envoy/envoy.yaml"]
+  
+  # database: 
+  #   image: postgres:alpine3.20
+  #   restart: always 
+  #   environment: 
+  #     POSTGRES_USER: root
+  #     POSTGRES_PASSWORD: pGdBorG
+  #     POSTGRES_DB: organisation
+  #   ports: 
+  #     - "5433:5432"
+  #   volumes: 
+  #     - data:/var/lib/postgresql/data
+
+volumes:
+  data:   

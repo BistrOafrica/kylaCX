@@ -1,0 +1,65 @@
+syntax = "proto3";
+
+package da.proto;
+option go_package = "./pb";
+
+import "call_dialplan.proto";
+
+enum IvrNodeType {
+  IVR_NODE_MENU = 0;
+  IVR_NODE_TRIGGER = 1;
+}
+
+message IvrFlowNode {
+  string id = 1;
+  NodePosition node_position = 2;
+  IvrNodeType node_type = 3;
+  string node_id = 4;
+}
+
+message CallIvrFlow {
+  string id = 1;
+  string name = 2;
+  string description = 3;
+  string created_at = 4;
+  repeated IvrFlowNode nodes = 5;
+}
+
+message CreateIvrFlowRequest {
+  string name = 1;
+  string description = 2;
+  repeated IvrFlowNode nodes = 3;
+}
+
+message UpdateIvrFlowRequest {
+  string id = 1;
+  string name = 2;
+  string description = 3;
+  repeated IvrFlowNode nodes = 4;
+}
+
+message ReadIvrFlowRequest {
+  string id = 1;
+}
+
+message SuccessIvrFlowResponse {
+  bool success = 1;
+}
+
+message ReadIvrFlowsRequest {
+  int32 page_number = 1;
+  int32 page_size = 2;
+}
+
+message ReadIvrFlowsResponse {
+  int64 total = 1;
+  repeated CallIvrFlow items = 2;
+}
+
+service CallIvrFlowService {
+  rpc CreateIvrFlow(CreateIvrFlowRequest) returns (SuccessIvrFlowResponse);
+  rpc ReadIvrFlow(ReadIvrFlowRequest) returns (CallIvrFlow);
+  rpc UpdateIvrFlow(UpdateIvrFlowRequest) returns (SuccessIvrFlowResponse);
+  rpc DeleteIvrFlow(ReadIvrFlowRequest) returns (SuccessIvrFlowResponse);
+  rpc ReadIvrFlows(ReadIvrFlowsRequest) returns (ReadIvrFlowsResponse);
+}

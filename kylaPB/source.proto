@@ -1,0 +1,33 @@
+syntax = "proto3";
+
+package da.proto;
+option go_package = "./pb";
+
+message Source {
+    string id = 1;
+    string name = 2;
+    string description = 3;
+}
+
+message ReadSourceRequest {
+    string id = 1;
+}
+
+message ReadSourceResponse {
+    Source data = 1;
+}
+
+message ReadSourcesRequest {
+    int32 page = 1;
+    int32 per_page = 2;
+}
+
+message ReadSourcesResponse {
+    int32 total_count = 1;
+    repeated Source data = 2;
+}
+
+service SourceService {
+    rpc ReadSource(ReadSourceRequest) returns (ReadSourceResponse);
+    rpc ReadSources(ReadSourcesRequest) returns (ReadSourcesResponse);
+}

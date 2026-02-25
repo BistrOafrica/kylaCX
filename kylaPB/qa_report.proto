@@ -1,0 +1,39 @@
+syntax="proto3";
+
+package da.proto;
+option go_package = "./pb";
+
+import "call_log.proto";
+
+message QAReport {
+  CallLog call_log = 1;
+  string id = 2;
+  string survey_id = 3;
+  string sentiment = 4;
+  string type = 5;
+}
+
+message ReadQAReportRequest {
+  string id = 1;
+}
+
+message ReadQAReportResponse {
+  QAReport qa_report = 1;
+}
+
+message QAReportsFilter {
+  int32 sentiment = 2;
+}
+
+message ReadAllQAReportsRequest {
+  QAReportsFilter filters = 1;
+}
+
+message ReadAllQAReportsResponse {
+  repeated QAReport qa_reports = 1;
+}
+
+service QAReportService {
+  rpc ReadQAReport(ReadQAReportRequest) returns (ReadQAReportResponse);
+  rpc ReadAllQAReports(ReadAllQAReportsRequest) returns (ReadAllQAReportsResponse);
+}

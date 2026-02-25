@@ -1,0 +1,64 @@
+syntax="proto3";
+
+package da.proto;
+option go_package = "./pb";
+
+message QAComment {
+  string id = 1;
+  string report_id = 2;
+  string agent_id = 3;
+  string content = 4;
+  string created_at = 5;
+  string updated_at = 6;
+  string attachment_id = 7;
+  string diarization = 8; // 1: agent, 2: customer
+  int32 timestamp = 9;
+}
+
+message CreateQACommentRequest {
+  QAComment qa_comment = 1;
+}
+
+message CreateQACommentResponse {
+  QAComment qa_comment = 1;
+}
+
+message ReadQACommentRequest {
+  string id = 1;
+}
+
+message ReadQACommentResponse {
+  QAComment qa_comment = 1;
+}
+
+message UpdateQACommentRequest {
+  QAComment qa_comment = 1;
+}
+
+message UpdateQACommentResponse {
+  QAComment qa_comment = 1;
+}
+
+message DeleteQACommentRequest {
+  string id = 1;
+}
+
+message DeleteQACommentResponse {
+  bool success = 1;
+}
+
+message ReadAllQACommentsRequest {
+  string qa_id = 1;
+}
+
+message ReadAllQACommentsResponse {
+  repeated QAComment qa_comments = 1;
+}
+
+service QACommentService {
+  rpc CreateQAComment(CreateQACommentRequest) returns (CreateQACommentResponse);
+  rpc ReadQAComment(ReadQACommentRequest) returns (ReadQACommentResponse);
+  rpc UpdateQAComment(UpdateQACommentRequest) returns (UpdateQACommentResponse);
+  rpc DeleteQAComment(DeleteQACommentRequest) returns (DeleteQACommentResponse);
+  rpc ReadAllQAComments(ReadAllQACommentsRequest) returns (ReadAllQACommentsResponse);
+}

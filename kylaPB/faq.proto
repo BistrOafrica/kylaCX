@@ -1,0 +1,70 @@
+syntax = "proto3";
+
+package da.proto;
+option go_package = "./pb";
+import "owner_type.proto";
+
+message Faq {
+   string id = 1;
+   string name = 2;
+   string description = 3;
+   string created_at = 4;
+   string updated_at = 5;
+   string created_by = 6;
+   string category_id = 7;
+   string owner_id = 8;
+   OwnerType owner_type = 9;
+   string notes = 10;
+}
+
+message CreateFaqRequest {
+   Faq data = 1;
+}
+
+message CreateFaqResponse {
+   Faq data = 1;
+}
+
+message ReadFaqRequest {
+   string id = 1;
+}
+
+message ReadFaqResponse {
+   Faq data = 1;
+}
+
+message UpdateFaqRequest {
+   Faq data = 1;
+}
+
+message UpdateFaqResponse {
+   Faq data = 1;
+}
+
+message DeleteFaqRequest {
+   string id = 1;
+}
+
+message DeleteFaqResponse {
+   bool success =1;
+}
+
+message ReadFaqsRequest {
+   int32 page = 1;
+   int32 per_page = 2;
+   string owner_id = 3;
+   OwnerType owner_type = 4;
+}
+
+message ReadFaqsResponse {
+   int32 total_count = 1;
+   repeated Faq data = 2;
+}
+
+service FaqService {
+   rpc CreateFaq(CreateFaqRequest) returns (CreateFaqResponse);
+   rpc ReadFaq(ReadFaqRequest) returns (ReadFaqResponse);
+   rpc UpdateFaq(UpdateFaqRequest) returns (UpdateFaqResponse);
+   rpc DeleteFaq(DeleteFaqRequest) returns (DeleteFaqResponse);
+   rpc ReadFaqs(ReadFaqsRequest) returns (ReadFaqsResponse);
+}

@@ -1,0 +1,93 @@
+syntax = "proto3";
+
+package da.proto;
+
+option go_package = "./pb";
+
+enum KnowledgeBaseType {
+  KNOWLEDGE_BASE_TYPE_TEXT = 0;
+  KNOWLEDGE_BASE_TYPE_WEBSITE = 1;
+  KNOWLEDGE_BASE_TYPE_DA_FAQ = 2;
+}
+
+message KnowledgeBase {
+  string id = 1;
+  string name = 2;
+  string description = 3;
+  KnowledgeBaseType type = 4;
+  string text = 5; // For text-based knowledge bases
+  string url = 6; // For website-based knowledge bases
+  string created_at = 7;
+  string updated_at = 8;
+}
+
+message CreateKnowledgeBaseRequest {
+  KnowledgeBase knowledge_base = 1;
+}
+
+message CreateKnowledgeBaseResponse {
+  KnowledgeBase knowledge_base = 1;
+}
+
+message ReadKnowledgeBaseRequest {
+  string id = 1;
+}
+
+message ReadKnowledgeBaseResponse {
+  KnowledgeBase knowledge_base = 1;
+}
+
+message ReadAllKnowledgeBasesRequest {
+  int32 limit = 1;
+  int32 offset = 2;
+}
+
+message ReadAllKnowledgeBasesResponse {
+  repeated KnowledgeBase knowledge_bases = 1;
+  int32 total_count = 2;
+}
+
+message UpdateKnowledgeBaseRequest {
+  KnowledgeBase knowledge_base = 1;
+}
+
+message UpdateKnowledgeBaseResponse {
+  KnowledgeBase knowledge_base = 1;
+}
+
+message DeleteKnowledgeBaseRequest {
+  string id = 1;
+}
+
+message DeleteKnowledgeBaseResponse {
+  string id = 1;
+}
+
+message KnowledgeBaseSearchRequest {
+  string query = 1;
+  int32 limit = 2;
+  int32 offset = 3;
+}
+
+message KnowledgeBaseSearchResponse {
+  repeated KnowledgeBase knowledge_bases = 1;
+  int32 total_count = 2;
+}
+
+message KnowledgeBaseSearchResult {
+  string id = 1;
+  string name = 2;
+  string description = 3;
+  KnowledgeBaseType type = 4;
+  string text = 5; // For text-based knowledge bases
+  string url = 6; // For website-based knowledge bases
+}
+
+service KnowledgeBaseService {
+  rpc CreateKnowledgeBase(CreateKnowledgeBaseRequest) returns (CreateKnowledgeBaseResponse);
+  rpc ReadKnowledgeBase(ReadKnowledgeBaseRequest) returns (ReadKnowledgeBaseResponse);
+  rpc ReadAllKnowledgeBases(ReadAllKnowledgeBasesRequest) returns (ReadAllKnowledgeBasesResponse);
+  rpc UpdateKnowledgeBase(UpdateKnowledgeBaseRequest) returns (UpdateKnowledgeBaseResponse);
+  rpc DeleteKnowledgeBase(DeleteKnowledgeBaseRequest) returns (DeleteKnowledgeBaseResponse);
+  rpc KnowledgeBaseSearch(KnowledgeBaseSearchRequest) returns (KnowledgeBaseSearchResponse);
+}

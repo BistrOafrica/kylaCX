@@ -1,0 +1,269 @@
+syntax = "proto3";
+
+package da.proto;
+option go_package = "./pb";
+import "tag.proto";
+import "label.proto";
+import "group.proto";
+import "owner_type.proto";
+
+message Contact {
+  string id = 1;
+  string first_name = 2;
+  string last_name = 3;
+  string other_name = 4;
+  string email = 5;
+  string phone = 6;
+  repeated string tag_ids = 7;
+  //repeated string group_ids = 9;
+  string serial_number = 10;
+  string title = 11;
+  string prefix = 12;
+  string suffix = 13;
+  string job_department = 14;
+  string job_title = 15;
+  string company = 16;
+  repeated SocialProfile social_profiles = 17;
+  string nickname = 18;
+  string notes = 19;
+  string birthday = 20;
+  string url = 22;
+  string created_by = 23;
+  string other_phone = 24;
+  string created_at = 26;
+  string updated_at = 27;
+  string country = 29;
+  string state = 30;
+  string city = 31;
+  string street = 32;
+  string postal_code = 33;
+  repeated string label_ids = 34;
+  repeated Label labels = 35;
+  repeated Tag tags = 36;
+  repeated CustomField custom_fields = 37;
+  string owner_id = 38;
+  OwnerType owner_type = 39;
+  string parent_id = 40;
+  bool is_vip = 41;
+}
+
+message CustomField {
+  string name = 1;
+  string value = 2;
+  string type = 3;
+  string definitionID = 4;
+  string value_id = 5;
+  string required = 6;
+  string placeholder = 7;
+}
+
+message SocialProfile {
+  string id = 1;
+  string contact_id = 2;
+  string platform_id = 3;
+  string page_id = 4;
+  string external_id = 5;
+}
+
+message CreateContactRequest {
+  Contact contact = 1;
+}
+
+message CreateContactResponse {
+  Contact contact = 1;
+}
+
+message ReadContactRequest {
+  string contact_id = 1;
+  Scope scope = 3;
+}
+
+message ReadContactResponse {
+  Contact contact = 1;
+}
+
+message ReadContactsRequest {
+  int32 page = 2;
+  int32 per_page = 3;
+  bool order_by_alphabet = 4;
+  string direction = 5;
+  Scope scope = 6;
+}
+
+message ReadContactsResponse {
+  repeated Contact contacts = 1;
+  int32 count = 2;
+}
+
+message UpdateContactRequest{
+  Contact contact = 1;
+  Scope scope = 2;
+}
+
+message UpdateContactResponse{
+  Contact contact = 1;
+}
+
+message DeleteContactRequest{
+  string contact_id = 1;
+  Scope scope = 3;
+}
+
+message DeleteContactResponse{
+  Status status = 1;
+}
+
+message BulkContactsImportRequest {
+  bytes data = 1;
+  Group group = 2;
+  Scope scope = 3;
+}
+
+message BulkContactsImportResponse {
+  Status status = 1;
+}
+
+message ContactList {
+  repeated Contact contacts = 1;
+}
+
+message CustomFieldDefinition {
+  string id = 1;
+  string name = 2;
+  string type = 3;
+  string created_at = 4;
+  string updated_at = 5;
+  OwnerType ownerType = 6;
+  string owner_id = 7;
+}
+
+message ReadCustomFieldDefinitionsRequest {
+  Scope scope = 1;
+}
+
+message ReadCustomFieldDefinitionsResponse {
+  repeated CustomFieldDefinition custom_field_definitions = 1;
+}
+
+message SearchContactsRequest {
+  string query = 1;
+  int32 page = 2;
+  int32 per_page = 3;
+  string group_id = 4;
+  string account_id = 5;
+  Scope scope = 6;
+}
+
+message SearchContactsResponse {
+  repeated Contact contacts = 1;
+  int32 count = 2;
+}
+
+message FindContactByEmailOrPhoneRequest {
+  string email = 1;
+  string phone = 2;
+  Scope scope = 3;
+}
+
+message FindContactByEmailOrPhoneResponse {
+  Contact contact = 1;
+}
+
+message CreateContactWithoutTokenRequest {
+  Contact contact = 1;
+  Scope scope = 2;
+}
+
+message CreateContactWithoutTokenResponse {
+  Contact contact = 1;
+}
+
+message ReadContactChildrenRequest {
+  string contact_id = 1;
+  Scope scope = 2;
+}
+
+message ReadContactChildrenResponse {
+  repeated Contact contacts = 1;
+}
+
+message ReadAccountContactsRequest {
+  string account_id = 1;
+  int32 page = 2;
+  int32 per_page = 3;
+  Scope scope = 4;
+}
+
+message ReadAccountContactsResponse {
+  repeated Contact contacts = 1;
+  int32 count = 2;
+}
+
+message FindContactBySocialProfileRequest {
+  string platform_id = 1;
+  string page_id = 2;
+  string external_user_id = 3;
+  Scope scope = 4;
+}
+
+message FindContactBySocialProfileResponse {
+  Contact contact = 1;
+}
+
+message DuplicateGroup {
+  string type = 1;  // "email" or "phone"
+  string value = 2; // The actual email or phone value
+  repeated Contact contacts = 3;
+}
+
+message FindContactDuplicatesRequest{
+}
+
+message FindContactDuplicatesResponse {
+  repeated DuplicateGroup duplicate_groups = 1;
+}
+
+message MergeDuplicateContactsRequest{
+  string selected_master_contact_id = 1;
+  repeated string contact_ids = 2;
+}
+
+message MergeDuplicateContactsResponse{
+  bool success = 1;
+}
+
+message BulkContactsExportRequest {
+  string group_id = 1;
+}
+
+message BulkContactsExportResponse {
+  bytes chunk_data = 1;
+}
+
+message ReadContactsByIdsFromServiceRequest {
+  repeated string contact_ids = 1;
+}
+
+message ReadContactsByIdsFromServiceResponse {
+  repeated Contact contacts = 1;
+}
+
+service ContactService {
+  rpc CreateContact(CreateContactRequest) returns (CreateContactResponse) {}
+  rpc ReadContact(ReadContactRequest) returns (ReadContactResponse) {}
+  rpc ReadContacts(ReadContactsRequest) returns (ReadContactsResponse) {}
+  rpc UpdateContact(UpdateContactRequest) returns (UpdateContactResponse) {}
+  rpc DeleteContact(DeleteContactRequest) returns (DeleteContactResponse) {}
+  rpc ReadCustomFieldDefinitions(ReadCustomFieldDefinitionsRequest) returns (ReadCustomFieldDefinitionsResponse) {}
+  rpc BulkContactsImport(BulkContactsImportRequest) returns (BulkContactsImportResponse) {}
+  rpc SearchContacts(SearchContactsRequest) returns (SearchContactsResponse) {}
+  rpc FindContactByEmailOrPhone(FindContactByEmailOrPhoneRequest) returns (FindContactByEmailOrPhoneResponse) {}
+  rpc CreateContactWithoutToken(CreateContactWithoutTokenRequest) returns (CreateContactWithoutTokenResponse) {}
+  rpc ReadContactChildren(ReadContactChildrenRequest) returns (ReadContactChildrenResponse) {}
+  rpc ReadAccountContacts(ReadAccountContactsRequest) returns (ReadAccountContactsResponse) {}
+  rpc FindContactBySocialProfile(FindContactBySocialProfileRequest) returns (FindContactBySocialProfileResponse) {}
+  rpc FindContactDuplicates(FindContactDuplicatesRequest) returns (FindContactDuplicatesResponse){}
+  rpc MergeDuplicateContacts(MergeDuplicateContactsRequest) returns(MergeDuplicateContactsResponse){}
+  rpc BulkContactsExport(BulkContactsExportRequest) returns (stream BulkContactsExportResponse);
+  rpc ReadByIdsFromService(ReadContactsByIdsFromServiceRequest) returns (ReadContactsByIdsFromServiceResponse) {}
+}

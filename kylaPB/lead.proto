@@ -1,0 +1,222 @@
+syntax="proto3";
+
+package da.proto;
+option go_package = "./pb"; 
+import "owner_type.proto";
+import "contact.proto";
+
+message Lead{
+    string id = 1;
+    string contact_id = 2;
+    repeated string pipeline_ids = 3;
+    string owner_id = 4;
+    OwnerType owner_type = 5;
+    string created_at = 10;
+    string updated_at = 11;
+    string created_by = 12;
+    string updated_by = 13;
+    string serial_number = 14;
+}
+
+enum LeadCustomFieldType {
+    UNKNOWN_LEAD_CUSTOM_FIELD_TYPE = 0;
+    TEXT_FIELD = 1;
+    NUMBER_FIELD = 2;
+    DATE_FIELD = 3;
+    BOOLEAN_FIELD = 4;
+    EMAIL_FIELD = 5;
+    PHONE_FIELD = 6;
+    URL_FIELD = 7;
+    FILE_FIELD = 8;
+    CURRENCY_FIELD = 9;
+    DATE_TIME_FIELD = 10;
+    PERCENTAGE_FIELD = 11;
+}
+
+message LeadCustomField{
+    string id = 1;
+    string name = 2;
+    LeadCustomFieldType type = 3;
+    repeated string stage_ids = 4;
+    OwnerType owner_type = 8;
+    string owner_id = 9;
+}
+
+message CreateLeadRequest{
+    Lead lead = 1;
+    Scope scope = 2;
+}
+
+message CreateLeadResponse{
+    Lead lead = 1;
+    Status status = 2;
+}
+
+message ReadLeadRequest{
+    string id = 1;
+    Scope scope = 2;
+}
+
+message ReadLeadResponse{
+    Lead lead = 1;
+    Status status = 2;
+}
+
+message UpdateLeadRequest{
+    Lead lead = 1;
+    Scope scope = 2;
+}
+
+message UpdateLeadResponse{
+    Lead lead = 1;
+    Status status = 2;
+}
+
+message DeleteLeadRequest{
+    string id = 1;
+    Scope scope = 2;
+}
+
+message DeleteLeadResponse{
+    Status status = 1;
+}
+
+message ListLeadRequest{
+    string owner_id = 2;
+    string created_at = 5;
+    string updated_at = 6;
+    string created_by = 7;
+    string updated_by = 8;
+    int32 page = 10;
+    int32 page_size = 11;
+    string pipeline_id = 13;
+    string contact_id = 14;
+    Scope scope = 16;
+    OwnerType ownerType = 17;
+}
+
+message ListLeadResponse{
+    repeated Lead leads = 1;
+    int32 page = 2;
+    int32 page_size = 3;
+    int32 total = 4;
+    Status status = 5;
+}
+
+message CreateCustomFieldRequest{
+    LeadCustomField field = 1;
+    Scope scope = 2;
+}
+
+message CreateCustomFieldResponse{
+    LeadCustomField field = 1;
+    Status status = 2;
+}
+
+message ReadCustomFieldRequest{
+    string id = 1;
+    Scope scope = 2;
+}
+
+message ReadCustomFieldResponse{
+    LeadCustomField field = 1;
+    Status status = 2;
+}
+
+message UpdateCustomFieldRequest{
+    LeadCustomField field = 1;
+    Scope scope = 2;
+}
+
+message UpdateCustomFieldResponse{
+    LeadCustomField field = 1;
+    Status status = 2;
+}
+
+message DeleteCustomFieldRequest{
+    string id = 1;
+    Scope scope = 2;
+}
+
+message DeleteCustomFieldResponse{
+    Status status = 1;
+}
+
+message ReadLeadKeysRequest {
+    Scope scope = 1;
+}
+
+message ReadLeadKeysResponse {
+    repeated CustomFieldDefinition fields = 1;
+    Status status = 2;
+}
+
+message OnContactCreateRequest{
+    Contact contact = 1;
+    repeated string customFieldDefinitions = 2;
+    Scope scope = 3;
+}
+
+message OnContactCreateResponse{
+    Status status = 1;
+}
+
+message AddLeadToPipelineRequest{
+    string lead_id = 1;
+    string pipeline_id = 2;
+    string stage_id = 3;
+    Scope scope = 4;
+}
+
+message AddLeadToPipelineResponse{
+    Status status = 1;
+}
+
+message ReadAvailableLeadsRequest {
+    string stage_id = 1;
+    Scope scope = 2;
+}
+
+message ReadAvailableLeadsResponse {
+    repeated Contact contacts = 1;
+    Status status = 2;
+}
+
+message BulkLeadsImportRequest {
+    bytes data = 1;
+    string pipeline_id = 2;
+    Scope scope = 3;
+}
+  
+  message BulkLeadsImportResponse {
+    Status status = 1;
+}
+
+message BulkLeadsExportRequest {
+    Scope scope = 1;
+    string pipeline_id = 2;
+}
+  
+message BulkLeadsExportResponse {
+    bytes chunk_data = 1;
+}
+
+service LeadService{
+    rpc OnContactCreate(OnContactCreateRequest) returns (OnContactCreateResponse) {}
+    rpc CreateLead(CreateLeadRequest) returns (CreateLeadResponse) {}
+    rpc ReadLead(ReadLeadRequest) returns (ReadLeadResponse) {}
+    rpc UpdateLead(UpdateLeadRequest) returns (UpdateLeadResponse) {}
+    rpc DeleteLead(DeleteLeadRequest) returns (DeleteLeadResponse) {}
+    rpc ReadLeads(ListLeadRequest) returns (ListLeadResponse) {}
+    rpc AddLeadToPipeline(AddLeadToPipelineRequest) returns (AddLeadToPipelineResponse) {}
+    rpc ReadLeadKeys(ReadLeadKeysRequest) returns (ReadLeadKeysResponse) {}
+    rpc ReadAvailableLeads(ReadAvailableLeadsRequest) returns (ReadAvailableLeadsResponse) {}
+    rpc BulkLeadsImport(BulkLeadsImportRequest) returns (BulkLeadsImportResponse) {}
+    rpc BulkLeadsExport(BulkLeadsExportRequest) returns (stream BulkLeadsExportResponse) {}
+
+    rpc CreateCustomField(CreateCustomFieldRequest) returns (CreateCustomFieldResponse) {}
+    rpc ReadCustomField(ReadCustomFieldRequest) returns (ReadCustomFieldResponse) {}
+    rpc UpdateCustomField(UpdateCustomFieldRequest) returns (UpdateCustomFieldResponse) {}
+    rpc DeleteCustomField(DeleteCustomFieldRequest) returns (DeleteCustomFieldResponse) {}
+}
+

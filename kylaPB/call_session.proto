@@ -1,0 +1,167 @@
+syntax = "proto3";
+
+package da.proto;
+option go_package = "./pb";
+
+
+enum Destination {
+  DESTINATION_IVR_MENU = 0;
+  DESTINATION_EXTENSION = 1;
+  DESTINATION_QUEUE = 2;
+  DESTINATION_AUDIO = 3;
+  DESTINATION_HANGUP = 4;
+  DESTINATION_VOICEMAIL = 5;
+  DESTINATION_TRIGGER = 6;
+}
+
+message SessionDestination {
+  Destination destination = 1;
+  string destination_id = 2;
+  string destination_number = 3;
+  string joined_at = 4;
+  string left_at = 5;
+  string id = 6;
+}
+
+message SessionOnHold {
+  string session_id = 1;
+  string started_at = 2;
+  string ended_at = 3;
+  string agent_id = 4;
+  string duration = 5;
+}
+
+enum Participant {
+  PARTICIPANT_AGENT = 0;
+  PARTICIPANT_CONTACT = 1;
+}
+
+message SessionParticipant {
+  Participant participant_type = 1;
+  string participant_id = 2;
+  string session_id = 3;
+  string added_at = 4;
+  string added_by = 5;
+  string removed_at = 6;
+  bool is_in_call = 7;
+  string id = 8;
+}
+
+message SessionNote {
+  string session_id = 1;
+  string name = 2;
+  string content = 3;
+  string created_by = 4;
+  string created_at = 5;
+  string id = 6;
+}
+
+enum CallDirection {
+  INBOUND = 0;
+  OUTBOUND = 1;
+  LOCAL = 2;
+}
+
+enum CallStatus {
+  ONGOING = 0;
+  REJECTED = 1;
+  DROPPED = 2;
+  COMPLETED = 3;
+  ON_HOLD = 4;
+}
+
+message CallSession {
+  string id = 1;
+  string agent_id = 2;
+  CallDirection direction = 3;
+  CallStatus status = 4;
+  string started_at = 5;
+  string ended_at = 6;
+  string duration = 7;
+  repeated SessionParticipant participants = 8;
+  repeated SessionDestination destinations = 9;
+  repeated SessionOnHold on_hold = 10;
+  repeated SessionNote notes = 11;
+  repeated string tag_ids = 12;
+  repeated string contact_ids = 13;
+  repeated string other_agent_ids = 14;
+}
+
+message StartCallSessionRequest {
+  string agent_id = 1;
+  CallDirection direction = 2;
+}
+
+message SuccessCallSessionResponse {
+  bool success = 1;
+}
+
+message EndCallSessionRequest {
+  string session_id = 1;
+}
+
+message ReadCallSessionRequest {
+  string id = 1;
+}
+message AddParticipantRequest {
+  string session_id = 1;
+  Participant participant_type = 2;
+  string participant_id = 3;
+  string added_by = 4;
+}
+
+message RemoveParticipantRequest {
+  string session_id = 1;
+  string participant_id = 2;
+}
+
+message SuccessParticipantResponse {
+  bool success = 1;
+}
+
+message PlaceOnHoldRequest {
+  string session_id = 1;
+  string agent_id = 2;
+}
+
+message RemoveFromHoldRequest {
+  string session_id = 1;
+}
+
+message SuccessHoldResponse {
+  bool success = 1;
+}
+
+message AddNoteRequest {
+  string session_id = 1;
+  string name = 2;
+  string content = 3;
+  string created_by = 4;
+}
+
+message SuccessNoteResponse {
+  bool success = 1;
+}
+
+message AddDestinationRequest {
+  string session_id = 1;
+  Destination destination_type = 2;
+  string destination_id = 3;
+  string destination_number = 4;
+}
+
+message SuccessDestinationResponse {
+  bool success = 1;
+}
+
+service CallSessionService {
+  rpc StartSession(StartCallSessionRequest) returns (SuccessCallSessionResponse);
+  rpc EndSession(EndCallSessionRequest) returns (SuccessCallSessionResponse);
+  rpc ReadSession(ReadCallSessionRequest) returns (CallSession);
+  rpc AddParticipant(AddParticipantRequest) returns (SuccessParticipantResponse);
+  rpc RemoveParticipant(RemoveParticipantRequest) returns (SuccessParticipantResponse);
+  rpc PlaceOnHold(PlaceOnHoldRequest) returns (SuccessHoldResponse);
+  rpc RemoveFromHold(RemoveFromHoldRequest) returns (SuccessHoldResponse);
+  rpc AddNote(AddNoteRequest) returns (SuccessNoteResponse);
+  rpc AddDestination(AddDestinationRequest) returns (SuccessDestinationResponse);
+}

@@ -1,0 +1,531 @@
+syntax = "proto3";
+
+package da.proto;
+import "google/protobuf/timestamp.proto"; 
+import "owner_type.proto";
+
+
+option go_package = "./pb"; 
+
+message Survey {
+  string id = 1;
+  string title = 2;
+  string description = 3;
+  string organisation = 4;
+  string brand_poster = 5;
+  repeated Section sections = 6;
+  string serial_number = 7;
+  google.protobuf.Timestamp expires = 8;
+  int64 response_count = 9;
+  int32 max_responses = 10;
+  google.protobuf.Timestamp updated_at = 11;
+  google.protobuf.Timestamp created_at = 12;
+}
+
+message SurveyList {
+  repeated Survey surveys = 1;
+}
+
+message Section {
+  string id = 1;
+  string survey_id = 2;
+  string title = 3;
+  string description = 4;
+  int32 index = 5;
+  repeated Question questions = 6;
+  google.protobuf.Timestamp created_at = 7;
+}
+
+enum QuestionType{
+  TEXT = 0;
+  CHOICE = 1;
+  DATE = 2;
+  CONTACT = 3;
+  NPS = 4;
+  RATING = 5;
+  MATRIX = 6;
+}
+// Question Messages
+message Question {
+  string id = 1;
+  string question = 2;
+  string description = 3;
+  int32 index = 4;
+  string survey_id = 5;
+  bool required = 12;
+  QuestionType type = 13;
+  string section_id = 14;
+  google.protobuf.Timestamp created_at = 15;
+  ChoiceTypeQuestion choice = 16;
+  NPSTypeQuestion nps = 17;
+  TextTypeQuestion text = 18;
+  DateTypeQuestion date = 19;
+  ContactTypeQuestion contact = 20;
+  RatingTypeQuestion rating = 21;
+  MatrixTypeQuestion matrix = 22;
+}
+
+message ChoiceTypeQuestion{
+  repeated string options = 1;
+  bool multiple = 2;
+  enum ChoiceType{
+    RADIO = 0;
+    CHECKBOX = 1;
+    SELECT = 2;
+  }
+  ChoiceType type = 3;
+}
+
+message NPSTypeQuestion{
+  int32 min = 1;
+  string label_min = 2;
+  int32 max = 3;
+  string label_max = 4;
+}
+
+message TextTypeQuestion{
+  string placeholder = 1;
+  enum TextType{
+    TEXT = 0;
+    TEXTAREA = 1;
+    NUMBER = 2;
+    URL = 3;
+  }
+  TextType type = 2;
+}
+
+
+message DateTypeQuestion{
+  enum DateType{
+    DATE = 0;
+    TIME = 1;
+    DATETIME = 2;
+  }
+  DateType type = 1;
+}
+
+message ContactTypeQuestion{
+  string placeholder = 1;
+  enum ContactType{
+    TEL = 0;
+    EMAIL = 1;
+  }
+  ContactType type = 2;
+}
+
+message RatingTypeQuestion{
+  int32 min = 1;
+  int32 max = 2;
+  enum IconType{
+    STAR = 0;
+    HEART = 1;
+    SMILEY = 2;
+    BULB = 3;
+    TROPHY = 4;
+  }
+  IconType icon = 3;
+}
+
+message MatrixTypeQuestion{
+  repeated string options = 1;
+  repeated string rows = 2;
+  bool multiple = 3;
+}
+
+// Answer Messages
+message Answer {
+  string id = 1;
+  string question_id = 2;
+  string survey_id = 3;
+  ChoiceTypeAnswer choice = 4;
+  NPSTypeAnswer nps = 5;
+  TextTypeAnswer text = 6;
+  DateTypeAnswer date = 7;
+  ContactTypeAnswer contact = 8;
+  RatingTypeAnswer rating = 9;
+  MatrixTypeAnswer matrix = 10;
+  QuestionType question_type = 11;
+  string response_id = 12;
+
+
+}
+message ChoiceTypeAnswer{
+  repeated string selected = 2;
+}
+
+message NPSTypeAnswer{
+  int32 value = 1;
+}
+
+message TextTypeAnswer{
+  string value = 1;
+}
+
+message DateTypeAnswer{
+  string value = 1;
+}
+
+message ContactTypeAnswer{
+  string value = 1;
+}
+
+message RatingTypeAnswer{
+  int32 value = 1;
+}
+
+message MatrixTypeAnswer{
+  repeated MatrixSelected selected = 1;
+}
+
+message MatrixSelected{
+  string row = 1;
+  string option = 2;
+}
+
+message Response {
+  string id = 1;
+  string survey_id = 2;
+  repeated Answer answers = 3;
+  string serial_number = 4;
+  google.protobuf.Timestamp updated_at = 5;
+  google.protobuf.Timestamp created_at = 6;
+  Respondent respondent = 7;
+  int64 average_response_time = 8;
+}
+message Respondent{
+  string id = 1;
+  string name = 2;
+  string email = 3;
+  string phone_number = 4;
+}
+
+message ResponseRes{
+  string id = 1;
+  string survey_id = 2;
+  repeated Answer answers = 3;
+  string serial_number = 4;
+  google.protobuf.Timestamp updated_at = 5;
+  google.protobuf.Timestamp created_at = 6;
+  Survey survey = 7;
+}
+
+message ResponseListRequest {
+  string survey_id = 1;
+}
+message ResponseListResponse {
+  Status status = 1;
+  repeated ResponseRes responses = 2;
+}
+
+message Analytics {
+  int64 response_count = 1;
+  int64 average_response_time = 2;
+  string survey_status = 3;
+  repeated QuestionAnalytics questions = 4;
+}
+
+message QuestionAnalytics{
+  Question question = 1;
+  int64 response_count = 2;
+  ChoiceTypeResponseAnalytics choice = 3;
+  NPSTypeResponseAnalytics nps = 4;
+  TextTypeResponseAnalytics text = 5;
+  DateTypeResponseAnalytics date = 6;
+  ContactTypeResponseAnalytics contact = 7;
+  RatingTypeResponseAnalytics rating = 8;
+  MatrixTypeResponseAnalytics matrix = 9;
+}
+message MatrixTypeResponseAnalytics{
+  repeated MatrixOptions matrix = 1;
+  int64 response_count = 2;
+  repeated string options = 3;
+  repeated string statements = 4;
+}
+message MatrixOptions{
+  string statement =1;
+  repeated MatrixOptionObj options = 2;
+}
+message MatrixOptionObj{
+  string option = 1;
+  int32 count = 2;
+}
+message RatingTypeResponseAnalytics{
+  float average_rating = 1;
+  map<string,float> ratings = 2;
+}
+
+message TextTypeResponseAnalytics{
+  int32 response_count = 1;
+  repeated string recent_responses = 2;
+}
+message DateTypeResponseAnalytics{
+  int32 response_count = 1;
+  repeated string recent_responses = 2;
+}
+message ContactTypeResponseAnalytics{
+  int32 response_count = 1;
+  repeated string recent_responses = 2;
+}
+message NPSTypeResponseAnalytics {
+  int32 response_count = 1;
+  float average_score = 2;
+  NPSRating rating = 3;
+}
+
+message NPSRating{
+  float promoters = 1;
+  float passives = 2;
+  float detractors = 3;
+}
+
+
+message ChoiceTypeResponseAnalytics {
+  repeated ChoiceTypeResponse options = 2;
+}
+message ChoiceTypeResponse{
+  string option = 1;
+  int64 count = 2;
+}
+
+message ReadAnalyticsRequest {
+  string survey_id = 1;
+}
+
+message ReadAnalyticsResponse {
+  Status status = 1;
+  Analytics res = 2;
+}
+
+message ReadResponseCSVRequest{
+  string survey_id = 1;
+}
+
+message ReadResponseCSVResponse{
+  repeated string row = 2;
+  bool end_of_stream = 1;
+}
+
+message ReadSurveyRequest {
+  string id = 1;
+}
+
+message ReadSurveyResponse {
+  Status status = 1;
+  Survey survey = 2;
+}
+
+message ReadSurveyListRequest {
+  string organisation = 1;
+}
+
+message ReadSurveyListResponse {
+  Status status = 1;
+  repeated Survey surveys = 2;
+}
+
+message ReadSectionRequest {
+  string id = 1;
+}
+
+message ReadSectionResponse {
+  Status status = 1;
+  Section section = 2;
+}
+
+message ReadQuestionRequest {
+  string id = 1;
+}
+
+message ReadQuestionResponse {
+  Status status = 1;
+  Question question = 2;
+}
+
+message ReadResponseRequest {
+  string id = 1;
+}
+
+message ReadResponseResponse {
+  Status status = 1;
+  ResponseRes response = 2;
+}
+
+message ReadAnswerRequest {
+  string id = 1;
+}
+
+message ReadAnswerResponse {
+  Status status = 1;
+  Answer answer = 2;
+}
+
+message CreateSurveyRequest {
+  Survey survey = 1;
+}
+
+message CreateSurveyResponse {
+  Status status = 1;
+  Survey res = 2;
+}
+
+message CreateSectionRequest {
+  Section section = 1;
+}
+
+message CreateSectionResponse {
+  Status status = 1;
+  Section section = 2;
+}
+
+message CreateQuestionRequest {
+  Question question = 1;
+}
+
+message CreateQuestionResponse {
+  Status status = 1;
+  Question question = 2;
+}
+
+message CreateResponseRequest {
+  Response response = 1;
+}
+
+message CreateResponseResponse {
+  Status status = 1;
+  Response response = 2;
+}
+
+message CreateAnswerRequest {
+  Answer answer = 1;
+}
+
+message CreateAnswerResponse {
+  Status status = 1;
+  Answer answer = 2;
+}
+
+message UpdateSurveyRequest {
+  Survey survey = 1;
+}
+
+message UpdateSurveyResponse {
+  Status status = 1;
+  Survey survey = 2;
+}
+
+message UpdateSectionRequest {
+  Section section = 1;
+}
+
+message UpdateSectionResponse {
+  Status status = 1;
+  Section section = 2;
+}
+
+message UpdateQuestionRequest {
+  Question question = 1;
+}
+
+message UpdateQuestionResponse {
+  Status status = 1;
+  Question question = 2;
+}
+
+message UpdateResponseRequest {
+  Response response = 1;
+}
+
+message UpdateResponseResponse {
+  Status status = 1;
+  Response response = 2;
+}
+
+message UpdateAnswerRequest {
+  Answer answer = 1;
+}
+
+message UpdateAnswerResponse {
+  Status status = 1;
+  Answer answer = 2;
+}
+
+message DeleteSurveyRequest {
+  string id = 1;
+}
+
+message DeleteSurveyResponse {
+  Status status = 2;
+}
+
+message DeleteSectionRequest {
+  Section section = 1;
+}
+
+message DeleteSectionResponse {
+  Status status = 1;
+}
+
+message DeleteQuestionRequest {
+  Question question = 1;
+}
+
+message DeleteQuestionResponse {
+  Status status = 1;
+}
+
+message DeleteResponseRequest {
+  string id = 1;
+}
+
+message DeleteResponseResponse {
+  Status status = 1;
+}
+
+message DeleteAnswerRequest {
+  string id = 1;
+}
+
+message DeleteAnswerResponse {
+  Status status = 1;
+}
+
+// Define services for CRUD operations
+
+service SurveyService {
+  rpc CreateSurvey(CreateSurveyRequest) returns (CreateSurveyResponse);
+  rpc ReadSurvey(ReadSurveyRequest) returns (ReadSurveyResponse);
+  rpc UpdateSurvey(UpdateSurveyRequest) returns (UpdateSurveyResponse);
+  rpc DeleteSurvey(DeleteSurveyRequest) returns (DeleteSurveyResponse);
+  rpc ReadSurveyList(ReadSurveyListRequest) returns (ReadSurveyListResponse);
+}
+
+service SectionService {
+  rpc CreateSection(CreateSectionRequest) returns (CreateSectionResponse);
+  rpc ReadSection(ReadSectionRequest) returns (ReadSectionResponse);
+  rpc UpdateSection(UpdateSectionRequest) returns (UpdateSectionResponse);
+  rpc DeleteSection(DeleteSectionRequest) returns (DeleteSectionResponse);
+}
+
+service QuestionService {
+  rpc CreateQuestion(CreateQuestionRequest) returns (CreateQuestionResponse);
+  rpc ReadQuestion(ReadQuestionRequest) returns (ReadQuestionResponse);
+  rpc UpdateQuestion(UpdateQuestionRequest) returns (UpdateQuestionResponse);
+  rpc DeleteQuestion(DeleteQuestionRequest) returns (DeleteQuestionResponse);
+}
+
+service ResponseService {
+  rpc CreateResponse(CreateResponseRequest) returns (CreateResponseResponse);
+  rpc ReadResponse(ReadResponseRequest) returns (ReadResponseResponse);
+  rpc UpdateResponse(UpdateResponseRequest) returns (UpdateResponseResponse);
+  rpc DeleteResponse(DeleteResponseRequest) returns (DeleteResponseResponse);
+  rpc ReadResponseList(ResponseListRequest) returns (ResponseListResponse);
+  rpc ReadResponseAnalytics(ReadAnalyticsRequest) returns (ReadAnalyticsResponse);
+  rpc ReadResponseCSV(ReadResponseCSVRequest) returns (stream ReadResponseCSVResponse);
+}
+
+service AnswerService {
+  rpc CreateAnswer(CreateAnswerRequest) returns (CreateAnswerResponse);
+  rpc ReadAnswer(ReadAnswerRequest) returns (ReadAnswerResponse);
+  rpc UpdateAnswer(UpdateAnswerRequest) returns (UpdateAnswerResponse);
+  rpc DeleteAnswer(DeleteAnswerRequest) returns (DeleteAnswerResponse);
+}

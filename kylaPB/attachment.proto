@@ -1,0 +1,67 @@
+syntax="proto3";
+
+package da.proto;
+option go_package = "./pb";
+import "owner_type.proto";
+
+message Attachment {
+  string id = 1;
+  string name = 2;
+  string file_type = 3;
+  int64 file_size = 4;
+  string path = 5;
+  string key = 6;
+  string created_at = 7;
+  string updated_at = 8;
+  string created_by = 9;
+  string ticket_id = 10;
+  string thread_id = 11;
+  string owner_id = 12;
+  OwnerType owner_type = 13;
+  string escalation_thread_id = 14;
+}
+
+message AttachmentBytesContent {
+    bytes content = 1;
+}
+
+message CreateAttachmentRequest {
+  Attachment data = 1;
+  AttachmentBytesContent content = 2;
+}
+
+message CreateAttachmentResponse {
+  Attachment data = 1;
+}
+
+message ReadAttachmentRequest {
+  string id = 1;
+}
+
+message ReadAttachmentResponse {
+  Attachment data = 1;
+}
+
+message ReadAttachmentsRequest {
+  string ticket_id = 1;
+  string thread_id = 2;
+}
+
+message ReadAttachmentsResponse {
+  repeated Attachment data = 1;
+}
+
+message GetAttachmentPresignedURLRequest {
+  string key = 1;
+}
+
+message GetAttachmentPresignedURLResponse {
+  string url = 1;
+}
+
+service AttachmentService {
+  rpc CreateAttachment(CreateAttachmentRequest) returns (CreateAttachmentResponse) {}
+  rpc ReadAttachment(ReadAttachmentRequest) returns (ReadAttachmentResponse) {}
+  rpc ReadAttachments(ReadAttachmentsRequest) returns (ReadAttachmentsResponse) {}
+  rpc GetAttachmentPresignedURL(GetAttachmentPresignedURLRequest) returns (GetAttachmentPresignedURLResponse) {}
+}

@@ -1,0 +1,82 @@
+syntax = "proto3";
+
+package da.proto;
+option go_package = "./pb"; 
+
+import "owner_type.proto";
+
+enum StatusType {
+  UNKNOWN_STATUS_TYPE = 0;
+  ONLINE = 1;
+  OFFLINE = 2;
+  BUSY = 3;
+  AVAILABLE = 4;
+  IN_A_MEETING = 5;
+  IN_A_CALL = 6;
+  ON_A_BREAK = 7;
+  ON_OUTBOUND_QUEUE = 8;
+  ON_INBOUND_QUEUE = 9;
+  ON_WRAP_UP = 10;
+  ON_MONITORING_QUEUE = 11;
+  ON_TICKET_QUEUE = 12;
+  CUSTOM_STATUS = 13;
+}
+message StatusChange {
+  string id = 1;
+  StatusType status_type = 2;
+  string description = 3;
+  string start_time = 4;
+  string end_time = 5;
+  string agent_status_id = 6;
+  string owner_id = 7;
+  OwnerType owner_type = 8;
+}
+
+message AgentStatus {
+  string id = 1;
+  string agent_id = 2;
+  repeated StatusChange status_changes = 3;
+  string organisation_id = 4;
+}
+
+message AgentStatusRequest {
+  string agent_id = 1;
+}
+
+message StatusChangeRequest {
+  StatusChange statusChange = 1;
+}
+
+message AgentStatusResponse {
+  AgentStatus agent_status = 1;
+}
+
+message StatusChangeResponse {
+  StatusChange status_change = 1;
+}
+
+message AgentAvailabilityRequest {
+  string agent_id = 1;
+}
+
+message AgentAvailabilityResponse {
+  StatusChange current_status = 1;
+}
+
+message StreamAgentStatusesRequest {
+  string agent_id = 1;
+}
+
+message StreamAgentStatusesResponse {
+  repeated StatusChange status_change = 1;
+}
+
+service AgentStatusService {
+  rpc CreateStatusChange(StatusChangeRequest) returns (StatusChangeResponse);
+  rpc ReadLatestStatusChange(AgentStatusRequest) returns (StatusChangeResponse);
+  rpc ReadUserStatusHistory(AgentStatusRequest) returns (AgentStatusResponse);
+
+  // Agent Availability
+  rpc GetAgentAvailability(AgentAvailabilityRequest) returns (AgentAvailabilityResponse);
+}
+

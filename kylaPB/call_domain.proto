@@ -1,0 +1,60 @@
+syntax="proto3";
+
+package da.proto;
+option go_package = "./pb";
+
+message CallDomain {
+ string id = 1;
+ string value = 2; 
+ int32 sip_port = 3;
+ int32 ws_port = 4;
+ int32 wss_port = 5;
+ string description = 6;
+ string created_at = 7;
+ string server_id = 8;
+}
+
+message CreateDomainRequest {
+  string value = 1;
+  int32 sip_port = 2;
+  int32 ws_port = 3;
+  int32 wss_port = 4;
+  string description = 5;
+  string server_id = 6;
+}
+
+message UpdateDomainRequest {
+  string id = 1;
+  string value = 2;
+  int32 sip_port = 3;
+  int32 ws_port = 4;
+  int32 wss_port = 5;
+  string description = 6;
+}
+
+message ReadDomainRequest {
+  string id = 1;
+}
+
+message SuccessDomainResponse {
+  bool success = 1;
+}
+
+message ReadDomainsRequest {
+  int32 page_number = 1;
+  int32 page_size = 2;
+  string server_id = 3;
+}
+
+message ReadDomainsResponse {
+	int64 total = 1;
+	repeated CallDomain items = 2;
+}
+
+service CallDomainService {
+  rpc CreateDomain(CreateDomainRequest) returns (SuccessDomainResponse);
+  rpc ReadDomain(ReadDomainRequest) returns (CallDomain);
+  rpc UpdateDomain(UpdateDomainRequest) returns (SuccessDomainResponse);
+  rpc DeleteDomain(ReadDomainRequest) returns (SuccessDomainResponse);
+  rpc ReadDomains(ReadDomainsRequest) returns (ReadDomainsResponse);
+}

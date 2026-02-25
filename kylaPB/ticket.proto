@@ -1,0 +1,449 @@
+syntax = "proto3";
+
+package da.proto;
+option go_package = "./pb";
+
+import "thread.proto";
+import "ticket_tag.proto";
+import "attachment.proto";
+import "ticket_log.proto";
+import "ticket_note.proto";
+import "category.proto";
+import "ticket_room.proto";
+import "owner_type.proto";
+import "contact.proto";
+import "escalation_thread.proto";
+
+enum Priority {
+    PRIORITY_UNSPECIFIED = 0;
+    CRITICAL = 1;
+    MEDIUM = 2;
+    HIGH = 3;
+    LOW = 4;
+}
+
+enum TicketStatus {
+    STATUS_UNSPECIFIED = 0;
+    OPEN = 1;
+    ASSIGNED = 2;
+    IN_PROGRESS = 3;
+    CLOSED = 4;
+    REOPENED = 5;
+}
+
+message TicketCustomField {
+    string id = 1;
+    string ticket_id = 2;
+    string custom_field_definition_id = 3;
+    string value = 4;
+    string created_at = 5;
+    string updated_at = 6;
+}
+
+message Ticket {
+  string id = 1;
+  string subject = 2;
+  string description = 3;
+  string account_id = 4;
+  string team_id = 5;
+  Priority priority = 6;
+  TicketStatus status = 7;
+  string source_id = 8;
+  string category_id = 9;
+  string assigned_agent = 10;
+  repeated string escalation_agent_ids = 11;
+  string contact_id = 12;
+  double sentiment_score = 13;
+  string created_at = 14;
+  string updated_at = 15;
+  string last_updated_at = 16;
+  string first_response_at = 17;
+  string next_reply_at = 18;
+  string resolved_at = 19;
+  string reopened_at = 20;
+  bool opened = 21;
+  string active_sla_id = 22;
+  // bool first_response_time_sla_breached = 23;
+  // bool handling_time_sla_breached = 24;
+  string integration_id = 25;
+  string external_id = 26;
+  string conversation_id = 27;
+  string serial_number = 28;
+  bool archived = 29;
+  bool is_spam = 30;
+  string created_by = 31;
+  bool agent_initiated = 32;
+  map<string, string> email_details = 33;
+  map<string, string> facebook_details = 34;
+  repeated string task_ids = 35;
+  repeated string event_ids = 36;
+  repeated string survey_ids = 37;
+  repeated Thread threads = 38;
+  repeated TicketTag tags = 39;
+  repeated Attachment attachments = 40;
+  repeated TicketLog logs = 41;
+  repeated TicketNote notes = 42;
+  repeated TicketCustomField custom_fields = 43;
+  TicketCategory category = 44;
+  string reopened_on = 45;
+  string owner_id = 46;
+  OwnerType owner_type = 47;
+  map<string, string> sms_details = 48;
+  string contact_name = 49;
+  string assigned_agent_name = 50;
+  repeated string eligible_integration_ids = 51;
+  Contact contact = 52;
+  repeated EscalationThread escalation_threads = 53;
+  map<string, string> instagram_details = 54;
+  repeated string follower_ids = 55;
+  map<string, string> follower_ids_map = 56;
+  bool is_merged = 57;
+  string merged_into_id = 58;
+  int32 merge_count = 59;
+}
+
+message CreateTicketRequest {
+  Ticket data = 1;
+}
+
+message CreateTicketResponse {
+  Ticket data = 1;
+}
+
+message ReadTicketRequest {
+  oneof identifier {
+    string id = 1;
+    string serial_number = 2;
+  }
+}
+
+message ReadTicketResponse {
+  Ticket data = 1;
+}
+
+message UpdateTicketRequest {
+  Ticket data = 1;
+}
+
+message UpdateTicketResponse {
+  Ticket data = 1;
+}
+
+message ReadTicketsRequest {
+  int32 page = 1;
+  int32 per_page = 2;
+}
+
+message ReadTicketsResponse {
+  int32 total_count = 1;
+  repeated Ticket data = 2;
+}
+
+message ReadMyAssignedTicketsRequest {
+  int32 page = 1;
+  int32 per_page = 2;
+}
+
+message ReadMyAssignedTicketsResponse {
+  int32 total_count = 1;
+  repeated Ticket data = 2;
+}
+
+message ReadMentionedTicketsRequest {
+  int32 page = 1;
+  int32 per_page = 2;
+}
+
+message ReadMentionedTicketsResponse {
+  int32 total_count = 1;
+  repeated Ticket data = 2;
+}
+
+message ReadUnassignedTicketsRequest {
+  int32 page = 1;
+  int32 per_page = 2;
+}
+
+message ReadUnassignedTicketsResponse {
+  int32 total_count = 1;
+  repeated Ticket data = 2;
+}
+
+message ReadArchivedTicketsRequest {
+  int32 page = 1;
+  int32 per_page = 2;
+}
+
+message ReadArchivedTicketsResponse {
+  int32 total_count = 1;
+  repeated Ticket data = 2;
+}
+
+message ArchiveTicketsRequest {
+  repeated string ids = 1;
+}
+
+message ArchiveTicketsResponse {
+  bool success = 1;
+  repeated string successful_ids = 2;
+}
+
+message UnarchiveTicketsRequest {
+  repeated string ids = 1;
+}
+
+message UnarchiveTicketsResponse {
+  bool success = 1;
+  repeated string successful_ids = 2;
+}
+
+message MarkTicketsAsReadRequest {
+  repeated string ids = 1;
+  bool log_action = 2;
+}
+
+message MarkTicketsAsReadResponse {
+  bool success = 1;
+  repeated string successful_ids = 2;
+}
+
+message MarkTicketsAsUnreadRequest {
+  repeated string ids = 1;
+}
+
+message MarkTicketsAsUnreadResponse {
+  bool success = 1;
+  repeated string successful_ids = 2;
+}
+
+message MarkTicketsAsSpamRequest {
+  repeated string ids = 1;
+}
+
+message MarkTicketsAsSpamResponse {
+  bool success = 1;
+  repeated string successful_ids = 2;
+}
+
+message MarkTicketsAsNotSpamRequest {
+  repeated string ids = 1;
+}
+
+message MarkTicketsAsNotSpamResponse {
+  bool success = 1;
+  repeated string successful_ids = 2;
+}
+
+message ChangeTicketsCategoryRequest {
+  repeated string ids = 1;
+  string category_id = 2;
+}
+
+message ChangeTicketsCategoryResponse {
+  bool success = 1;
+  repeated string successful_ids = 2;
+}
+
+message ChangeTicketsPriorityRequest {
+  repeated string ids = 1;
+  Priority priority = 2;
+}
+
+message ChangeTicketsPriorityResponse {
+  bool success = 1;
+  repeated string successful_ids = 2;
+}
+
+message ChangeTicketsStatusRequest {
+  repeated string ids = 1;
+  TicketStatus status = 2;
+  string assigned_agent = 3;
+}
+
+message ChangeTicketsStatusResponse {
+  bool success = 1;
+  repeated string successful_ids = 2;
+}
+
+message ChangeTicketsAssignedAgentRequest {
+  repeated string ids = 1;
+  string assigned_agent = 2;
+}
+
+message ChangeTicketsAssignedAgentResponse {
+  bool success = 1;
+  repeated string successful_ids = 2;
+}
+
+message DeleteTicketsRequest {
+  repeated string ids = 1;
+}
+
+message DeleteTicketsResponse {
+  bool success = 1;
+  repeated string successful_ids = 2;
+}
+
+message ReadTicketsInRoomRequest {
+  int32 page = 1;
+  int32 per_page = 2;
+  string room_id = 3;
+}
+
+message ReadTicketsInRoomResponse {
+  int32 total_count = 1;
+  repeated Ticket data = 2;
+}
+
+message ReadFilteredTicketsRequest {
+  int32 page = 1;
+  int32 per_page = 2;
+  repeated TicketFilter filters = 3;
+}
+
+message ReadFilteredTicketsResponse {
+  int32 total_count = 1;
+  repeated Ticket data = 2;
+}
+
+message ReadSpamTicketsRequest {
+  int32 page = 1;
+  int32 per_page = 2;
+}
+
+message ReadSpamTicketsResponse {
+  int32 total_count = 1;
+  repeated Ticket data = 2;
+}
+
+message ChangeTicketsTagsRequest {
+  repeated string ids = 1;
+  repeated string tag_ids = 2;
+}
+
+message ChangeTicketsTagsResponse {
+  bool success = 1;
+  repeated string successful_ids = 2;
+}
+
+message ChangeTicketsFollowersRequest {
+  repeated string ids = 1;
+  repeated string follower_ids = 2;
+}
+
+message ChangeTicketsFollowersResponse {
+  bool success = 1;
+  repeated string successful_ids = 2;
+}
+
+message MergeTicketsRequest {
+  string master_ticket_id = 1;
+  repeated string ticket_ids = 2;
+  string merge_comment = 3;
+}
+
+message MergeTicketsResponse {
+  bool success = 1;
+  repeated string successful_ids = 2;
+}
+
+message TicketMerge {
+  string id = 1;
+  string master_ticket_id = 2;
+  string merged_ticket_id = 3;
+  string merged_by = 4;
+  string merged_by_name = 5;
+  string merge_comment = 6;
+  int64 merged_at = 7;
+}
+
+message TicketDuplicate {
+  string id = 1;
+  string first_ticket_id = 2;
+  string second_ticket_id = 3;
+  float similarity_score = 4;
+  string similarity_reasons = 5;
+  string status = 6;
+  string reviewed_by = 7;
+  string reviewed_by_name = 8;
+  string review_comment = 9;
+  int64 created_at = 10;
+}
+
+message GetPotentialDuplicatesRequest {
+  int32 page = 1;
+  int32 per_page = 2;
+}
+
+message GetPotentialDuplicatesResponse {
+  repeated TicketDuplicate duplicates = 1;
+  int32 total_count = 2;
+}
+
+message ReviewDuplicateRequest {
+  string duplicate_id = 1;
+  string status = 2; // REVIEWED, DISMISSED, MERGED 
+  string comment = 3;
+}
+
+message ReviewDuplicateResponse {
+  bool success = 1;
+}
+
+message GetMergeHistoryRequest {
+  string ticket_id = 1;
+}
+
+message GetMergeHistoryResponse {
+  repeated TicketMerge merges = 1;
+}
+
+message GetMergedTicketsRequest {
+  string master_ticket_id = 1;
+}
+
+message GetMergedTicketsResponse {
+  repeated Ticket tickets = 1;
+}
+
+message GetMasterTicketRequest {
+  string merged_ticket_id = 1;  
+}
+
+message GetMasterTicketResponse {
+  Ticket ticket = 1;
+}
+
+service TicketService {
+    rpc CreateTicket(CreateTicketRequest) returns (CreateTicketResponse){}
+    rpc ReadTicket(ReadTicketRequest) returns (ReadTicketResponse){}
+    rpc UpdateTicket(UpdateTicketRequest) returns (UpdateTicketResponse){}
+    rpc ReadTickets(ReadTicketsRequest) returns (ReadTicketsResponse){}
+    rpc ReadMyAssignedTickets(ReadMyAssignedTicketsRequest) returns (ReadMyAssignedTicketsResponse){}
+    rpc ReadMentionedTickets(ReadMentionedTicketsRequest) returns (ReadMentionedTicketsResponse){}
+    rpc ReadUnassignedTickets(ReadUnassignedTicketsRequest) returns (ReadUnassignedTicketsResponse){}
+    rpc ReadAllArchivedTickets(ReadArchivedTicketsRequest) returns (ReadArchivedTicketsResponse){}
+    rpc ReadMyArchivedTickets(ReadArchivedTicketsRequest) returns (ReadArchivedTicketsResponse){}
+    rpc ArchiveTickets(ArchiveTicketsRequest) returns (ArchiveTicketsResponse){}
+    rpc UnarchiveTickets(UnarchiveTicketsRequest) returns (UnarchiveTicketsResponse){}
+    rpc MarkTicketsAsRead(MarkTicketsAsReadRequest) returns (MarkTicketsAsReadResponse){}
+    rpc MarkTicketsAsUnread(MarkTicketsAsUnreadRequest) returns (MarkTicketsAsUnreadResponse){}
+    rpc MarkTicketsAsSpam(MarkTicketsAsSpamRequest) returns (MarkTicketsAsSpamResponse){}
+    rpc MarkTicketsAsNotSpam(MarkTicketsAsNotSpamRequest) returns (MarkTicketsAsNotSpamResponse){}
+    rpc ChangeTicketsCategory(ChangeTicketsCategoryRequest) returns (ChangeTicketsCategoryResponse){}
+    rpc ChangeTicketsPriority(ChangeTicketsPriorityRequest) returns (ChangeTicketsPriorityResponse){}
+    rpc ChangeTicketsStatus(ChangeTicketsStatusRequest) returns (ChangeTicketsStatusResponse){}
+    rpc ChangeTicketsAssignedAgent(ChangeTicketsAssignedAgentRequest) returns (ChangeTicketsAssignedAgentResponse){}
+    rpc DeleteTickets(DeleteTicketsRequest) returns (DeleteTicketsResponse){}
+    rpc ReadTicketsInRoom(ReadTicketsInRoomRequest) returns (ReadTicketsInRoomResponse){}
+    rpc ReadFilteredTickets(ReadFilteredTicketsRequest) returns (ReadFilteredTicketsResponse){}
+    rpc ReadSpamTickets(ReadSpamTicketsRequest) returns (ReadSpamTicketsResponse){}
+    rpc ChangeTicketsTags(ChangeTicketsTagsRequest) returns (ChangeTicketsTagsResponse){}
+    rpc ChangeTicketsFollowers(ChangeTicketsFollowersRequest) returns (ChangeTicketsFollowersResponse){}
+    rpc MergeTickets(MergeTicketsRequest) returns (MergeTicketsResponse){}
+    rpc GetPotentialDuplicates(GetPotentialDuplicatesRequest) returns (GetPotentialDuplicatesResponse){}
+    rpc ReviewDuplicate(ReviewDuplicateRequest) returns (ReviewDuplicateResponse){}
+    rpc GetMergeHistory(GetMergeHistoryRequest) returns (GetMergeHistoryResponse){}
+    rpc GetMergedTickets(GetMergedTicketsRequest) returns (GetMergedTicketsResponse){}
+    rpc GetMasterTicket(GetMasterTicketRequest) returns (GetMasterTicketResponse){}
+}

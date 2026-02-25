@@ -1,0 +1,34 @@
+syntax = "proto3";
+
+
+package da.proto;
+
+
+option go_package = "./pb";
+
+message ChatUserMessage {
+  string message = 1;
+}
+
+message RAGAgentMessage {
+  string id = 1;
+  string message = 2;
+}
+
+message AskQuestionRequest {
+  ChatUserMessage user_message = 1;
+  string namespace = 2;
+  string thread_id = 3;
+  string user_id = 4;
+}
+
+
+message AskQuestionResponse {
+  RAGAgentMessage agent_message = 1;
+  string thread_id = 2;
+  string user_id = 3;
+}
+
+service RAGAgentService {
+  rpc AskQuestion(AskQuestionRequest) returns (AskQuestionResponse);
+}

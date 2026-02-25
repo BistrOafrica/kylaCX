@@ -1,0 +1,18 @@
+envs/
+envs/dev.env
+*.env
+dev.env
+.DS_STORE
+/pkg/proto
+
+ecs
+ecs/*
+
+vendor
+vendor/*
+
+# deploy/redis
+# deploy/redis/*
+
+# deploy/envoy
+# deploy/envoy/*

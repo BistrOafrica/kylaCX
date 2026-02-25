@@ -1,0 +1,42 @@
+syntax = "proto3";
+
+package da.proto;
+import "google/protobuf/struct.proto";
+
+option go_package = "./pb";
+
+message SubscriptionPlan {
+  string                 id             = 1;
+  string                 name           = 2;
+  string                 slug           = 3;
+  string                 description    = 4;
+  int64                  price          = 5;
+  string                 currency       = 6;
+  string                 billing_period = 7;
+  google.protobuf.Struct features       = 8;
+  bool                   is_active      = 9;
+  string                 plan_code      = 10;
+  int64                  external_id    = 11;
+}
+
+message ReadSubscriptionPlansRequest {
+}
+
+message ReadSubscriptionPlansResponse{
+  repeated SubscriptionPlan subscription_plans = 1;
+}
+
+message SyncPlansRequest {
+}
+
+message SyncPlansResponse {
+  bool success = 1;
+}
+
+// subscription plans service
+service SubscriptionPlansService {
+  // read available plans
+  rpc ReadSubscriptionPlans(ReadSubscriptionPlansRequest) returns (ReadSubscriptionPlansResponse);
+  // sync with providers
+  rpc SyncSubscriptionPlans(SyncPlansRequest) returns (SyncPlansResponse);
+}
