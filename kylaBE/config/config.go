@@ -4,6 +4,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strconv"
 
 	"github.com/spf13/viper"
 )
@@ -17,10 +18,38 @@ type PostgresConfig struct {
 }
 
 type EnvConfigs struct {
-	Environment string `mapstructure:"ENVIRONMENT"`
-	Port        string `mapstructure:"PORT"`
-	JwtSecret   string `mapstructure:"JWT_SECRET_KEY"`
-	AuthSvcUrl  string `mapstructure:"AUTH_SVC_URL"`
+	Environment          string `mapstructure:"ENVIRONMENT"`
+	Port                 string `mapstructure:"PORT"`
+	JwtSecret            string `mapstructure:"JWT_SECRET_KEY"`
+	AuthSvcUrl           string `mapstructure:"AUTH_SVC_URL"`
+	NatsURL              string `mapstructure:"NATS_URL"`
+	WhatsAppWebhookSecret string `mapstructure:"WA_WEBHOOK_SECRET"`
+	WhatsAppVerifyToken  string `mapstructure:"WA_VERIFY_TOKEN"`
+	WhatsAppAccessToken   string `mapstructure:"WA_ACCESS_TOKEN"`
+	WhatsAppPhoneNumberID string `mapstructure:"WA_PHONE_NUMBER_ID"`
+
+	IMAPHost             string `mapstructure:"IMAP_HOST"`
+	IMAPPort             string `mapstructure:"IMAP_PORT"`
+	IMAPUser             string `mapstructure:"IMAP_USER"`
+	IMAPPassword         string `mapstructure:"IMAP_PASS"`
+	IMAPPollIntervalSecs int    `mapstructure:"IMAP_POLL_INTERVAL_SECS"`
+
+	SMTPHost     string `mapstructure:"SMTP_HOST"`
+	SMTPPort     string `mapstructure:"SMTP_PORT"`
+	SMTPUser     string `mapstructure:"SMTP_USER"`
+	SMTPPassword string `mapstructure:"SMTP_PASS"`
+
+	SMSProvider string `mapstructure:"SMS_PROVIDER"`
+
+	TwilioAccountSID string `mapstructure:"TWILIO_ACCOUNT_SID"`
+	TwilioAuthToken  string `mapstructure:"TWILIO_AUTH_TOKEN"`
+	TwilioFrom       string `mapstructure:"TWILIO_FROM"`
+
+	AfricasTalkingAPIKey   string `mapstructure:"AT_API_KEY"`
+	AfricasTalkingUsername string `mapstructure:"AT_USERNAME"`
+	AfricasTalkingFrom     string `mapstructure:"AT_FROM"`
+
+	SLAScanIntervalSecs int `mapstructure:"SLA_SCAN_INTERVAL_SECS"`
 }
 
 type RsConfig struct {
@@ -82,6 +111,8 @@ func LoadConfig() (*Config, error) {
 	awsRegion, awsAccessKey, awsSecretKey := os.Getenv("AWS_REGION"), os.Getenv("AWS_ACCESS_KEY"), os.Getenv("AWS_SECRET_KEY")
 
 	fbCredentials := os.Getenv("FB_CREDENTIALS")
+	waWebhookSecret := os.Getenv("WA_WEBHOOK_SECRET")
+	waVerifyToken := os.Getenv("WA_VERIFY_TOKEN")
 
 	if !isSet(port) && !isSet(jwtSecretKey) && !isSet(postgresHost) && !isSet(postgresPort) && !isSet(postgresDB) && !isSet(postgresUser) && !isSet(postgresPass) && !isSet(environment) && !isSet(resendapikey) && !isSet(resendBaseUrl) && !isSet(resendFromEmail) && !isSet(leadsAddress) && !isSet(fbCredentials) && !isSet(awsRegion) && !isSet(awsAccessKey) && !isSet(awsSecretKey) {
 		cwd, err := os.Getwd()
@@ -123,9 +154,36 @@ func LoadConfig() (*Config, error) {
 		log.Println("Port2 is: ", port)
 		config = &Config{
 			EnvConfigs: EnvConfigs{
-				Environment: environment,
-				Port:        port,
-				JwtSecret:   jwtSecretKey,
+				Environment:           environment,
+				Port:                  port,
+				JwtSecret:             jwtSecretKey,
+				WhatsAppWebhookSecret: waWebhookSecret,
+				WhatsAppVerifyToken:   waVerifyToken,
+				WhatsAppAccessToken:   os.Getenv("WA_ACCESS_TOKEN"),
+				WhatsAppPhoneNumberID: os.Getenv("WA_PHONE_NUMBER_ID"),
+
+				IMAPHost:             os.Getenv("IMAP_HOST"),
+				IMAPPort:             os.Getenv("IMAP_PORT"),
+				IMAPUser:             os.Getenv("IMAP_USER"),
+				IMAPPassword:         os.Getenv("IMAP_PASS"),
+				IMAPPollIntervalSecs: getIntEnv("IMAP_POLL_INTERVAL_SECS", 60),
+
+				SMTPHost:     os.Getenv("SMTP_HOST"),
+				SMTPPort:     os.Getenv("SMTP_PORT"),
+				SMTPUser:     os.Getenv("SMTP_USER"),
+				SMTPPassword: os.Getenv("SMTP_PASS"),
+
+				SMSProvider: os.Getenv("SMS_PROVIDER"),
+
+				TwilioAccountSID: os.Getenv("TWILIO_ACCOUNT_SID"),
+				TwilioAuthToken:  os.Getenv("TWILIO_AUTH_TOKEN"),
+				TwilioFrom:       os.Getenv("TWILIO_FROM"),
+
+				AfricasTalkingAPIKey:   os.Getenv("AT_API_KEY"),
+				AfricasTalkingUsername: os.Getenv("AT_USERNAME"),
+				AfricasTalkingFrom:     os.Getenv("AT_FROM"),
+
+				SLAScanIntervalSecs: getIntEnv("SLA_SCAN_INTERVAL_SECS", 60),
 			},
 			RsConfig: RsConfig{
 				ResendApiKey:       resendapikey,
@@ -159,4 +217,16 @@ func LoadConfig() (*Config, error) {
 		}
 		return config, nil
 	}
+}
+
+func getIntEnv(key string, defaultVal int) int {
+	val := os.Getenv(key)
+	if val == "" {
+		return defaultVal
+	}
+	i, err := strconv.Atoi(val)
+	if err != nil {
+		return defaultVal
+	}
+	return i
 }
