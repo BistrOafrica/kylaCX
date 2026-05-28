@@ -1,0 +1,59 @@
+/* ---------------------------------------------------------------------------
+ * Palette layer — raw color scales (OKLch).
+ * Do NOT consume these directly from components. Use semantic tokens instead.
+ *
+ * Brand    : Emerald  (Tailwind 500)
+ * Neutral  : Zinc     (Linear/Vercel-adjacent cool grey)
+ * Status   : Emerald / Amber / Rose / Sky
+ * Channels : per-channel hues used only in badges, never in chrome.
+ * ------------------------------------------------------------------------- */
+
+:root {
+  /* Emerald — brand accent */
+  --emerald-50:  oklch(0.979 0.021 166);
+  --emerald-100: oklch(0.950 0.052 163);
+  --emerald-200: oklch(0.905 0.093 164);
+  --emerald-300: oklch(0.845 0.143 164);
+  --emerald-400: oklch(0.765 0.177 163);
+  --emerald-500: oklch(0.696 0.170 162);
+  --emerald-600: oklch(0.596 0.145 163);
+  --emerald-700: oklch(0.508 0.118 165);
+  --emerald-800: oklch(0.432 0.095 166);
+  --emerald-900: oklch(0.378 0.077 168);
+  --emerald-950: oklch(0.262 0.051 172);
+
+  /* Zinc — chrome and surfaces */
+  --zinc-50:  oklch(0.985 0.000 286);
+  --zinc-100: oklch(0.967 0.001 286);
+  --zinc-200: oklch(0.920 0.004 286);
+  --zinc-300: oklch(0.871 0.006 286);
+  --zinc-400: oklch(0.705 0.015 286);
+  --zinc-500: oklch(0.552 0.016 286);
+  --zinc-600: oklch(0.442 0.017 286);
+  --zinc-700: oklch(0.371 0.011 286);
+  --zinc-800: oklch(0.274 0.006 286);
+  --zinc-900: oklch(0.210 0.006 286);
+  --zinc-950: oklch(0.141 0.005 286);
+
+  /* Status hues */
+  --amber-500: oklch(0.769 0.188 70);
+  --amber-600: oklch(0.671 0.180 60);
+  --amber-100: oklch(0.957 0.062 92);
+
+  --rose-500:  oklch(0.645 0.246 16);
+  --rose-600:  oklch(0.577 0.245 27);
+  --rose-100:  oklch(0.934 0.060 14);
+
+  --sky-500:   oklch(0.685 0.169 237);
+  --sky-600:   oklch(0.596 0.171 240);
+  --sky-100:   oklch(0.933 0.043 230);
+
+  /* Channel hues — badge use only */
+  --channel-whatsapp:  var(--emerald-500);
+  --channel-email:     var(--sky-500);
+  --channel-sms:       oklch(0.622 0.211 296);          /* violet */
+  --channel-voice:     var(--amber-500);
+  --channel-webchat:   var(--rose-500);
+  --channel-instagram: oklch(0.621 0.229 332);          /* fuchsia */
+  --channel-messenger: oklch(0.554 0.246 263);          /* blue   */
+}

@@ -1,0 +1,123 @@
+syntax = "proto3";
+
+package da.proto;
+option go_package = "./pb";
+
+// Workspace is a logical product domain within an organisation.
+message Workspace {
+  string id              = 1;
+  string org_id          = 2;
+  string name            = 3;
+  string slug            = 4;
+  string description     = 5;
+  string icon            = 6;
+  string color           = 7;
+  string domain_template = 8;  // "support"|"sales"|"marketing"|"operations"|"custom"
+  string status          = 9;  // "active"|"archived"|"suspended"
+  string created_at      = 10;
+  string updated_at      = 11;
+}
+
+// WorkspaceMember links a user to a workspace with an assigned role.
+message WorkspaceMember {
+  string workspace_id = 1;
+  string user_id      = 2;
+  string role         = 3;  // "owner"|"admin"|"member"|"guest"
+  string joined_at    = 4;
+}
+
+// ── CRUD ─────────────────────────────────────────────────────────────────────
+
+message CreateWorkspaceRequest {
+  string    org_id    = 1;
+  Workspace workspace = 2;
+}
+message CreateWorkspaceResponse {
+  Workspace workspace = 1;
+}
+
+message GetWorkspaceRequest {
+  string id     = 1;
+  string org_id = 2;
+}
+message GetWorkspaceResponse {
+  Workspace workspace = 1;
+}
+
+message ListWorkspacesRequest {
+  string org_id = 1;
+}
+message ListWorkspacesResponse {
+  repeated Workspace workspaces = 1;
+}
+
+message UpdateWorkspaceRequest {
+  Workspace workspace = 1;
+}
+message UpdateWorkspaceResponse {
+  Workspace workspace = 1;
+}
+
+message ArchiveWorkspaceRequest {
+  string id = 1;
+}
+message ArchiveWorkspaceResponse {
+  message Status {
+    int32  code    = 1;
+    string message = 2;
+  }
+  Status status = 1;
+}
+
+// ── Member management ────────────────────────────────────────────────────────
+
+message AddMemberRequest {
+  string workspace_id = 1;
+  string user_id      = 2;
+  string role         = 3;
+}
+message AddMemberResponse {
+  WorkspaceMember member = 1;
+}
+
+message RemoveMemberRequest {
+  string workspace_id = 1;
+  string user_id      = 2;
+}
+message RemoveMemberResponse {
+  message Status {
+    int32  code    = 1;
+    string message = 2;
+  }
+  Status status = 1;
+}
+
+message UpdateMemberRoleRequest {
+  string workspace_id = 1;
+  string user_id      = 2;
+  string role         = 3;
+}
+message UpdateMemberRoleResponse {
+  WorkspaceMember member = 1;
+}
+
+message ListMembersRequest {
+  string workspace_id = 1;
+}
+message ListMembersResponse {
+  repeated WorkspaceMember members = 1;
+}
+
+// ── Service ──────────────────────────────────────────────────────────────────
+
+service WorkspaceService {
+  rpc CreateWorkspace(CreateWorkspaceRequest)     returns (CreateWorkspaceResponse)  {}
+  rpc GetWorkspace(GetWorkspaceRequest)           returns (GetWorkspaceResponse)     {}
+  rpc ListWorkspaces(ListWorkspacesRequest)       returns (ListWorkspacesResponse)   {}
+  rpc UpdateWorkspace(UpdateWorkspaceRequest)     returns (UpdateWorkspaceResponse)  {}
+  rpc ArchiveWorkspace(ArchiveWorkspaceRequest)   returns (ArchiveWorkspaceResponse) {}
+  rpc AddMember(AddMemberRequest)                 returns (AddMemberResponse)        {}
+  rpc RemoveMember(RemoveMemberRequest)           returns (RemoveMemberResponse)     {}
+  rpc UpdateMemberRole(UpdateMemberRoleRequest)   returns (UpdateMemberRoleResponse) {}
+  rpc ListMembers(ListMembersRequest)             returns (ListMembersResponse)      {}
+}

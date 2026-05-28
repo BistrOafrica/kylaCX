@@ -1,0 +1,118 @@
+syntax = "proto3";
+
+package da.proto;
+option go_package = "./pb";
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/struct.proto";
+
+// Workflow defines a Temporal-backed automation: a trigger, optional
+// filter conditions, and an ordered list of actions to execute.
+message Workflow {
+  string id = 1;
+  string org_id = 2;
+  string workspace_id = 3;
+  string name = 4;
+  string description = 5;
+
+  // WorkflowTrigger — JSON-encoded structure such as
+  // { "type": "object.created", "object_type": "ticket" }
+  google.protobuf.Struct trigger = 6;
+
+  // Optional filter conditions evaluated against the trigger event payload.
+  // Each entry is a JSON object describing a single condition.
+  repeated google.protobuf.Struct conditions = 7;
+
+  // Ordered list of actions executed by the Temporal AutomationWorkflow.
+  // Each entry is a JSON object: { "type": "send_message", "params": {...} }
+  repeated google.protobuf.Struct actions = 8;
+
+  // Lifecycle state — "draft", "active", "inactive".
+  string status = 9;
+
+  google.protobuf.Timestamp created_at = 10;
+  google.protobuf.Timestamp updated_at = 11;
+  string created_by = 12;
+}
+
+// WorkflowRun is a projection of a single Temporal workflow execution.
+// Temporal owns the canonical execution state; this row is a fast-query mirror
+// that lets the UI deep-link into Temporal Web via temporal_run_id.
+message WorkflowRun {
+  string id = 1;
+  string workflow_id = 2;
+  string temporal_run_id = 3;
+  string trigger_event_id = 4;
+  string status = 5;                       // "pending" | "running" | "success" | "failed"
+  google.protobuf.Struct context = 6;       // event payload + execution metadata
+  string error = 7;
+  google.protobuf.Timestamp started_at = 8;
+  google.protobuf.Timestamp finished_at = 9;
+}
+
+// ── Requests / Responses ────────────────────────────────────────────────────
+
+message CreateWorkflowRequest {
+  string workspace_id = 1;
+  string name = 2;
+  string description = 3;
+  google.protobuf.Struct trigger = 4;
+  repeated google.protobuf.Struct conditions = 5;
+  repeated google.protobuf.Struct actions = 6;
+  string status = 7;
+}
+
+message UpdateWorkflowRequest {
+  string id = 1;
+  string name = 2;
+  string description = 3;
+  google.protobuf.Struct trigger = 4;
+  repeated google.protobuf.Struct conditions = 5;
+  repeated google.protobuf.Struct actions = 6;
+  string status = 7;
+}
+
+message GetWorkflowRequest { string id = 1; }
+message DeleteWorkflowRequest { string id = 1; }
+message DeleteWorkflowResponse { bool success = 1; }
+
+message ListWorkflowsRequest {
+  string workspace_id = 1;
+  int32 page_number = 2;
+  int32 page_size = 3;
+}
+message ListWorkflowsResponse {
+  repeated Workflow items = 1;
+  int64 total = 2;
+}
+
+message GetRunHistoryRequest {
+  string workflow_id = 1;
+  int32 page_number = 2;
+  int32 page_size = 3;
+}
+message GetRunHistoryResponse {
+  repeated WorkflowRun runs = 1;
+  int64 total = 2;
+}
+
+// TestRunWorkflowRequest fires a workflow definition once with a synthetic
+// trigger event, useful for the visual builder's "Test run" button.
+message TestRunWorkflowRequest {
+  string workflow_id = 1;
+  google.protobuf.Struct sample_event = 2;
+}
+message TestRunWorkflowResponse {
+  string temporal_run_id = 1;
+}
+
+service WorkflowService {
+  rpc CreateWorkflow(CreateWorkflowRequest) returns (Workflow);
+  rpc UpdateWorkflow(UpdateWorkflowRequest) returns (Workflow);
+  rpc GetWorkflow(GetWorkflowRequest) returns (Workflow);
+  rpc ListWorkflows(ListWorkflowsRequest) returns (ListWorkflowsResponse);
+  rpc DeleteWorkflow(DeleteWorkflowRequest) returns (DeleteWorkflowResponse);
+
+  rpc GetRunHistory(GetRunHistoryRequest) returns (GetRunHistoryResponse);
+  rpc TestRunWorkflow(TestRunWorkflowRequest) returns (TestRunWorkflowResponse);
+}

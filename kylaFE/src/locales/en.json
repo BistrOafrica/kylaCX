@@ -1,0 +1,123 @@
+{
+  "common": {
+    "appName": "Kyla",
+    "tagline": "Agent workbench for customer experience",
+    "loading": "Loading…",
+    "tryAgain": "Try again",
+    "cancel": "Cancel",
+    "save": "Save",
+    "delete": "Delete",
+    "confirm": "Confirm",
+    "search": "Search",
+    "searchAnything": "Search anything…",
+    "signOut": "Sign out",
+    "settings": "Settings",
+    "profile": "Profile",
+    "back": "Back",
+    "close": "Close",
+    "more": "More"
+  },
+  "nav": {
+    "inbox": "Inbox",
+    "crm": "CRM",
+    "tickets": "Tickets",
+    "knowledge": "Knowledge",
+    "forms": "Forms",
+    "automation": "Automation",
+    "campaigns": "Campaigns",
+    "calls": "Calls",
+    "analytics": "Analytics",
+    "admin": "Admin"
+  },
+  "shell": {
+    "toggleSidebar": "Toggle sidebar",
+    "toggleAiRail": "Toggle Kyla copilot",
+    "openCommandPalette": "Open command palette",
+    "notifications": "Notifications",
+    "workspaceSwitcher": "Switch workspace",
+    "agentStatus": "Agent status"
+  },
+  "agentStatus": {
+    "online": "Available",
+    "busy": "Busy",
+    "away": "Away",
+    "break": "On a break",
+    "offline": "Offline"
+  },
+  "auth": {
+    "login": {
+      "title": "Sign in to Kyla",
+      "subtitle": "Continue to your workspace",
+      "emailLabel": "Email",
+      "emailPlaceholder": "you@company.com",
+      "passwordLabel": "Password",
+      "passwordPlaceholder": "••••••••",
+      "submit": "Sign in",
+      "submitting": "Signing in…",
+      "forgot": "Forgot password?",
+      "passkey": "Sign in with a passkey",
+      "noAccount": "Don't have an account?",
+      "createAccount": "Create one",
+      "error": "Couldn't sign you in. Check your details and try again."
+    },
+    "signup": {
+      "title": "Create your Kyla account",
+      "submit": "Create account"
+    },
+    "otp": {
+      "title": "Verify it's you",
+      "subtitle": "Enter the 6-digit code from your authenticator",
+      "submit": "Verify"
+    },
+    "logout": {
+      "confirm": "Sign out of Kyla?"
+    }
+  },
+  "ai": {
+    "railTitle": "Kyla Copilot",
+    "emptyTitle": "Nothing to assist on yet",
+    "emptyDescription": "Open a conversation, contact, or workflow and Kyla will help you here.",
+    "summarize": "Summarize",
+    "suggestReply": "Suggest a reply",
+    "translate": "Translate",
+    "classify": "Classify",
+    "thinking": "Thinking…",
+    "accept": "Accept",
+    "discard": "Discard"
+  },
+  "command": {
+    "placeholder": "Type a command or search…",
+    "noResults": "No matches",
+    "sections": {
+      "navigation": "Navigation",
+      "actions": "Actions",
+      "theme": "Theme",
+      "language": "Language",
+      "workspaces": "Workspaces",
+      "account": "Account",
+      "help": "Help"
+    },
+    "actions": {
+      "toggleTheme": "Toggle theme",
+      "setThemeLight": "Light theme",
+      "setThemeDark": "Dark theme",
+      "setThemeSystem": "Match system",
+      "changeLanguage": "Change language",
+      "switchWorkspace": "Switch workspace",
+      "signOut": "Sign out",
+      "shortcuts": "Keyboard shortcuts"
+    }
+  },
+  "errors": {
+    "generic": "Something went wrong. Please try again.",
+    "network": "We couldn't reach the server. Check your connection.",
+    "unauthorized": "Your session expired. Please sign in again.",
+    "forbidden": "You don't have access to that."
+  },
+  "language": {
+    "en": "English",
+    "ar": "العربية",
+    "fr": "Français",
+    "sw": "Kiswahili"
+  }
+}

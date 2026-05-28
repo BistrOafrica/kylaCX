@@ -1,0 +1,45 @@
+syntax = "proto3";
+
+package da.proto;
+option go_package = "./pb";
+
+// AIService is the minimal Phase 6 AI surface used by the automation engine
+// and the frontend. Richer capabilities (RAG, virtual agents, vector search)
+// live in their own existing protos and will land in a later AI-specific phase.
+
+message ClassifyTextRequest {
+  string text = 1;
+  repeated string labels = 2;
+}
+
+message ClassifyTextResponse {
+  string label = 1;
+  double confidence = 2;
+}
+
+message SummarizeTextRequest {
+  string text = 1;
+  // Optional hint at the desired summary length in sentences.
+  int32 max_sentences = 2;
+}
+
+message SummarizeTextResponse {
+  string summary = 1;
+}
+
+message GenerateReplyRequest {
+  // Prior conversation turns, oldest first.
+  repeated string history = 1;
+  // The instruction or user message to generate a reply for.
+  string prompt = 2;
+}
+
+message GenerateReplyResponse {
+  string reply = 1;
+}
+
+service AIService {
+  rpc ClassifyText(ClassifyTextRequest) returns (ClassifyTextResponse);
+  rpc SummarizeText(SummarizeTextRequest) returns (SummarizeTextResponse);
+  rpc GenerateReply(GenerateReplyRequest) returns (GenerateReplyResponse);
+}

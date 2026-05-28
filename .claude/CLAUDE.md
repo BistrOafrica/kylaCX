@@ -29,12 +29,32 @@ kylaCX/
 ├── kylaBE/
 │   ├── cmd/server/         ← entrypoint (main.go)
 │   ├── config/             ← Viper-based config structs + loader
-│   ├── internal/           ← private domain handlers (e.g. user invitations)
+│   ├── internal/           ← domain-scoped packages (one sub-directory per domain)
+│   │   ├── agentops/       ← agent status model / store / server
+│   │   ├── apps/           ← API apps model / store / server
+│   │   ├── auth/           ← auth wrapper store + JWT/DBAuthStore type aliases
+│   │   ├── authctx/        ← request metadata types (shared, no domain logic)
+│   │   ├── branch/         ← branch model / store / server
+│   │   ├── contact/        ← contact + group model / store / servers
+│   │   ├── department/     ← department model / store / server
+│   │   ├── invitation/     ← invitation model / store / server
+│   │   ├── label/          ← label store / server
+│   │   ├── leave/          ← leave model / store / server
+│   │   ├── middleware/     ← gRPC auth + response + session interceptors
+│   │   ├── nats/           ← NATS client + EventPublisher
+│   │   ├── onboarding/     ← onboarding model / store / server / handlers
+│   │   ├── organisation/   ← organisation model / store / server
+│   │   ├── rbac/           ← role model / store / server
+│   │   ├── sharing/        ← resource sharing model / store / server
+│   │   ├── shift/          ← shift + schedule + break model / stores / servers
+│   │   ├── tag/            ← tag store / server
+│   │   ├── team/           ← team model / store / server
+│   │   └── user/           ← user + passkey model / store / server
 │   ├── pkg/
 │   │   ├── db/             ← GORM database initialisation
 │   │   ├── pb/             ← generated Go protobuf stubs (do not edit)
-│   │   ├── service/        ← all business logic, gRPC servers, stores, models
-│   │   ├── utils/          ← email (Resend), shared helpers
+│   │   ├── service/        ← auth infrastructure (JWT, Firebase, WebAuthn, interceptors)
+│   │   ├── utils/          ← email (Resend), SQS, shared helpers
 │   │   └── k/              ← constants / shared keys
 │   ├── deploy/             ← Dockerfiles, docker-compose, ECS configs, Envoy
 │   ├── envs/               ← environment variable files (.env)
@@ -64,6 +84,7 @@ kylaCX/
 - **MFA**: TOTP via `pquerna/otp`
 - **Cache**: Redis (`redis/go-redis/v9`)
 - **Config**: Viper (`spf13/viper`) — reads from `envs/.env`
+- **Messaging**: NATS (`nats-io/nats.go`) — EventPublisher in `internal/nats/`
 - **Queue**: AWS SQS (`aws/aws-sdk-go-v2`)
 - **Proxy**: Envoy sidecar (see `envoy.yaml`)
 - **Live reload**: Air (`deploy/.air.toml`)
@@ -131,22 +152,47 @@ pnpm preview    # Preview production build
 ## Architecture Patterns
 
 ### Backend — gRPC Service Pattern
-Each domain follows a consistent four-file pattern inside `pkg/service/`:
+Each domain lives in its own package under `internal/{domain}/` and follows a consistent four-file layout:
 
 ```
-{domain}.go           ← GORM model struct(s)
-{domain}_store.go     ← database access layer (CRUD against DB)
-{domain}_server.go    ← gRPC server implementation (implements pb interface)
-{domain}_utils.go     ← helpers / converters (model ↔ proto)
+internal/{domain}/
+  model.go      ← GORM model struct(s)
+  store.go      ← database access layer (CRUD against DB)
+  server.go     ← gRPC server implementation (implements pb interface)
+  utils.go      ← helpers / converters (model ↔ proto)
 ```
 
 Example for `user`:
-- `user.go` — `User`, `Passkey` structs (GORM models)
-- `user_store.go` — `UserStore` with DB methods
-- `user_server.go` — `UserServer` implementing `pb.UserServiceServer`
-- `user_utils.go` — conversion functions
+- `internal/user/model.go` — `User`, `Passkey` structs (GORM models)
+- `internal/user/store.go` — `UserStore` with DB methods
+- `internal/user/server.go` — `UserServer` implementing `pb.UserServiceServer`
+- `internal/user/utils.go` — conversion functions
 
 **Never** put database logic in the server file. **Never** put gRPC logic in the store file.
+
+### Interface-at-Boundary Pattern
+Each domain server defines a minimal local `AuthGateway` interface describing only the auth methods it actually uses. `internal/auth.AuthStore` satisfies all of them without requiring domain packages to import each other. This prevents import cycles.
+
+```go
+// Example: internal/branch/server.go
+type AuthGateway interface {
+    ScopeCheck(ctx context.Context, scopeID string) (bool, *authctx.RequestMetadata, error)
+    GetServiceAuthMetadata(ctx context.Context) (*authctx.RequestMetadata, error)
+}
+```
+
+`auth.AuthStore` is constructed in `main.go` by wrapping a `*service.AuthStore` (the auth infrastructure layer in `pkg/service/`) together with the domain `*rbac.RbacStore`. Domain servers never import `pkg/service` directly.
+
+### Event Publishing (NATS)
+The NATS `EventPublisher` lives in `internal/nats/`. Inject it into servers that need to emit events:
+
+```go
+natsClient, _ := nats.Connect(configs.EnvConfigs.NatsURL)
+pub := nats.NewEventPublisher(natsClient)
+// pass pub to org/auth/invitation servers
+```
+
+Available subjects: `org.created`, `user.created`, `auth.login`, `invitation.sent`.
 
 ### gRPC Server Registration (main.go)
 1. Load config via `config.LoadConfig()`
@@ -198,6 +244,7 @@ FB_CREDENTIALS
 WEB_AUTHN_RP_ID / WEB_AUTHN_RP_ORIGIN / WEB_AUTHN_RP_DISPLAY_NAME
 REDIS_ADDR / REDIS_PASSWORD / REDIS_DB
 AWS_REGION / AWS_ACCESS_KEY / AWS_SECRET_KEY
+NATS_URL                     # defaults to nats://localhost:4222
 ```
 
 ---
@@ -206,10 +253,10 @@ AWS_REGION / AWS_ACCESS_KEY / AWS_SECRET_KEY
 
 - [ ] Define the service in `kylaPB/<domain>.proto`
 - [ ] Run `make proto-go` to regenerate Go stubs
-- [ ] Create `pkg/service/<domain>.go` (GORM model)
-- [ ] Create `pkg/service/<domain>_store.go` (DB layer)
-- [ ] Create `pkg/service/<domain>_server.go` (gRPC impl)
-- [ ] Create `pkg/service/<domain>_utils.go` (converters)
+- [ ] Create `internal/<domain>/model.go` (GORM model)
+- [ ] Create `internal/<domain>/store.go` (DB layer)
+- [ ] Create `internal/<domain>/server.go` (gRPC impl; define a local `AuthGateway` interface)
+- [ ] Create `internal/<domain>/utils.go` (converters)
 - [ ] Register the server in `cmd/server/main.go`
 - [ ] Add DB auto-migration in the migration block in `main.go`
 

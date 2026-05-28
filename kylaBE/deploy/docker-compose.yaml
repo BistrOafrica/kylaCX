@@ -27,18 +27,89 @@ services:
     depends_on:
        - grpc-server
     command: ["envoy", "-c", "/etc/envoy/envoy.yaml"]
-  
-  # database: 
+
+  # NATS JetStream — event bus backbone
+  # All domain events are published here. Automation engine, notification service,
+  # analytics pipeline, and realtime gateway all consume from this stream.
+  nats:
+    image: nats:2.10-alpine
+    command: ["-js", "-sd", "/data", "-m", "8222"]
+    ports:
+      - "4222:4222"   # client connections
+      - "8222:8222"   # HTTP monitoring / health
+    volumes:
+      - nats_data:/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8222/healthz"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # NATS monitoring UI (optional dev helper — http://localhost:8100)
+  nats-surveyor:
+    image: natsio/nats-surveyor:latest
+    depends_on:
+      - nats
+    environment:
+      - NATS_SURVEYOR_SERVERS=nats://nats:4222
+      - NATS_SURVEYOR_HTTP_PORT=8100
+    ports:
+      - "8100:8100"
+    restart: unless-stopped
+
+  # Temporal — durable workflow execution engine.
+  # Used by the automation engine for retries, timers, and workflow state persistence.
+  # Backed by its own Postgres instance to isolate Temporal state from application data.
+  temporal-postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: temporal
+      POSTGRES_PASSWORD: temporal
+      POSTGRES_DB: temporal
+    volumes:
+      - temporal_pg_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  temporal:
+    image: temporalio/auto-setup:1.24
+    depends_on:
+      - temporal-postgres
+    environment:
+      - DB=postgres12
+      - DB_PORT=5432
+      - POSTGRES_USER=temporal
+      - POSTGRES_PWD=temporal
+      - POSTGRES_SEEDS=temporal-postgres
+    ports:
+      - "7233:7233"   # Temporal gRPC frontend
+    restart: unless-stopped
+
+  # Temporal Web UI — http://localhost:8088
+  temporal-ui:
+    image: temporalio/ui:2.26
+    depends_on:
+      - temporal
+    environment:
+      - TEMPORAL_ADDRESS=temporal:7233
+      - TEMPORAL_CORS_ORIGINS=http://localhost:3000
+    ports:
+      - "8088:8080"
+    restart: unless-stopped
+
+  # database:
   #   image: postgres:alpine3.20
-  #   restart: always 
-  #   environment: 
+  #   restart: always
+  #   environment:
   #     POSTGRES_USER: root
   #     POSTGRES_PASSWORD: pGdBorG
   #     POSTGRES_DB: organisation
-  #   ports: 
+  #   ports:
   #     - "5433:5432"
-  #   volumes: 
+  #   volumes:
   #     - data:/var/lib/postgresql/data
 
 volumes:
-  data:   
+  data:
+  nats_data:
+  temporal_pg_data:

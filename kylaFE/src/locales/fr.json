@@ -1,0 +1,123 @@
+{
+  "common": {
+    "appName": "Kyla",
+    "tagline": "Plateforme agent pour l'expérience client",
+    "loading": "Chargement…",
+    "tryAgain": "Réessayer",
+    "cancel": "Annuler",
+    "save": "Enregistrer",
+    "delete": "Supprimer",
+    "confirm": "Confirmer",
+    "search": "Rechercher",
+    "searchAnything": "Rechercher n'importe quoi…",
+    "signOut": "Se déconnecter",
+    "settings": "Paramètres",
+    "profile": "Profil",
+    "back": "Retour",
+    "close": "Fermer",
+    "more": "Plus"
+  },
+  "nav": {
+    "inbox": "Boîte de réception",
+    "crm": "CRM",
+    "tickets": "Tickets",
+    "knowledge": "Base de connaissances",
+    "forms": "Formulaires",
+    "automation": "Automatisation",
+    "campaigns": "Campagnes",
+    "calls": "Appels",
+    "analytics": "Analytique",
+    "admin": "Administration"
+  },
+  "shell": {
+    "toggleSidebar": "Basculer le panneau latéral",
+    "toggleAiRail": "Basculer le copilote Kyla",
+    "openCommandPalette": "Ouvrir la palette de commandes",
+    "notifications": "Notifications",
+    "workspaceSwitcher": "Changer d'espace de travail",
+    "agentStatus": "Statut de l'agent"
+  },
+  "agentStatus": {
+    "online": "Disponible",
+    "busy": "Occupé",
+    "away": "Absent",
+    "break": "En pause",
+    "offline": "Hors ligne"
+  },
+  "auth": {
+    "login": {
+      "title": "Se connecter à Kyla",
+      "subtitle": "Accédez à votre espace de travail",
+      "emailLabel": "E-mail",
+      "emailPlaceholder": "vous@entreprise.com",
+      "passwordLabel": "Mot de passe",
+      "passwordPlaceholder": "••••••••",
+      "submit": "Se connecter",
+      "submitting": "Connexion en cours…",
+      "forgot": "Mot de passe oublié ?",
+      "passkey": "Se connecter avec une clé d'accès",
+      "noAccount": "Pas de compte ?",
+      "createAccount": "En créer un",
+      "error": "Connexion impossible. Vérifiez vos informations et réessayez."
+    },
+    "signup": {
+      "title": "Créer votre compte Kyla",
+      "submit": "Créer le compte"
+    },
+    "otp": {
+      "title": "Vérifier votre identité",
+      "subtitle": "Saisissez le code à 6 chiffres de votre application",
+      "submit": "Vérifier"
+    },
+    "logout": {
+      "confirm": "Se déconnecter de Kyla ?"
+    }
+  },
+  "ai": {
+    "railTitle": "Copilote Kyla",
+    "emptyTitle": "Rien à assister pour l'instant",
+    "emptyDescription": "Ouvrez une conversation, un contact ou un flux et Kyla vous aidera ici.",
+    "summarize": "Résumer",
+    "suggestReply": "Suggérer une réponse",
+    "translate": "Traduire",
+    "classify": "Classer",
+    "thinking": "Réflexion…",
+    "accept": "Accepter",
+    "discard": "Ignorer"
+  },
+  "command": {
+    "placeholder": "Tapez une commande ou recherchez…",
+    "noResults": "Aucun résultat",
+    "sections": {
+      "navigation": "Navigation",
+      "actions": "Actions",
+      "theme": "Thème",
+      "language": "Langue",
+      "workspaces": "Espaces de travail",
+      "account": "Compte",
+      "help": "Aide"
+    },
+    "actions": {
+      "toggleTheme": "Basculer le thème",
+      "setThemeLight": "Thème clair",
+      "setThemeDark": "Thème sombre",
+      "setThemeSystem": "Comme le système",
+      "changeLanguage": "Changer la langue",
+      "switchWorkspace": "Changer d'espace de travail",
+      "signOut": "Se déconnecter",
+      "shortcuts": "Raccourcis clavier"
+    }
+  },
+  "errors": {
+    "generic": "Une erreur est survenue. Veuillez réessayer.",
+    "network": "Impossible de joindre le serveur. Vérifiez votre connexion.",
+    "unauthorized": "Votre session a expiré. Veuillez vous reconnecter.",
+    "forbidden": "Vous n'avez pas accès à cela."
+  },
+  "language": {
+    "en": "English",
+    "ar": "العربية",
+    "fr": "Français",
+    "sw": "Kiswahili"
+  }
+}

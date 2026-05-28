@@ -1,0 +1,123 @@
+{
+  "common": {
+    "appName": "Kyla",
+    "tagline": "Jukwaa la wakala kwa uzoefu wa wateja",
+    "loading": "Inapakia…",
+    "tryAgain": "Jaribu tena",
+    "cancel": "Ghairi",
+    "save": "Hifadhi",
+    "delete": "Futa",
+    "confirm": "Thibitisha",
+    "search": "Tafuta",
+    "searchAnything": "Tafuta chochote…",
+    "signOut": "Ondoka",
+    "settings": "Mipangilio",
+    "profile": "Wasifu",
+    "back": "Rudi",
+    "close": "Funga",
+    "more": "Zaidi"
+  },
+  "nav": {
+    "inbox": "Sanduku",
+    "crm": "CRM",
+    "tickets": "Tikiti",
+    "knowledge": "Maarifa",
+    "forms": "Fomu",
+    "automation": "Otomatiki",
+    "campaigns": "Kampeni",
+    "calls": "Simu",
+    "analytics": "Uchanganuzi",
+    "admin": "Utawala"
+  },
+  "shell": {
+    "toggleSidebar": "Geuza paneli ya kando",
+    "toggleAiRail": "Geuza msaidizi wa Kyla",
+    "openCommandPalette": "Fungua paneli ya amri",
+    "notifications": "Arifa",
+    "workspaceSwitcher": "Badilisha eneo la kazi",
+    "agentStatus": "Hali ya wakala"
+  },
+  "agentStatus": {
+    "online": "Anapatikana",
+    "busy": "Mshughuli",
+    "away": "Hayupo",
+    "break": "Mapumziko",
+    "offline": "Nje ya mtandao"
+  },
+  "auth": {
+    "login": {
+      "title": "Ingia kwenye Kyla",
+      "subtitle": "Endelea hadi eneo lako la kazi",
+      "emailLabel": "Barua pepe",
+      "emailPlaceholder": "wewe@kampuni.com",
+      "passwordLabel": "Nenosiri",
+      "passwordPlaceholder": "••••••••",
+      "submit": "Ingia",
+      "submitting": "Inaingia…",
+      "forgot": "Umesahau nenosiri?",
+      "passkey": "Ingia kwa kitufe cha funguo",
+      "noAccount": "Huna akaunti?",
+      "createAccount": "Tengeneza moja",
+      "error": "Imeshindwa kukuingiza. Hakiki taarifa zako na ujaribu tena."
+    },
+    "signup": {
+      "title": "Tengeneza akaunti yako ya Kyla",
+      "submit": "Tengeneza akaunti"
+    },
+    "otp": {
+      "title": "Thibitisha utambulisho wako",
+      "subtitle": "Andika msimbo wa tarakimu 6 kutoka kwa programu yako ya uthibitishaji",
+      "submit": "Thibitisha"
+    },
+    "logout": {
+      "confirm": "Ondoka kwenye Kyla?"
+    }
+  },
+  "ai": {
+    "railTitle": "Msaidizi wa Kyla",
+    "emptyTitle": "Hakuna cha kusaidia bado",
+    "emptyDescription": "Fungua mazungumzo, mawasiliano au sasi na Kyla atakusaidia hapa.",
+    "summarize": "Fupisha",
+    "suggestReply": "Pendekeza jibu",
+    "translate": "Tafsiri",
+    "classify": "Ainisha",
+    "thinking": "Anafikiri…",
+    "accept": "Kubali",
+    "discard": "Tupa"
+  },
+  "command": {
+    "placeholder": "Andika amri au tafuta…",
+    "noResults": "Hakuna matokeo",
+    "sections": {
+      "navigation": "Urambazaji",
+      "actions": "Vitendo",
+      "theme": "Mandhari",
+      "language": "Lugha",
+      "workspaces": "Maeneo ya kazi",
+      "account": "Akaunti",
+      "help": "Msaada"
+    },
+    "actions": {
+      "toggleTheme": "Geuza mandhari",
+      "setThemeLight": "Mandhari nyepesi",
+      "setThemeDark": "Mandhari nyeusi",
+      "setThemeSystem": "Linganisha na mfumo",
+      "changeLanguage": "Badilisha lugha",
+      "switchWorkspace": "Badilisha eneo la kazi",
+      "signOut": "Ondoka",
+      "shortcuts": "Njia za mkato za kibodi"
+    }
+  },
+  "errors": {
+    "generic": "Tatizo limetokea. Tafadhali jaribu tena.",
+    "network": "Hatuwezi kufikia seva. Hakiki muunganisho wako.",
+    "unauthorized": "Kipindi chako kimeisha. Tafadhali ingia tena.",
+    "forbidden": "Huna ruhusa ya kufikia hilo."
+  },
+  "language": {
+    "en": "English",
+    "ar": "العربية",
+    "fr": "Français",
+    "sw": "Kiswahili"
+  }
+}

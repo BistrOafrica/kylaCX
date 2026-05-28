@@ -1,0 +1,188 @@
+syntax = "proto3";
+
+package da.proto;
+option go_package = "./pb";
+
+// ── Enums ─────────────────────────────────────────────────────────────────────
+
+enum PipelineType {
+  PIPELINE_TYPE_UNSPECIFIED = 0;
+  PIPELINE_TYPE_SALES       = 1;
+  PIPELINE_TYPE_OPERATIONS  = 2;
+  PIPELINE_TYPE_CUSTOM      = 3;
+}
+
+// ── Pipeline ──────────────────────────────────────────────────────────────────
+
+message Pipeline {
+  string       id           = 1;
+  string       org_id       = 2;
+  string       workspace_id = 3;
+  string       name         = 4;
+  string       description  = 5;
+  PipelineType type         = 6;
+  string       color        = 7;
+  int32        stages_count = 8;
+  string       created_at   = 9;
+  string       updated_at   = 10;
+}
+
+message PipelineStage {
+  string id          = 1;
+  string pipeline_id = 2;
+  string org_id      = 3;
+  string name        = 4;
+  string color       = 5;
+  int32  index       = 6;
+  int32  probability = 7; // 0–100 (close probability %)
+  string created_at  = 8;
+  string updated_at  = 9;
+}
+
+// ── Pipeline board (Kanban view) ──────────────────────────────────────────────
+
+message PipelineBoardColumn {
+  PipelineStage stage = 1;
+  int32         total = 2;
+  repeated DealCard deals = 3;
+}
+
+message DealCard {
+  string object_id    = 1; // Object Core ID
+  string name         = 2;
+  string value        = 3;
+  string assignee_id  = 4;
+  string close_date   = 5;
+  int32  probability  = 6;
+}
+
+// ── Request / Response messages ───────────────────────────────────────────────
+
+// Pipelines
+message CreatePipelineRequest {
+  string       org_id       = 1;
+  string       workspace_id = 2;
+  string       name         = 3;
+  string       description  = 4;
+  PipelineType type         = 5;
+  string       color        = 6;
+}
+
+message GetPipelineRequest {
+  string id     = 1;
+  string org_id = 2;
+}
+
+message ListPipelinesRequest {
+  string org_id       = 1;
+  string workspace_id = 2;
+}
+
+message ListPipelinesResponse {
+  repeated Pipeline pipelines = 1;
+}
+
+message UpdatePipelineRequest {
+  string       id          = 1;
+  string       org_id      = 2;
+  string       name        = 3;
+  string       description = 4;
+  string       color       = 5;
+}
+
+message DeletePipelineRequest {
+  string id     = 1;
+  string org_id = 2;
+}
+
+message DeletePipelineResponse {
+  bool success = 1;
+}
+
+// Stages
+message CreateStageRequest {
+  string pipeline_id = 1;
+  string org_id      = 2;
+  string name        = 3;
+  string color       = 4;
+  int32  probability = 5;
+}
+
+message ListStagesRequest {
+  string pipeline_id = 1;
+  string org_id      = 2;
+}
+
+message ListStagesResponse {
+  repeated PipelineStage stages = 1;
+}
+
+message UpdateStageRequest {
+  string id          = 1;
+  string org_id      = 2;
+  string name        = 3;
+  string color       = 4;
+  int32  probability = 5;
+}
+
+message DeleteStageRequest {
+  string id     = 1;
+  string org_id = 2;
+}
+
+message DeleteStageResponse {
+  bool success = 1;
+}
+
+message ReorderStagesRequest {
+  string          pipeline_id = 1;
+  string          org_id      = 2;
+  repeated string stage_ids   = 3; // ordered list
+}
+
+// Deal operations
+message MoveDealRequest {
+  string deal_object_id = 1;
+  string stage_id       = 2;
+  string org_id         = 3;
+}
+
+message MoveDealResponse {
+  bool   success   = 1;
+  string object_id = 2;
+  string stage_id  = 3;
+}
+
+message GetPipelineBoardRequest {
+  string pipeline_id  = 1;
+  string org_id       = 2;
+  string workspace_id = 3;
+  int32  page_size    = 4; // deals per column
+}
+
+message GetPipelineBoardResponse {
+  Pipeline                    pipeline = 1;
+  repeated PipelineBoardColumn columns = 2;
+}
+
+// ── Service ───────────────────────────────────────────────────────────────────
+
+service CRMService {
+  // Pipeline management
+  rpc CreatePipeline(CreatePipelineRequest)  returns (Pipeline);
+  rpc GetPipeline(GetPipelineRequest)        returns (Pipeline);
+  rpc ListPipelines(ListPipelinesRequest)    returns (ListPipelinesResponse);
+  rpc UpdatePipeline(UpdatePipelineRequest)  returns (Pipeline);
+  rpc DeletePipeline(DeletePipelineRequest)  returns (DeletePipelineResponse);
+
+  // Stage management
+  rpc CreateStage(CreateStageRequest)        returns (PipelineStage);
+  rpc ListStages(ListStagesRequest)          returns (ListStagesResponse);
+  rpc UpdateStage(UpdateStageRequest)        returns (PipelineStage);
+  rpc DeleteStage(DeleteStageRequest)        returns (DeleteStageResponse);
+  rpc ReorderStages(ReorderStagesRequest)    returns (ListStagesResponse);
+
+  // Deal pipeline operations
+  rpc MoveDeal(MoveDealRequest)                      returns (MoveDealResponse);
+  rpc GetPipelineBoard(GetPipelineBoardRequest)      returns (GetPipelineBoardResponse);
+}

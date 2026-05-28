@@ -1,0 +1,162 @@
+/* ---------------------------------------------------------------------------
+ * Semantic layer — the ONLY tokens components are allowed to read.
+ *
+ * Re-theming the product is a remap here, never a component edit.
+ * Two themes shipped: light (default) and dark.
+ *
+ * Naming convention:  <role>-<variant>
+ *   role     bg | text | border | accent | status-* | focus | selection
+ *   variant  canvas | surface | elevated | subtle | muted | strong | solid | fg
+ * ------------------------------------------------------------------------- */
+
+:root {
+  /* Backgrounds */
+  --bg-canvas:   var(--zinc-50);
+  --bg-surface:  #ffffff;
+  --bg-elevated: #ffffff;
+  --bg-subtle:   var(--zinc-100);
+  --bg-muted:    var(--zinc-200);
+  --bg-inverse:  var(--zinc-900);
+
+  /* Borders */
+  --border-default: var(--zinc-200);
+  --border-strong:  var(--zinc-300);
+  --border-subtle:  var(--zinc-100);
+  --border-focus:   var(--emerald-600);
+
+  /* Text */
+  --text-primary:   var(--zinc-900);
+  --text-secondary: var(--zinc-600);
+  --text-muted:     var(--zinc-500);
+  --text-disabled:  var(--zinc-400);
+  --text-inverse:   var(--zinc-50);
+  --text-link:      var(--emerald-700);
+
+  /* Accent (brand) */
+  --accent-solid:  var(--emerald-600);
+  --accent-hover:  var(--emerald-700);
+  --accent-active: var(--emerald-800);
+  --accent-subtle: var(--emerald-50);
+  --accent-muted:  oklch(0.950 0.052 163 / 0.5);
+  --accent-fg:     var(--zinc-50);
+
+  /* Status — semantic colors */
+  --status-success-solid:  var(--emerald-600);
+  --status-success-subtle: var(--emerald-50);
+  --status-success-fg:     var(--zinc-50);
+
+  --status-warn-solid:     var(--amber-600);
+  --status-warn-subtle:    var(--amber-100);
+  --status-warn-fg:        var(--zinc-950);
+
+  --status-danger-solid:   var(--rose-600);
+  --status-danger-subtle:  var(--rose-100);
+  --status-danger-fg:      var(--zinc-50);
+
+  --status-info-solid:     var(--sky-600);
+  --status-info-subtle:    var(--sky-100);
+  --status-info-fg:        var(--zinc-50);
+
+  /* Focus + selection */
+  --focus-ring:    oklch(0.596 0.145 163 / 0.45);
+  --focus-offset:  var(--bg-canvas);
+  --selection:     oklch(0.696 0.170 162 / 0.25);
+
+  /* Shadows */
+  --shadow-1: 0 1px 2px rgb(0 0 0 / 0.04);
+  --shadow-2: 0 4px 12px rgb(0 0 0 / 0.08);
+  --shadow-3: 0 16px 32px rgb(0 0 0 / 0.16);
+  --shadow-4: 0 24px 64px rgb(0 0 0 / 0.24);
+
+  /* Radius */
+  --radius-xs: 2px;
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 12px;
+  --radius-full: 9999px;
+
+  /* Density */
+  --row-compact: 28px;
+  --row-default: 32px;
+  --row-cozy:    40px;
+
+  /* Shell layout */
+  --shell-topbar:    40px;
+  --shell-statusbar: 28px;
+  --shell-sidebar:   208px;
+  --shell-sidebar-collapsed: 48px;
+  --shell-ai-rail:   320px;
+  --shell-list:      320px;
+}
+
+.dark {
+  /* Backgrounds */
+  --bg-canvas:   var(--zinc-950);
+  --bg-surface:  var(--zinc-900);
+  --bg-elevated: var(--zinc-800);
+  --bg-subtle:   var(--zinc-800);
+  --bg-muted:    var(--zinc-700);
+  --bg-inverse:  var(--zinc-50);
+
+  /* Borders */
+  --border-default: oklch(1 0 0 / 0.08);
+  --border-strong:  oklch(1 0 0 / 0.14);
+  --border-subtle:  oklch(1 0 0 / 0.05);
+  --border-focus:   var(--emerald-500);
+
+  /* Text */
+  --text-primary:   var(--zinc-50);
+  --text-secondary: var(--zinc-300);
+  --text-muted:     var(--zinc-400);
+  --text-disabled:  var(--zinc-600);
+  --text-inverse:   var(--zinc-950);
+  --text-link:      var(--emerald-400);
+
+  /* Accent */
+  --accent-solid:  var(--emerald-500);
+  --accent-hover:  var(--emerald-400);
+  --accent-active: var(--emerald-300);
+  --accent-subtle: oklch(0.378 0.077 168 / 0.35);
+  --accent-muted:  oklch(0.378 0.077 168 / 0.25);
+  --accent-fg:     var(--zinc-950);
+
+  /* Status */
+  --status-success-solid:  var(--emerald-500);
+  --status-success-subtle: oklch(0.378 0.077 168 / 0.35);
+  --status-success-fg:     var(--zinc-950);
+
+  --status-warn-solid:     var(--amber-500);
+  --status-warn-subtle:    oklch(0.671 0.180 60 / 0.20);
+  --status-warn-fg:        var(--zinc-950);
+
+  --status-danger-solid:   var(--rose-500);
+  --status-danger-subtle:  oklch(0.577 0.245 27 / 0.20);
+  --status-danger-fg:      var(--zinc-50);
+
+  --status-info-solid:     var(--sky-500);
+  --status-info-subtle:    oklch(0.596 0.171 240 / 0.20);
+  --status-info-fg:        var(--zinc-50);
+
+  /* Focus */
+  --focus-ring:    oklch(0.696 0.170 162 / 0.55);
+  --focus-offset:  var(--bg-canvas);
+  --selection:     oklch(0.696 0.170 162 / 0.30);
+
+  /* Shadows — softer in dark */
+  --shadow-1: 0 1px 2px rgb(0 0 0 / 0.32);
+  --shadow-2: 0 4px 12px rgb(0 0 0 / 0.40);
+  --shadow-3: 0 16px 32px rgb(0 0 0 / 0.50);
+  --shadow-4: 0 24px 64px rgb(0 0 0 / 0.60);
+}
+
+/* Selection follows the accent */
+::selection {
+  background: var(--selection);
+}
+
+/* High-contrast focus ring used by all interactive primitives */
+.focus-ring {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}

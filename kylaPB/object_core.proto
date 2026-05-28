@@ -1,0 +1,283 @@
+syntax = "proto3";
+
+package da.proto;
+option go_package = "./pb";
+
+// ── Field types & schema ──────────────────────────────────────────────────────
+
+enum FieldType {
+  FIELD_TYPE_TEXT        = 0;
+  FIELD_TYPE_NUMBER      = 1;
+  FIELD_TYPE_DATE        = 2;
+  FIELD_TYPE_DATETIME    = 3;
+  FIELD_TYPE_SELECT      = 4;
+  FIELD_TYPE_MULTI       = 5;
+  FIELD_TYPE_BOOLEAN     = 6;
+  FIELD_TYPE_USER        = 7;
+  FIELD_TYPE_RELATION    = 8;
+  FIELD_TYPE_FILE        = 9;
+  FIELD_TYPE_EMAIL       = 10;
+  FIELD_TYPE_PHONE       = 11;
+  FIELD_TYPE_URL         = 12;
+  FIELD_TYPE_CURRENCY    = 13;
+}
+
+message SelectOption {
+  string value = 1;
+  string label = 2;
+  string color = 3;
+}
+
+message FieldDefinition {
+  string               key        = 1;
+  string               label      = 2;
+  FieldType            type       = 3;
+  bool                 required   = 4;
+  bool                 unique     = 5;
+  bool                 searchable = 6;
+  repeated SelectOption options   = 7;
+  string               relates_to = 8; // slug of target ObjectType for relation fields
+}
+
+message ObjectSchema {
+  repeated FieldDefinition fields = 1;
+}
+
+// ── ObjectType ────────────────────────────────────────────────────────────────
+
+message ObjectType {
+  string       id           = 1;
+  string       org_id       = 2;
+  string       workspace_id = 3;
+  string       slug         = 4;
+  string       name         = 5;
+  string       plural_name  = 6;
+  string       icon         = 7;
+  string       color        = 8;
+  bool         is_system    = 9;
+  ObjectSchema schema       = 10;
+  string       created_at   = 11;
+  string       updated_at   = 12;
+}
+
+// ── Object record ─────────────────────────────────────────────────────────────
+
+message Object {
+  string id           = 1;
+  string org_id       = 2;
+  string workspace_id = 3;
+  string type_slug    = 4;
+  string data         = 5; // JSON-encoded field values
+  string created_by   = 6;
+  string created_at   = 7;
+  string updated_at   = 8;
+}
+
+// ── Object relation ───────────────────────────────────────────────────────────
+
+message ObjectRelation {
+  string id         = 1;
+  string org_id     = 2;
+  string from_id    = 3;
+  string to_id      = 4;
+  string relation   = 5;
+  string created_at = 6;
+}
+
+// ── Object event (timeline) ───────────────────────────────────────────────────
+
+message ObjectEvent {
+  string id         = 1;
+  string org_id     = 2;
+  string object_id  = 3;
+  string actor_id   = 4;
+  string actor_type = 5;
+  string event_type = 6;
+  string payload    = 7; // JSON-encoded
+  string created_at = 8;
+}
+
+// ── SavedView ─────────────────────────────────────────────────────────────────
+
+message SavedView {
+  string id           = 1;
+  string workspace_id = 2;
+  string org_id       = 3;
+  string name         = 4;
+  string type_slug    = 5;   // which object type this view is for
+  string filters      = 6;   // JSON-encoded filter conditions
+  string sort         = 7;   // JSON-encoded sort config
+  string columns      = 8;   // JSON-encoded column list
+  bool   is_shared    = 9;
+  string created_by   = 10;
+  string created_at   = 11;
+  string updated_at   = 12;
+}
+
+// ── ObjectType requests ───────────────────────────────────────────────────────
+
+message CreateObjectTypeRequest  { ObjectType object_type = 1; }
+
+message GetObjectTypeRequest {
+  string org_id = 1;
+  string slug   = 2;
+}
+
+message ListObjectTypesRequest {
+  string org_id       = 1;
+  string workspace_id = 2; // optional: filter to a workspace
+}
+message ListObjectTypesResponse { repeated ObjectType object_types = 1; }
+
+message UpdateObjectSchemaRequest {
+  string       org_id = 1;
+  string       slug   = 2;
+  ObjectSchema schema = 3;
+}
+
+message DeleteObjectTypeRequest {
+  string org_id = 1;
+  string slug   = 2;
+}
+message DeleteObjectTypeResponse { bool success = 1; }
+
+// ── Object CRUD requests ──────────────────────────────────────────────────────
+
+message CreateObjectRequest {
+  string org_id       = 1;
+  string workspace_id = 2;
+  string type_slug    = 3;
+  string data         = 4; // JSON
+}
+
+message GetObjectRequest {
+  string id     = 1;
+  string org_id = 2;
+}
+
+message ListObjectsRequest {
+  string org_id       = 1;
+  string workspace_id = 2;
+  string type_slug    = 3;
+  int32  page_size    = 4; // max 200, default 50
+  string page_token   = 5; // cursor (last seen ID for keyset pagination)
+  string filter       = 6; // JSON: {"status":"open"} or {"and":[...]}
+  string sort_by      = 7; // field key to sort on
+  bool   sort_desc    = 8;
+}
+message ListObjectsResponse {
+  repeated Object objects        = 1;
+  string          next_page_token = 2;
+  int32           total          = 3;
+}
+
+message SearchObjectsRequest {
+  string org_id       = 1;
+  string workspace_id = 2;
+  string type_slug    = 3; // optional: restrict to one type
+  string query        = 4; // full-text search string
+  int32  page_size    = 5;
+}
+message SearchObjectsResponse { repeated Object objects = 1; }
+
+message UpdateObjectRequest {
+  string id     = 1;
+  string org_id = 2;
+  string data   = 3; // JSON patch — merged over existing data
+}
+
+message DeleteObjectRequest {
+  string id     = 1;
+  string org_id = 2;
+}
+message DeleteObjectResponse { bool success = 1; }
+
+// ── Relation requests ─────────────────────────────────────────────────────────
+
+message LinkObjectsRequest {
+  string org_id   = 1;
+  string from_id  = 2;
+  string to_id    = 3;
+  string relation = 4;
+}
+
+message UnlinkObjectsRequest {
+  string from_id  = 1;
+  string to_id    = 2;
+  string relation = 3;
+}
+message UnlinkObjectsResponse { bool success = 1; }
+
+message GetObjectRelationsRequest {
+  string org_id    = 1;
+  string object_id = 2;
+  string relation  = 3; // optional filter
+}
+message GetObjectRelationsResponse { repeated ObjectRelation relations = 1; }
+
+// ── Timeline requests ─────────────────────────────────────────────────────────
+
+message GetObjectTimelineRequest {
+  string org_id    = 1;
+  string object_id = 2;
+  int32  limit     = 3;
+}
+message GetObjectTimelineResponse { repeated ObjectEvent events = 1; }
+
+// ── View requests ─────────────────────────────────────────────────────────────
+
+message CreateSavedViewRequest { SavedView view = 1; }
+
+message GetSavedViewRequest {
+  string id           = 1;
+  string workspace_id = 2;
+}
+
+message ListSavedViewsRequest {
+  string workspace_id = 1;
+  string type_slug    = 2; // optional filter
+}
+message ListSavedViewsResponse { repeated SavedView views = 1; }
+
+message UpdateSavedViewRequest { SavedView view = 1; }
+
+message DeleteSavedViewRequest {
+  string id           = 1;
+  string workspace_id = 2;
+}
+message DeleteSavedViewResponse { bool success = 1; }
+
+// ── Services ──────────────────────────────────────────────────────────────────
+
+service ObjectCoreService {
+  // Schema management
+  rpc CreateObjectType    (CreateObjectTypeRequest)     returns (ObjectType);
+  rpc GetObjectType       (GetObjectTypeRequest)        returns (ObjectType);
+  rpc ListObjectTypes     (ListObjectTypesRequest)      returns (ListObjectTypesResponse);
+  rpc UpdateObjectSchema  (UpdateObjectSchemaRequest)   returns (ObjectType);
+  rpc DeleteObjectType    (DeleteObjectTypeRequest)     returns (DeleteObjectTypeResponse);
+
+  // Records — CRUD
+  rpc CreateObject   (CreateObjectRequest)   returns (Object);
+  rpc GetObject      (GetObjectRequest)      returns (Object);
+  rpc ListObjects    (ListObjectsRequest)    returns (ListObjectsResponse);
+  rpc SearchObjects  (SearchObjectsRequest)  returns (SearchObjectsResponse);
+  rpc UpdateObject   (UpdateObjectRequest)   returns (Object);
+  rpc DeleteObject   (DeleteObjectRequest)   returns (DeleteObjectResponse);
+
+  // Relations
+  rpc LinkObjects        (LinkObjectsRequest)        returns (ObjectRelation);
+  rpc UnlinkObjects      (UnlinkObjectsRequest)      returns (UnlinkObjectsResponse);
+  rpc GetObjectRelations (GetObjectRelationsRequest) returns (GetObjectRelationsResponse);
+
+  // Timeline
+  rpc GetObjectTimeline (GetObjectTimelineRequest) returns (GetObjectTimelineResponse);
+}
+
+service ViewService {
+  rpc CreateSavedView (CreateSavedViewRequest) returns (SavedView);
+  rpc GetSavedView    (GetSavedViewRequest)    returns (SavedView);
+  rpc ListSavedViews  (ListSavedViewsRequest)  returns (ListSavedViewsResponse);
+  rpc UpdateSavedView (UpdateSavedViewRequest) returns (SavedView);
+  rpc DeleteSavedView (DeleteSavedViewRequest) returns (DeleteSavedViewResponse);
+}

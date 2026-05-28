@@ -1,0 +1,123 @@
+{
+  "common": {
+    "appName": "كايلا",
+    "tagline": "منصة الوكلاء لتجربة العملاء",
+    "loading": "جارٍ التحميل…",
+    "tryAgain": "حاول مرة أخرى",
+    "cancel": "إلغاء",
+    "save": "حفظ",
+    "delete": "حذف",
+    "confirm": "تأكيد",
+    "search": "بحث",
+    "searchAnything": "ابحث عن أي شيء…",
+    "signOut": "تسجيل الخروج",
+    "settings": "الإعدادات",
+    "profile": "الملف الشخصي",
+    "back": "رجوع",
+    "close": "إغلاق",
+    "more": "المزيد"
+  },
+  "nav": {
+    "inbox": "الوارد",
+    "crm": "إدارة العملاء",
+    "tickets": "التذاكر",
+    "knowledge": "قاعدة المعرفة",
+    "forms": "النماذج",
+    "automation": "الأتمتة",
+    "campaigns": "الحملات",
+    "calls": "المكالمات",
+    "analytics": "التحليلات",
+    "admin": "الإدارة"
+  },
+  "shell": {
+    "toggleSidebar": "تبديل الشريط الجانبي",
+    "toggleAiRail": "تبديل مساعد كايلا",
+    "openCommandPalette": "فتح لوحة الأوامر",
+    "notifications": "الإشعارات",
+    "workspaceSwitcher": "تبديل مساحة العمل",
+    "agentStatus": "حالة الوكيل"
+  },
+  "agentStatus": {
+    "online": "متاح",
+    "busy": "مشغول",
+    "away": "غائب",
+    "break": "في استراحة",
+    "offline": "غير متصل"
+  },
+  "auth": {
+    "login": {
+      "title": "تسجيل الدخول إلى كايلا",
+      "subtitle": "الانتقال إلى مساحة عملك",
+      "emailLabel": "البريد الإلكتروني",
+      "emailPlaceholder": "you@company.com",
+      "passwordLabel": "كلمة المرور",
+      "passwordPlaceholder": "••••••••",
+      "submit": "تسجيل الدخول",
+      "submitting": "جارٍ تسجيل الدخول…",
+      "forgot": "نسيت كلمة المرور؟",
+      "passkey": "الدخول عبر مفتاح المرور",
+      "noAccount": "ليس لديك حساب؟",
+      "createAccount": "أنشئ حسابًا",
+      "error": "تعذّر تسجيل دخولك. تحقق من البيانات وحاول مرة أخرى."
+    },
+    "signup": {
+      "title": "أنشئ حسابك في كايلا",
+      "submit": "إنشاء الحساب"
+    },
+    "otp": {
+      "title": "تأكيد هويتك",
+      "subtitle": "أدخل الرمز المكوّن من 6 أرقام من تطبيق المصادقة",
+      "submit": "تأكيد"
+    },
+    "logout": {
+      "confirm": "هل تريد تسجيل الخروج من كايلا؟"
+    }
+  },
+  "ai": {
+    "railTitle": "مساعد كايلا",
+    "emptyTitle": "لا يوجد ما يساعد فيه بعد",
+    "emptyDescription": "افتح محادثة أو جهة اتصال أو سير عمل ليساعدك كايلا هنا.",
+    "summarize": "ملخّص",
+    "suggestReply": "اقتراح ردّ",
+    "translate": "ترجمة",
+    "classify": "تصنيف",
+    "thinking": "يفكّر…",
+    "accept": "قبول",
+    "discard": "تجاهل"
+  },
+  "command": {
+    "placeholder": "اكتب أمرًا أو ابحث…",
+    "noResults": "لا توجد نتائج",
+    "sections": {
+      "navigation": "التنقل",
+      "actions": "الإجراءات",
+      "theme": "السمة",
+      "language": "اللغة",
+      "workspaces": "مساحات العمل",
+      "account": "الحساب",
+      "help": "المساعدة"
+    },
+    "actions": {
+      "toggleTheme": "تبديل السمة",
+      "setThemeLight": "سمة فاتحة",
+      "setThemeDark": "سمة داكنة",
+      "setThemeSystem": "وفق النظام",
+      "changeLanguage": "تغيير اللغة",
+      "switchWorkspace": "تبديل مساحة العمل",
+      "signOut": "تسجيل الخروج",
+      "shortcuts": "اختصارات لوحة المفاتيح"
+    }
+  },
+  "errors": {
+    "generic": "حدث خطأ ما. يرجى المحاولة مرة أخرى.",
+    "network": "تعذّر الوصول إلى الخادم. تحقّق من اتصالك.",
+    "unauthorized": "انتهت الجلسة. يرجى تسجيل الدخول مجدّدًا.",
+    "forbidden": "ليست لديك صلاحية للوصول."
+  },
+  "language": {
+    "en": "English",
+    "ar": "العربية",
+    "fr": "Français",
+    "sw": "Kiswahili"
+  }
+}

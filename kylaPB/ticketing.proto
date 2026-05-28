@@ -1,0 +1,174 @@
+syntax = "proto3";
+
+package da.proto;
+option go_package = "./pb";
+
+// ── Enums ─────────────────────────────────────────────────────────────────────
+
+enum RoomType {
+  ROOM_TYPE_UNSPECIFIED    = 0;
+  ROOM_TYPE_INTERNAL       = 1; // internal team discussion
+  ROOM_TYPE_CUSTOMER_REPLY = 2; // visible to customer
+}
+
+enum MacroVisibility {
+  MACRO_VISIBILITY_UNSPECIFIED = 0;
+  MACRO_VISIBILITY_PRIVATE     = 1;
+  MACRO_VISIBILITY_TEAM        = 2;
+  MACRO_VISIBILITY_PUBLIC      = 3;
+}
+
+// ── Ticket Room ───────────────────────────────────────────────────────────────
+
+message TicketRoom {
+  string   id            = 1;
+  string   ticket_id     = 2;  // Object Core ID of the ticket object
+  string   org_id        = 3;
+  string   name          = 4;
+  RoomType type          = 5;
+  int32    message_count = 6;
+  string   created_at    = 7;
+  string   updated_at    = 8;
+}
+
+message TicketRoomMessage {
+  string id         = 1;
+  string room_id    = 2;
+  string org_id     = 3;
+  string author_id  = 4; // user_id
+  string content    = 5;
+  bool   is_private = 6;
+  string created_at = 7;
+}
+
+// ── Macro ─────────────────────────────────────────────────────────────────────
+
+message Macro {
+  string          id           = 1;
+  string          org_id       = 2;
+  string          workspace_id = 3;
+  string          name         = 4;
+  string          content      = 5; // message body to insert
+  string          actions      = 6; // JSON: patch to apply to ticket data fields
+  MacroVisibility visibility   = 7;
+  string          created_by   = 8;
+  string          created_at   = 9;
+  string          updated_at   = 10;
+}
+
+// ── Request / Response messages ───────────────────────────────────────────────
+
+// Ticket Rooms
+message CreateTicketRoomRequest {
+  string   org_id    = 1;
+  string   ticket_id = 2;
+  string   name      = 3;
+  RoomType type      = 4;
+}
+
+message GetTicketRoomRequest {
+  string id     = 1;
+  string org_id = 2;
+}
+
+message ListTicketRoomsRequest {
+  string org_id    = 1;
+  string ticket_id = 2;
+}
+
+message ListTicketRoomsResponse {
+  repeated TicketRoom rooms = 1;
+}
+
+// Room Messages
+message AddRoomMessageRequest {
+  string org_id     = 1;
+  string room_id    = 2;
+  string content    = 3;
+  bool   is_private = 4;
+}
+
+message ListRoomMessagesRequest {
+  string org_id   = 1;
+  string room_id  = 2;
+  int32  limit    = 3;
+  string before   = 4; // message_id cursor
+}
+
+message ListRoomMessagesResponse {
+  repeated TicketRoomMessage messages = 1;
+  bool has_more = 2;
+}
+
+// Macros
+message CreateMacroRequest {
+  string          org_id       = 1;
+  string          workspace_id = 2;
+  string          name         = 3;
+  string          content      = 4;
+  string          actions      = 5; // JSON
+  MacroVisibility visibility   = 6;
+}
+
+message GetMacroRequest {
+  string id     = 1;
+  string org_id = 2;
+}
+
+message ListMacrosRequest {
+  string org_id       = 1;
+  string workspace_id = 2;
+}
+
+message ListMacrosResponse {
+  repeated Macro macros = 1;
+}
+
+message UpdateMacroRequest {
+  string          id         = 1;
+  string          org_id     = 2;
+  string          name       = 3;
+  string          content    = 4;
+  string          actions    = 5; // JSON
+  MacroVisibility visibility = 6;
+}
+
+message DeleteMacroRequest {
+  string id     = 1;
+  string org_id = 2;
+}
+
+message DeleteMacroResponse {
+  bool success = 1;
+}
+
+message ApplyMacroRequest {
+  string org_id          = 1;
+  string macro_id        = 2;
+  string ticket_id       = 3; // Object Core ID of the ticket
+  string room_id         = 4; // Room to post the message into (optional)
+}
+
+message ApplyMacroResponse {
+  bool   success   = 1;
+  string ticket_id = 2;
+}
+
+// ── Service ───────────────────────────────────────────────────────────────────
+
+service TicketingService {
+  // Ticket Rooms (threaded discussion spaces attached to a ticket)
+  rpc CreateTicketRoom(CreateTicketRoomRequest)     returns (TicketRoom);
+  rpc GetTicketRoom(GetTicketRoomRequest)           returns (TicketRoom);
+  rpc ListTicketRooms(ListTicketRoomsRequest)       returns (ListTicketRoomsResponse);
+  rpc AddRoomMessage(AddRoomMessageRequest)         returns (TicketRoomMessage);
+  rpc ListRoomMessages(ListRoomMessagesRequest)     returns (ListRoomMessagesResponse);
+
+  // Macros (canned responses + field-patch actions)
+  rpc CreateMacro(CreateMacroRequest) returns (Macro);
+  rpc GetMacro(GetMacroRequest)       returns (Macro);
+  rpc ListMacros(ListMacrosRequest)   returns (ListMacrosResponse);
+  rpc UpdateMacro(UpdateMacroRequest) returns (Macro);
+  rpc DeleteMacro(DeleteMacroRequest) returns (DeleteMacroResponse);
+  rpc ApplyMacro(ApplyMacroRequest)   returns (ApplyMacroResponse);
+}

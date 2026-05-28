@@ -22,8 +22,8 @@ const (
 	SubjectConversationResolved = "kyla.%s.conversation.resolved"
 	SubjectMessageReceived      = "kyla.%s.conversation.message_received"
 
-	SubjectCallStarted  = "kyla.%s.call.started"
-	SubjectCallEnded    = "kyla.%s.call.ended"
+	SubjectCallStarted = "kyla.%s.call.started"
+	SubjectCallEnded   = "kyla.%s.call.ended"
 
 	SubjectDealCreated      = "kyla.%s.deal.created"
 	SubjectDealStageChanged = "kyla.%s.deal.stage_changed"

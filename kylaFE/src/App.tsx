@@ -1,18 +1,8 @@
-import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import { routeConfig } from "./routes/config";
-import { Toaster } from "./components/ui/sonner";
-import "./App.css";
+import { createBrowserRouter, RouterProvider } from "react-router-dom"
+import { routeConfig } from "./app/routes/config"
 
-// Create router with the route configuration
-const router = createBrowserRouter(routeConfig);
+const router = createBrowserRouter(routeConfig)
 
-function App() {
-  return (
-    <>
-      <RouterProvider router={router} />
-      <Toaster />
-    </>
-  );
+export function App() {
+  return <RouterProvider router={router} />
 }
-
-export default App;

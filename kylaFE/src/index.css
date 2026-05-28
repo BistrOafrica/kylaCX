@@ -1,83 +1,91 @@
+/* ---------------------------------------------------------------------------
+ * Kyla — root stylesheet.
+ *
+ * Order matters:
+ *   1. tailwindcss              base utility engine
+ *   2. tw-animate-css           radix animation helpers
+ *   3. palette.css              raw color scales
+ *   4. semantic.css             :root + .dark token mappings
+ *   5. theme.css                semantic → Tailwind utility bridge
+ *   6. typography.css           font stacks + type scale
+ *
+ * Components must consume only the semantic / utility layer.
+ * ------------------------------------------------------------------------- */
+
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@import "./design-system/tokens/palette.css";
+@import "./design-system/tokens/semantic.css";
+@import "./design-system/tokens/theme.css";
+@import "./design-system/tokens/typography.css";
+
 @layer base {
-  :root {
-    --radius: 0.625rem;
-    --background: oklch(1 0 0);
-    --foreground: oklch(0.141 0.005 285.823);
-    --card: oklch(1 0 0);
-    --card-foreground: oklch(0.141 0.005 285.823);
-    --popover: oklch(1 0 0);
-    --popover-foreground: oklch(0.141 0.005 285.823);
-    --primary: oklch(0.646 0.165 160);
-    --primary-foreground: oklch(0.986 0.008 160);
-    --secondary: oklch(0.967 0.001 286.375);
-    --secondary-foreground: oklch(0.21 0.006 285.885);
-    --muted: oklch(0.967 0.001 286.375);
-    --muted-foreground: oklch(0.552 0.016 285.938);
-    --accent: oklch(0.967 0.001 286.375);
-    --accent-foreground: oklch(0.21 0.006 285.885);
-    --destructive: oklch(0.577 0.245 27.325);
-    --destructive-foreground: oklch(0.985 0 0);
-    --border: oklch(0.92 0.004 286.32);
-    --input: oklch(0.92 0.004 286.32);
-    --ring: oklch(0.646 0.165 160);
-    --chart-1: oklch(0.646 0.165 160);
-    --chart-2: oklch(0.498 0.142 171.452);
-    --chart-3: oklch(0.646 0.138 166.118);
-    --chart-4: oklch(0.398 0.132 172.927);
-    --chart-5: oklch(0.748 0.152 163.634);
-    --sidebar-background: oklch(0.985 0 0);
-    --sidebar-foreground: oklch(0.141 0.005 285.823);
-    --sidebar-primary: oklch(0.21 0.006 285.885);
-    --sidebar-primary-foreground: oklch(0.985 0 0);
-    --sidebar-accent: oklch(0.967 0.001 286.375);
-    --sidebar-accent-foreground: oklch(0.21 0.006 285.885);
-    --sidebar-border: oklch(0.92 0.004 286.32);
-    --sidebar-ring: oklch(0.705 0.015 286.067);
+  *, *::before, *::after {
+    border-color: var(--border-default);
   }
 
-  .dark {
-    --background: oklch(0.141 0.005 285.823);
-    --foreground: oklch(0.985 0 0);
-    --card: oklch(0.21 0.006 285.885);
-    --card-foreground: oklch(0.985 0 0);
-    --popover: oklch(0.21 0.006 285.885);
-    --popover-foreground: oklch(0.985 0 0);
-    --primary: oklch(0.646 0.165 160);
-    --primary-foreground: oklch(0.986 0.008 160);
-    --secondary: oklch(0.274 0.006 286.033);
-    --secondary-foreground: oklch(0.985 0 0);
-    --muted: oklch(0.274 0.006 286.033);
-    --muted-foreground: oklch(0.705 0.015 286.067);
-    --accent: oklch(0.274 0.006 286.033);
-    --accent-foreground: oklch(0.985 0 0);
-    --destructive: oklch(0.704 0.191 22.216);
-    --destructive-foreground: oklch(0.985 0 0);
-    --border: oklch(1 0 0 / 10%);
-    --input: oklch(1 0 0 / 15%);
-    --ring: oklch(0.646 0.165 160);
-    --chart-1: oklch(0.646 0.165 160);
-    --chart-2: oklch(0.498 0.142 171.452);
-    --chart-3: oklch(0.646 0.138 166.118);
-    --chart-4: oklch(0.398 0.132 172.927);
-    --chart-5: oklch(0.748 0.152 163.634);
-    --sidebar-background: oklch(0.21 0.006 285.885);
-    --sidebar-foreground: oklch(0.985 0 0);
-    --sidebar-primary: oklch(0.646 0.165 160);
-    --sidebar-primary-foreground: oklch(0.986 0.008 160);
-    --sidebar-accent: oklch(0.274 0.006 286.033);
-    --sidebar-accent-foreground: oklch(0.985 0 0);
-    --sidebar-border: oklch(1 0 0 / 10%);
-    --sidebar-ring: oklch(0.552 0.016 285.938);
+  *:focus-visible {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: 2px;
+    border-radius: var(--radius-sm);
   }
+
+  html {
+    color-scheme: light dark;
+    background: var(--bg-canvas);
+    color: var(--text-primary);
+  }
+
+  body {
+    background: var(--bg-canvas);
+    color: var(--text-primary);
+    min-height: 100vh;
+  }
+
+  /* Hairline borders look crisper without subpixel rounding */
+  hr {
+    border-color: var(--border-default);
+  }
+
+  /* Disable browser default focus rings — replaced by :focus-visible above */
+  :focus { outline: none; }
+
+  /* Scrollbar — restrained, theme-aware */
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb {
+    background: var(--border-strong);
+    border-radius: var(--radius-full);
+    border: 2px solid var(--bg-canvas);
+  }
+  ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
 }
 
-@layer base {
-  * {
-    border-color: hsl(var(--border));
+@layer utilities {
+  /* Used everywhere a panel needs a hairline-bordered surface */
+  .surface {
+    background: var(--bg-surface);
+    border: 1px solid var(--border-default);
   }
-  body {
-    background-color: hsl(var(--background));
-    color: hsl(var(--foreground));
-    font-feature-settings: "rlig" 1, "calt" 1;
+  .surface-elevated {
+    background: var(--bg-elevated);
+    border: 1px solid var(--border-default);
+    box-shadow: var(--shadow-2);
+  }
+
+  /* Density helpers */
+  .row-compact { height: var(--row-compact); }
+  .row-default { height: var(--row-default); }
+  .row-cozy    { height: var(--row-cozy); }
+
+  /* Reduced motion: kill non-essential animation everywhere */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.001ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.001ms !important;
+      scroll-behavior: auto !important;
+    }
   }
 }

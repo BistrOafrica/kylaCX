@@ -25,7 +25,7 @@ func GenerateMFASecret() (string, error) {
 // GenerateQRCode generates a QR code for the authenticator app
 func GenerateQRCode(secret, email string) (string, error) {
 	key, err := totp.Generate(totp.GenerateOpts{
-		Issuer:      "DialAfrika",
+		Issuer:      "kyla",
 		AccountName: email,
 		Secret:      []byte(secret),
 	})

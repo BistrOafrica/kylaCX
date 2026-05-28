@@ -88,6 +88,67 @@ func (DialplanNodeType) EnumDescriptor() ([]byte, []int) {
 	return file_call_dialplan_proto_rawDescGZIP(), []int{0}
 }
 
+// Edge represents a directed connection between two dialplan nodes.
+type DialplanEdge struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Source        string                 `protobuf:"bytes,2,opt,name=source,proto3" json:"source,omitempty"`
+	Target        string                 `protobuf:"bytes,3,opt,name=target,proto3" json:"target,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DialplanEdge) Reset() {
+	*x = DialplanEdge{}
+	mi := &file_call_dialplan_proto_msgTypes[0]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DialplanEdge) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DialplanEdge) ProtoMessage() {}
+
+func (x *DialplanEdge) ProtoReflect() protoreflect.Message {
+	mi := &file_call_dialplan_proto_msgTypes[0]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DialplanEdge.ProtoReflect.Descriptor instead.
+func (*DialplanEdge) Descriptor() ([]byte, []int) {
+	return file_call_dialplan_proto_rawDescGZIP(), []int{0}
+}
+
+func (x *DialplanEdge) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *DialplanEdge) GetSource() string {
+	if x != nil {
+		return x.Source
+	}
+	return ""
+}
+
+func (x *DialplanEdge) GetTarget() string {
+	if x != nil {
+		return x.Target
+	}
+	return ""
+}
+
 type NodePosition struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	X             float32                `protobuf:"fixed32,1,opt,name=x,proto3" json:"x,omitempty"`
@@ -98,7 +159,7 @@ type NodePosition struct {
 
 func (x *NodePosition) Reset() {
 	*x = NodePosition{}
-	mi := &file_call_dialplan_proto_msgTypes[0]
+	mi := &file_call_dialplan_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -110,7 +171,7 @@ func (x *NodePosition) String() string {
 func (*NodePosition) ProtoMessage() {}
 
 func (x *NodePosition) ProtoReflect() protoreflect.Message {
-	mi := &file_call_dialplan_proto_msgTypes[0]
+	mi := &file_call_dialplan_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -123,7 +184,7 @@ func (x *NodePosition) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use NodePosition.ProtoReflect.Descriptor instead.
 func (*NodePosition) Descriptor() ([]byte, []int) {
-	return file_call_dialplan_proto_rawDescGZIP(), []int{0}
+	return file_call_dialplan_proto_rawDescGZIP(), []int{1}
 }
 
 func (x *NodePosition) GetX() float32 {
@@ -151,7 +212,7 @@ type DialplanNode struct {
 
 func (x *DialplanNode) Reset() {
 	*x = DialplanNode{}
-	mi := &file_call_dialplan_proto_msgTypes[1]
+	mi := &file_call_dialplan_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -163,7 +224,7 @@ func (x *DialplanNode) String() string {
 func (*DialplanNode) ProtoMessage() {}
 
 func (x *DialplanNode) ProtoReflect() protoreflect.Message {
-	mi := &file_call_dialplan_proto_msgTypes[1]
+	mi := &file_call_dialplan_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -176,7 +237,7 @@ func (x *DialplanNode) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DialplanNode.ProtoReflect.Descriptor instead.
 func (*DialplanNode) Descriptor() ([]byte, []int) {
-	return file_call_dialplan_proto_rawDescGZIP(), []int{1}
+	return file_call_dialplan_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *DialplanNode) GetId() string {
@@ -207,7 +268,7 @@ type CallDialplan struct {
 	Description   string                 `protobuf:"bytes,3,opt,name=description,proto3" json:"description,omitempty"`
 	Notes         string                 `protobuf:"bytes,4,opt,name=notes,proto3" json:"notes,omitempty"`
 	Nodes         []*DialplanNode        `protobuf:"bytes,5,rep,name=nodes,proto3" json:"nodes,omitempty"`
-	Edges         []*Edge                `protobuf:"bytes,6,rep,name=edges,proto3" json:"edges,omitempty"`
+	Edges         []*DialplanEdge        `protobuf:"bytes,6,rep,name=edges,proto3" json:"edges,omitempty"`
 	CreatedAt     string                 `protobuf:"bytes,7,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -215,7 +276,7 @@ type CallDialplan struct {
 
 func (x *CallDialplan) Reset() {
 	*x = CallDialplan{}
-	mi := &file_call_dialplan_proto_msgTypes[2]
+	mi := &file_call_dialplan_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -227,7 +288,7 @@ func (x *CallDialplan) String() string {
 func (*CallDialplan) ProtoMessage() {}
 
 func (x *CallDialplan) ProtoReflect() protoreflect.Message {
-	mi := &file_call_dialplan_proto_msgTypes[2]
+	mi := &file_call_dialplan_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -240,7 +301,7 @@ func (x *CallDialplan) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CallDialplan.ProtoReflect.Descriptor instead.
 func (*CallDialplan) Descriptor() ([]byte, []int) {
-	return file_call_dialplan_proto_rawDescGZIP(), []int{2}
+	return file_call_dialplan_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *CallDialplan) GetId() string {
@@ -278,7 +339,7 @@ func (x *CallDialplan) GetNodes() []*DialplanNode {
 	return nil
 }
 
-func (x *CallDialplan) GetEdges() []*Edge {
+func (x *CallDialplan) GetEdges() []*DialplanEdge {
 	if x != nil {
 		return x.Edges
 	}
@@ -298,14 +359,14 @@ type CreateDialplanRequest struct {
 	Description   string                 `protobuf:"bytes,2,opt,name=description,proto3" json:"description,omitempty"`
 	Notes         string                 `protobuf:"bytes,3,opt,name=notes,proto3" json:"notes,omitempty"`
 	Nodes         []*DialplanNode        `protobuf:"bytes,4,rep,name=nodes,proto3" json:"nodes,omitempty"`
-	Edges         []*Edge                `protobuf:"bytes,5,rep,name=edges,proto3" json:"edges,omitempty"`
+	Edges         []*DialplanEdge        `protobuf:"bytes,5,rep,name=edges,proto3" json:"edges,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *CreateDialplanRequest) Reset() {
 	*x = CreateDialplanRequest{}
-	mi := &file_call_dialplan_proto_msgTypes[3]
+	mi := &file_call_dialplan_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -317,7 +378,7 @@ func (x *CreateDialplanRequest) String() string {
 func (*CreateDialplanRequest) ProtoMessage() {}
 
 func (x *CreateDialplanRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_call_dialplan_proto_msgTypes[3]
+	mi := &file_call_dialplan_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -330,7 +391,7 @@ func (x *CreateDialplanRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateDialplanRequest.ProtoReflect.Descriptor instead.
 func (*CreateDialplanRequest) Descriptor() ([]byte, []int) {
-	return file_call_dialplan_proto_rawDescGZIP(), []int{3}
+	return file_call_dialplan_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *CreateDialplanRequest) GetName() string {
@@ -361,7 +422,7 @@ func (x *CreateDialplanRequest) GetNodes() []*DialplanNode {
 	return nil
 }
 
-func (x *CreateDialplanRequest) GetEdges() []*Edge {
+func (x *CreateDialplanRequest) GetEdges() []*DialplanEdge {
 	if x != nil {
 		return x.Edges
 	}
@@ -375,14 +436,14 @@ type UpdateDialplanRequest struct {
 	Description   string                 `protobuf:"bytes,3,opt,name=description,proto3" json:"description,omitempty"`
 	Notes         string                 `protobuf:"bytes,4,opt,name=notes,proto3" json:"notes,omitempty"`
 	Nodes         []*DialplanNode        `protobuf:"bytes,5,rep,name=nodes,proto3" json:"nodes,omitempty"`
-	Edges         []*Edge                `protobuf:"bytes,6,rep,name=edges,proto3" json:"edges,omitempty"`
+	Edges         []*DialplanEdge        `protobuf:"bytes,6,rep,name=edges,proto3" json:"edges,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *UpdateDialplanRequest) Reset() {
 	*x = UpdateDialplanRequest{}
-	mi := &file_call_dialplan_proto_msgTypes[4]
+	mi := &file_call_dialplan_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -394,7 +455,7 @@ func (x *UpdateDialplanRequest) String() string {
 func (*UpdateDialplanRequest) ProtoMessage() {}
 
 func (x *UpdateDialplanRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_call_dialplan_proto_msgTypes[4]
+	mi := &file_call_dialplan_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -407,7 +468,7 @@ func (x *UpdateDialplanRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateDialplanRequest.ProtoReflect.Descriptor instead.
 func (*UpdateDialplanRequest) Descriptor() ([]byte, []int) {
-	return file_call_dialplan_proto_rawDescGZIP(), []int{4}
+	return file_call_dialplan_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *UpdateDialplanRequest) GetId() string {
@@ -445,7 +506,7 @@ func (x *UpdateDialplanRequest) GetNodes() []*DialplanNode {
 	return nil
 }
 
-func (x *UpdateDialplanRequest) GetEdges() []*Edge {
+func (x *UpdateDialplanRequest) GetEdges() []*DialplanEdge {
 	if x != nil {
 		return x.Edges
 	}
@@ -461,7 +522,7 @@ type ReadDialplanRequest struct {
 
 func (x *ReadDialplanRequest) Reset() {
 	*x = ReadDialplanRequest{}
-	mi := &file_call_dialplan_proto_msgTypes[5]
+	mi := &file_call_dialplan_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -473,7 +534,7 @@ func (x *ReadDialplanRequest) String() string {
 func (*ReadDialplanRequest) ProtoMessage() {}
 
 func (x *ReadDialplanRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_call_dialplan_proto_msgTypes[5]
+	mi := &file_call_dialplan_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -486,7 +547,7 @@ func (x *ReadDialplanRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ReadDialplanRequest.ProtoReflect.Descriptor instead.
 func (*ReadDialplanRequest) Descriptor() ([]byte, []int) {
-	return file_call_dialplan_proto_rawDescGZIP(), []int{5}
+	return file_call_dialplan_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *ReadDialplanRequest) GetId() string {
@@ -505,7 +566,7 @@ type SuccessDialplanResponse struct {
 
 func (x *SuccessDialplanResponse) Reset() {
 	*x = SuccessDialplanResponse{}
-	mi := &file_call_dialplan_proto_msgTypes[6]
+	mi := &file_call_dialplan_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -517,7 +578,7 @@ func (x *SuccessDialplanResponse) String() string {
 func (*SuccessDialplanResponse) ProtoMessage() {}
 
 func (x *SuccessDialplanResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_call_dialplan_proto_msgTypes[6]
+	mi := &file_call_dialplan_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -530,7 +591,7 @@ func (x *SuccessDialplanResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SuccessDialplanResponse.ProtoReflect.Descriptor instead.
 func (*SuccessDialplanResponse) Descriptor() ([]byte, []int) {
-	return file_call_dialplan_proto_rawDescGZIP(), []int{6}
+	return file_call_dialplan_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *SuccessDialplanResponse) GetSuccess() bool {
@@ -550,7 +611,7 @@ type ReadDialplansRequest struct {
 
 func (x *ReadDialplansRequest) Reset() {
 	*x = ReadDialplansRequest{}
-	mi := &file_call_dialplan_proto_msgTypes[7]
+	mi := &file_call_dialplan_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -562,7 +623,7 @@ func (x *ReadDialplansRequest) String() string {
 func (*ReadDialplansRequest) ProtoMessage() {}
 
 func (x *ReadDialplansRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_call_dialplan_proto_msgTypes[7]
+	mi := &file_call_dialplan_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -575,7 +636,7 @@ func (x *ReadDialplansRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ReadDialplansRequest.ProtoReflect.Descriptor instead.
 func (*ReadDialplansRequest) Descriptor() ([]byte, []int) {
-	return file_call_dialplan_proto_rawDescGZIP(), []int{7}
+	return file_call_dialplan_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *ReadDialplansRequest) GetPageNumber() int32 {
@@ -602,7 +663,7 @@ type ReadDialplansResponse struct {
 
 func (x *ReadDialplansResponse) Reset() {
 	*x = ReadDialplansResponse{}
-	mi := &file_call_dialplan_proto_msgTypes[8]
+	mi := &file_call_dialplan_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -614,7 +675,7 @@ func (x *ReadDialplansResponse) String() string {
 func (*ReadDialplansResponse) ProtoMessage() {}
 
 func (x *ReadDialplansResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_call_dialplan_proto_msgTypes[8]
+	mi := &file_call_dialplan_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -627,7 +688,7 @@ func (x *ReadDialplansResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ReadDialplansResponse.ProtoReflect.Descriptor instead.
 func (*ReadDialplansResponse) Descriptor() ([]byte, []int) {
-	return file_call_dialplan_proto_rawDescGZIP(), []int{8}
+	return file_call_dialplan_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *ReadDialplansResponse) GetTotal() int64 {
@@ -648,36 +709,40 @@ var File_call_dialplan_proto protoreflect.FileDescriptor
 
 const file_call_dialplan_proto_rawDesc = "" +
 	"\n" +
-	"\x13call_dialplan.proto\x12\bda.proto\x1a\x0fpipelines.proto\"*\n" +
+	"\x13call_dialplan.proto\x12\bda.proto\"N\n" +
+	"\fDialplanEdge\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x16\n" +
+	"\x06source\x18\x02 \x01(\tR\x06source\x12\x16\n" +
+	"\x06target\x18\x03 \x01(\tR\x06target\"*\n" +
 	"\fNodePosition\x12\f\n" +
 	"\x01x\x18\x01 \x01(\x02R\x01x\x12\f\n" +
 	"\x01y\x18\x02 \x01(\x02R\x01y\"\x94\x01\n" +
 	"\fDialplanNode\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x127\n" +
 	"\tnode_type\x18\x02 \x01(\x0e2\x1a.da.proto.DialplanNodeTypeR\bnodeType\x12;\n" +
-	"\rnode_position\x18\x03 \x01(\v2\x16.da.proto.NodePositionR\fnodePosition\"\xdd\x01\n" +
+	"\rnode_position\x18\x03 \x01(\v2\x16.da.proto.NodePositionR\fnodePosition\"\xe5\x01\n" +
 	"\fCallDialplan\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12 \n" +
 	"\vdescription\x18\x03 \x01(\tR\vdescription\x12\x14\n" +
 	"\x05notes\x18\x04 \x01(\tR\x05notes\x12,\n" +
-	"\x05nodes\x18\x05 \x03(\v2\x16.da.proto.DialplanNodeR\x05nodes\x12$\n" +
-	"\x05edges\x18\x06 \x03(\v2\x0e.da.proto.EdgeR\x05edges\x12\x1d\n" +
+	"\x05nodes\x18\x05 \x03(\v2\x16.da.proto.DialplanNodeR\x05nodes\x12,\n" +
+	"\x05edges\x18\x06 \x03(\v2\x16.da.proto.DialplanEdgeR\x05edges\x12\x1d\n" +
 	"\n" +
-	"created_at\x18\a \x01(\tR\tcreatedAt\"\xb7\x01\n" +
+	"created_at\x18\a \x01(\tR\tcreatedAt\"\xbf\x01\n" +
 	"\x15CreateDialplanRequest\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12 \n" +
 	"\vdescription\x18\x02 \x01(\tR\vdescription\x12\x14\n" +
 	"\x05notes\x18\x03 \x01(\tR\x05notes\x12,\n" +
-	"\x05nodes\x18\x04 \x03(\v2\x16.da.proto.DialplanNodeR\x05nodes\x12$\n" +
-	"\x05edges\x18\x05 \x03(\v2\x0e.da.proto.EdgeR\x05edges\"\xc7\x01\n" +
+	"\x05nodes\x18\x04 \x03(\v2\x16.da.proto.DialplanNodeR\x05nodes\x12,\n" +
+	"\x05edges\x18\x05 \x03(\v2\x16.da.proto.DialplanEdgeR\x05edges\"\xcf\x01\n" +
 	"\x15UpdateDialplanRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12 \n" +
 	"\vdescription\x18\x03 \x01(\tR\vdescription\x12\x14\n" +
 	"\x05notes\x18\x04 \x01(\tR\x05notes\x12,\n" +
-	"\x05nodes\x18\x05 \x03(\v2\x16.da.proto.DialplanNodeR\x05nodes\x12$\n" +
-	"\x05edges\x18\x06 \x03(\v2\x0e.da.proto.EdgeR\x05edges\"%\n" +
+	"\x05nodes\x18\x05 \x03(\v2\x16.da.proto.DialplanNodeR\x05nodes\x12,\n" +
+	"\x05edges\x18\x06 \x03(\v2\x16.da.proto.DialplanEdgeR\x05edges\"%\n" +
 	"\x13ReadDialplanRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\"3\n" +
 	"\x17SuccessDialplanResponse\x12\x18\n" +
@@ -719,40 +784,40 @@ func file_call_dialplan_proto_rawDescGZIP() []byte {
 }
 
 var file_call_dialplan_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_call_dialplan_proto_msgTypes = make([]protoimpl.MessageInfo, 9)
+var file_call_dialplan_proto_msgTypes = make([]protoimpl.MessageInfo, 10)
 var file_call_dialplan_proto_goTypes = []any{
 	(DialplanNodeType)(0),           // 0: da.proto.DialplanNodeType
-	(*NodePosition)(nil),            // 1: da.proto.NodePosition
-	(*DialplanNode)(nil),            // 2: da.proto.DialplanNode
-	(*CallDialplan)(nil),            // 3: da.proto.CallDialplan
-	(*CreateDialplanRequest)(nil),   // 4: da.proto.CreateDialplanRequest
-	(*UpdateDialplanRequest)(nil),   // 5: da.proto.UpdateDialplanRequest
-	(*ReadDialplanRequest)(nil),     // 6: da.proto.ReadDialplanRequest
-	(*SuccessDialplanResponse)(nil), // 7: da.proto.SuccessDialplanResponse
-	(*ReadDialplansRequest)(nil),    // 8: da.proto.ReadDialplansRequest
-	(*ReadDialplansResponse)(nil),   // 9: da.proto.ReadDialplansResponse
-	(*Edge)(nil),                    // 10: da.proto.Edge
+	(*DialplanEdge)(nil),            // 1: da.proto.DialplanEdge
+	(*NodePosition)(nil),            // 2: da.proto.NodePosition
+	(*DialplanNode)(nil),            // 3: da.proto.DialplanNode
+	(*CallDialplan)(nil),            // 4: da.proto.CallDialplan
+	(*CreateDialplanRequest)(nil),   // 5: da.proto.CreateDialplanRequest
+	(*UpdateDialplanRequest)(nil),   // 6: da.proto.UpdateDialplanRequest
+	(*ReadDialplanRequest)(nil),     // 7: da.proto.ReadDialplanRequest
+	(*SuccessDialplanResponse)(nil), // 8: da.proto.SuccessDialplanResponse
+	(*ReadDialplansRequest)(nil),    // 9: da.proto.ReadDialplansRequest
+	(*ReadDialplansResponse)(nil),   // 10: da.proto.ReadDialplansResponse
 }
 var file_call_dialplan_proto_depIdxs = []int32{
 	0,  // 0: da.proto.DialplanNode.node_type:type_name -> da.proto.DialplanNodeType
-	1,  // 1: da.proto.DialplanNode.node_position:type_name -> da.proto.NodePosition
-	2,  // 2: da.proto.CallDialplan.nodes:type_name -> da.proto.DialplanNode
-	10, // 3: da.proto.CallDialplan.edges:type_name -> da.proto.Edge
-	2,  // 4: da.proto.CreateDialplanRequest.nodes:type_name -> da.proto.DialplanNode
-	10, // 5: da.proto.CreateDialplanRequest.edges:type_name -> da.proto.Edge
-	2,  // 6: da.proto.UpdateDialplanRequest.nodes:type_name -> da.proto.DialplanNode
-	10, // 7: da.proto.UpdateDialplanRequest.edges:type_name -> da.proto.Edge
-	3,  // 8: da.proto.ReadDialplansResponse.items:type_name -> da.proto.CallDialplan
-	4,  // 9: da.proto.CallDialplanService.CreateDialplan:input_type -> da.proto.CreateDialplanRequest
-	6,  // 10: da.proto.CallDialplanService.ReadDialplan:input_type -> da.proto.ReadDialplanRequest
-	5,  // 11: da.proto.CallDialplanService.UpdateDialplan:input_type -> da.proto.UpdateDialplanRequest
-	6,  // 12: da.proto.CallDialplanService.DeleteDialplan:input_type -> da.proto.ReadDialplanRequest
-	8,  // 13: da.proto.CallDialplanService.ReadDialplans:input_type -> da.proto.ReadDialplansRequest
-	7,  // 14: da.proto.CallDialplanService.CreateDialplan:output_type -> da.proto.SuccessDialplanResponse
-	3,  // 15: da.proto.CallDialplanService.ReadDialplan:output_type -> da.proto.CallDialplan
-	7,  // 16: da.proto.CallDialplanService.UpdateDialplan:output_type -> da.proto.SuccessDialplanResponse
-	7,  // 17: da.proto.CallDialplanService.DeleteDialplan:output_type -> da.proto.SuccessDialplanResponse
-	9,  // 18: da.proto.CallDialplanService.ReadDialplans:output_type -> da.proto.ReadDialplansResponse
+	2,  // 1: da.proto.DialplanNode.node_position:type_name -> da.proto.NodePosition
+	3,  // 2: da.proto.CallDialplan.nodes:type_name -> da.proto.DialplanNode
+	1,  // 3: da.proto.CallDialplan.edges:type_name -> da.proto.DialplanEdge
+	3,  // 4: da.proto.CreateDialplanRequest.nodes:type_name -> da.proto.DialplanNode
+	1,  // 5: da.proto.CreateDialplanRequest.edges:type_name -> da.proto.DialplanEdge
+	3,  // 6: da.proto.UpdateDialplanRequest.nodes:type_name -> da.proto.DialplanNode
+	1,  // 7: da.proto.UpdateDialplanRequest.edges:type_name -> da.proto.DialplanEdge
+	4,  // 8: da.proto.ReadDialplansResponse.items:type_name -> da.proto.CallDialplan
+	5,  // 9: da.proto.CallDialplanService.CreateDialplan:input_type -> da.proto.CreateDialplanRequest
+	7,  // 10: da.proto.CallDialplanService.ReadDialplan:input_type -> da.proto.ReadDialplanRequest
+	6,  // 11: da.proto.CallDialplanService.UpdateDialplan:input_type -> da.proto.UpdateDialplanRequest
+	7,  // 12: da.proto.CallDialplanService.DeleteDialplan:input_type -> da.proto.ReadDialplanRequest
+	9,  // 13: da.proto.CallDialplanService.ReadDialplans:input_type -> da.proto.ReadDialplansRequest
+	8,  // 14: da.proto.CallDialplanService.CreateDialplan:output_type -> da.proto.SuccessDialplanResponse
+	4,  // 15: da.proto.CallDialplanService.ReadDialplan:output_type -> da.proto.CallDialplan
+	8,  // 16: da.proto.CallDialplanService.UpdateDialplan:output_type -> da.proto.SuccessDialplanResponse
+	8,  // 17: da.proto.CallDialplanService.DeleteDialplan:output_type -> da.proto.SuccessDialplanResponse
+	10, // 18: da.proto.CallDialplanService.ReadDialplans:output_type -> da.proto.ReadDialplansResponse
 	14, // [14:19] is the sub-list for method output_type
 	9,  // [9:14] is the sub-list for method input_type
 	9,  // [9:9] is the sub-list for extension type_name
@@ -765,14 +830,13 @@ func file_call_dialplan_proto_init() {
 	if File_call_dialplan_proto != nil {
 		return
 	}
-	file_pipelines_proto_init()
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_call_dialplan_proto_rawDesc), len(file_call_dialplan_proto_rawDesc)),
 			NumEnums:      1,
-			NumMessages:   9,
+			NumMessages:   10,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

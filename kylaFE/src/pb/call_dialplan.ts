@@ -12,7 +12,25 @@ import { UnknownFieldHandler } from "@protobuf-ts/runtime";
 import type { PartialMessage } from "@protobuf-ts/runtime";
 import { reflectionMergePartial } from "@protobuf-ts/runtime";
 import { MessageType } from "@protobuf-ts/runtime";
-import { Edge } from "./pipelines";
+/**
+ * Edge represents a directed connection between two dialplan nodes.
+ *
+ * @generated from protobuf message da.proto.DialplanEdge
+ */
+export interface DialplanEdge {
+    /**
+     * @generated from protobuf field: string id = 1
+     */
+    id: string;
+    /**
+     * @generated from protobuf field: string source = 2
+     */
+    source: string;
+    /**
+     * @generated from protobuf field: string target = 3
+     */
+    target: string;
+}
 /**
  * @generated from protobuf message da.proto.NodePosition
  */
@@ -68,9 +86,9 @@ export interface CallDialplan {
      */
     nodes: DialplanNode[];
     /**
-     * @generated from protobuf field: repeated da.proto.Edge edges = 6
+     * @generated from protobuf field: repeated da.proto.DialplanEdge edges = 6
      */
-    edges: Edge[];
+    edges: DialplanEdge[];
     /**
      * @generated from protobuf field: string created_at = 7
      */
@@ -97,9 +115,9 @@ export interface CreateDialplanRequest {
      */
     nodes: DialplanNode[];
     /**
-     * @generated from protobuf field: repeated da.proto.Edge edges = 5
+     * @generated from protobuf field: repeated da.proto.DialplanEdge edges = 5
      */
-    edges: Edge[];
+    edges: DialplanEdge[];
 }
 /**
  * @generated from protobuf message da.proto.UpdateDialplanRequest
@@ -126,9 +144,9 @@ export interface UpdateDialplanRequest {
      */
     nodes: DialplanNode[];
     /**
-     * @generated from protobuf field: repeated da.proto.Edge edges = 6
+     * @generated from protobuf field: repeated da.proto.DialplanEdge edges = 6
      */
-    edges: Edge[];
+    edges: DialplanEdge[];
 }
 /**
  * @generated from protobuf message da.proto.ReadDialplanRequest
@@ -215,6 +233,69 @@ export enum DialplanNodeType {
      */
     TRIGGER = 8
 }
+// @generated message type with reflection information, may provide speed optimized methods
+class DialplanEdge$Type extends MessageType<DialplanEdge> {
+    constructor() {
+        super("da.proto.DialplanEdge", [
+            { no: 1, name: "id", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
+            { no: 2, name: "source", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
+            { no: 3, name: "target", kind: "scalar", T: 9 /*ScalarType.STRING*/ }
+        ]);
+    }
+    create(value?: PartialMessage<DialplanEdge>): DialplanEdge {
+        const message = globalThis.Object.create((this.messagePrototype!));
+        message.id = "";
+        message.source = "";
+        message.target = "";
+        if (value !== undefined)
+            reflectionMergePartial<DialplanEdge>(this, message, value);
+        return message;
+    }
+    internalBinaryRead(reader: IBinaryReader, length: number, options: BinaryReadOptions, target?: DialplanEdge): DialplanEdge {
+        let message = target ?? this.create(), end = reader.pos + length;
+        while (reader.pos < end) {
+            let [fieldNo, wireType] = reader.tag();
+            switch (fieldNo) {
+                case /* string id */ 1:
+                    message.id = reader.string();
+                    break;
+                case /* string source */ 2:
+                    message.source = reader.string();
+                    break;
+                case /* string target */ 3:
+                    message.target = reader.string();
+                    break;
+                default:
+                    let u = options.readUnknownField;
+                    if (u === "throw")
+                        throw new globalThis.Error(`Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`);
+                    let d = reader.skip(wireType);
+                    if (u !== false)
+                        (u === true ? UnknownFieldHandler.onRead : u)(this.typeName, message, fieldNo, wireType, d);
+            }
+        }
+        return message;
+    }
+    internalBinaryWrite(message: DialplanEdge, writer: IBinaryWriter, options: BinaryWriteOptions): IBinaryWriter {
+        /* string id = 1; */
+        if (message.id !== "")
+            writer.tag(1, WireType.LengthDelimited).string(message.id);
+        /* string source = 2; */
+        if (message.source !== "")
+            writer.tag(2, WireType.LengthDelimited).string(message.source);
+        /* string target = 3; */
+        if (message.target !== "")
+            writer.tag(3, WireType.LengthDelimited).string(message.target);
+        let u = options.writeUnknownFields;
+        if (u !== false)
+            (u == true ? UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);
+        return writer;
+    }
+}
+/**
+ * @generated MessageType for protobuf message da.proto.DialplanEdge
+ */
+export const DialplanEdge = new DialplanEdge$Type();
 // @generated message type with reflection information, may provide speed optimized methods
 class NodePosition$Type extends MessageType<NodePosition> {
     constructor() {
@@ -341,7 +422,7 @@ class CallDialplan$Type extends MessageType<CallDialplan> {
             { no: 3, name: "description", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
             { no: 4, name: "notes", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
             { no: 5, name: "nodes", kind: "message", repeat: 2 /*RepeatType.UNPACKED*/, T: () => DialplanNode },
-            { no: 6, name: "edges", kind: "message", repeat: 2 /*RepeatType.UNPACKED*/, T: () => Edge },
+            { no: 6, name: "edges", kind: "message", repeat: 2 /*RepeatType.UNPACKED*/, T: () => DialplanEdge },
             { no: 7, name: "created_at", kind: "scalar", T: 9 /*ScalarType.STRING*/ }
         ]);
     }
@@ -378,8 +459,8 @@ class CallDialplan$Type extends MessageType<CallDialplan> {
                 case /* repeated da.proto.DialplanNode nodes */ 5:
                     message.nodes.push(DialplanNode.internalBinaryRead(reader, reader.uint32(), options));
                     break;
-                case /* repeated da.proto.Edge edges */ 6:
-                    message.edges.push(Edge.internalBinaryRead(reader, reader.uint32(), options));
+                case /* repeated da.proto.DialplanEdge edges */ 6:
+                    message.edges.push(DialplanEdge.internalBinaryRead(reader, reader.uint32(), options));
                     break;
                 case /* string created_at */ 7:
                     message.createdAt = reader.string();
@@ -411,9 +492,9 @@ class CallDialplan$Type extends MessageType<CallDialplan> {
         /* repeated da.proto.DialplanNode nodes = 5; */
         for (let i = 0; i < message.nodes.length; i++)
             DialplanNode.internalBinaryWrite(message.nodes[i], writer.tag(5, WireType.LengthDelimited).fork(), options).join();
-        /* repeated da.proto.Edge edges = 6; */
+        /* repeated da.proto.DialplanEdge edges = 6; */
         for (let i = 0; i < message.edges.length; i++)
-            Edge.internalBinaryWrite(message.edges[i], writer.tag(6, WireType.LengthDelimited).fork(), options).join();
+            DialplanEdge.internalBinaryWrite(message.edges[i], writer.tag(6, WireType.LengthDelimited).fork(), options).join();
         /* string created_at = 7; */
         if (message.createdAt !== "")
             writer.tag(7, WireType.LengthDelimited).string(message.createdAt);
@@ -435,7 +516,7 @@ class CreateDialplanRequest$Type extends MessageType<CreateDialplanRequest> {
             { no: 2, name: "description", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
             { no: 3, name: "notes", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
             { no: 4, name: "nodes", kind: "message", repeat: 2 /*RepeatType.UNPACKED*/, T: () => DialplanNode },
-            { no: 5, name: "edges", kind: "message", repeat: 2 /*RepeatType.UNPACKED*/, T: () => Edge }
+            { no: 5, name: "edges", kind: "message", repeat: 2 /*RepeatType.UNPACKED*/, T: () => DialplanEdge }
         ]);
     }
     create(value?: PartialMessage<CreateDialplanRequest>): CreateDialplanRequest {
@@ -466,8 +547,8 @@ class CreateDialplanRequest$Type extends MessageType<CreateDialplanRequest> {
                 case /* repeated da.proto.DialplanNode nodes */ 4:
                     message.nodes.push(DialplanNode.internalBinaryRead(reader, reader.uint32(), options));
                     break;
-                case /* repeated da.proto.Edge edges */ 5:
-                    message.edges.push(Edge.internalBinaryRead(reader, reader.uint32(), options));
+                case /* repeated da.proto.DialplanEdge edges */ 5:
+                    message.edges.push(DialplanEdge.internalBinaryRead(reader, reader.uint32(), options));
                     break;
                 default:
                     let u = options.readUnknownField;
@@ -493,9 +574,9 @@ class CreateDialplanRequest$Type extends MessageType<CreateDialplanRequest> {
         /* repeated da.proto.DialplanNode nodes = 4; */
         for (let i = 0; i < message.nodes.length; i++)
             DialplanNode.internalBinaryWrite(message.nodes[i], writer.tag(4, WireType.LengthDelimited).fork(), options).join();
-        /* repeated da.proto.Edge edges = 5; */
+        /* repeated da.proto.DialplanEdge edges = 5; */
         for (let i = 0; i < message.edges.length; i++)
-            Edge.internalBinaryWrite(message.edges[i], writer.tag(5, WireType.LengthDelimited).fork(), options).join();
+            DialplanEdge.internalBinaryWrite(message.edges[i], writer.tag(5, WireType.LengthDelimited).fork(), options).join();
         let u = options.writeUnknownFields;
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);
@@ -515,7 +596,7 @@ class UpdateDialplanRequest$Type extends MessageType<UpdateDialplanRequest> {
             { no: 3, name: "description", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
             { no: 4, name: "notes", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
             { no: 5, name: "nodes", kind: "message", repeat: 2 /*RepeatType.UNPACKED*/, T: () => DialplanNode },
-            { no: 6, name: "edges", kind: "message", repeat: 2 /*RepeatType.UNPACKED*/, T: () => Edge }
+            { no: 6, name: "edges", kind: "message", repeat: 2 /*RepeatType.UNPACKED*/, T: () => DialplanEdge }
         ]);
     }
     create(value?: PartialMessage<UpdateDialplanRequest>): UpdateDialplanRequest {
@@ -550,8 +631,8 @@ class UpdateDialplanRequest$Type extends MessageType<UpdateDialplanRequest> {
                 case /* repeated da.proto.DialplanNode nodes */ 5:
                     message.nodes.push(DialplanNode.internalBinaryRead(reader, reader.uint32(), options));
                     break;
-                case /* repeated da.proto.Edge edges */ 6:
-                    message.edges.push(Edge.internalBinaryRead(reader, reader.uint32(), options));
+                case /* repeated da.proto.DialplanEdge edges */ 6:
+                    message.edges.push(DialplanEdge.internalBinaryRead(reader, reader.uint32(), options));
                     break;
                 default:
                     let u = options.readUnknownField;
@@ -580,9 +661,9 @@ class UpdateDialplanRequest$Type extends MessageType<UpdateDialplanRequest> {
         /* repeated da.proto.DialplanNode nodes = 5; */
         for (let i = 0; i < message.nodes.length; i++)
             DialplanNode.internalBinaryWrite(message.nodes[i], writer.tag(5, WireType.LengthDelimited).fork(), options).join();
-        /* repeated da.proto.Edge edges = 6; */
+        /* repeated da.proto.DialplanEdge edges = 6; */
         for (let i = 0; i < message.edges.length; i++)
-            Edge.internalBinaryWrite(message.edges[i], writer.tag(6, WireType.LengthDelimited).fork(), options).join();
+            DialplanEdge.internalBinaryWrite(message.edges[i], writer.tag(6, WireType.LengthDelimited).fork(), options).join();
         let u = options.writeUnknownFields;
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);

@@ -1,0 +1,394 @@
+syntax = "proto3";
+
+package da.proto;
+option go_package = "./pb";
+
+// ── Enums ─────────────────────────────────────────────────────────────────────
+
+enum Channel {
+  CHANNEL_UNSPECIFIED = 0;
+  CHANNEL_WHATSAPP    = 1;
+  CHANNEL_EMAIL       = 2;
+  CHANNEL_SMS         = 3;
+  CHANNEL_VOICE       = 4;
+  CHANNEL_WEBCHAT     = 5;
+  CHANNEL_INSTAGRAM   = 6;
+  CHANNEL_MESSENGER   = 7;
+}
+
+enum ConversationStatus {
+  CONVERSATION_STATUS_UNSPECIFIED = 0;
+  CONVERSATION_STATUS_OPEN        = 1;
+  CONVERSATION_STATUS_PENDING     = 2;
+  CONVERSATION_STATUS_RESOLVED    = 3;
+  CONVERSATION_STATUS_SNOOZED     = 4;
+}
+
+enum ConversationPriority {
+  CONVERSATION_PRIORITY_UNSPECIFIED = 0;
+  CONVERSATION_PRIORITY_LOW         = 1;
+  CONVERSATION_PRIORITY_NORMAL      = 2;
+  CONVERSATION_PRIORITY_HIGH        = 3;
+  CONVERSATION_PRIORITY_URGENT      = 4;
+}
+
+enum SenderType {
+  SENDER_TYPE_UNSPECIFIED = 0;
+  SENDER_TYPE_AGENT       = 1;
+  SENDER_TYPE_CONTACT     = 2;
+  SENDER_TYPE_BOT         = 3;
+  SENDER_TYPE_SYSTEM      = 4;
+}
+
+enum MessageStatus {
+  MESSAGE_STATUS_UNSPECIFIED = 0;
+  MESSAGE_STATUS_PENDING     = 1;
+  MESSAGE_STATUS_SENT        = 2;
+  MESSAGE_STATUS_DELIVERED   = 3;
+  MESSAGE_STATUS_READ        = 4;
+  MESSAGE_STATUS_FAILED      = 5;
+}
+
+enum ContentType {
+  CONTENT_TYPE_UNSPECIFIED  = 0;
+  CONTENT_TYPE_TEXT         = 1;
+  CONTENT_TYPE_IMAGE        = 2;
+  CONTENT_TYPE_AUDIO        = 3;
+  CONTENT_TYPE_VIDEO        = 4;
+  CONTENT_TYPE_FILE         = 5;
+  CONTENT_TYPE_TEMPLATE     = 6;
+  CONTENT_TYPE_INTERACTIVE  = 7;
+}
+
+// ── Core messages ─────────────────────────────────────────────────────────────
+
+message Conversation {
+  string               id             = 1;
+  string               org_id         = 2;
+  string               workspace_id   = 3;
+  Channel              channel        = 4;
+  string               channel_ref    = 5;
+  string               contact_id     = 6;
+  string               assigned_to    = 7;
+  string               team_id        = 8;
+  ConversationStatus   status         = 9;
+  ConversationPriority priority       = 10;
+  string               subject        = 11;
+  optional string      sla_deadline   = 12;
+  optional string      snoozed_until  = 13;
+  optional string      resolved_at    = 14;
+  string               meta           = 15; // JSON
+  string               created_at     = 16;
+  string               updated_at     = 17;
+}
+
+message Message {
+  string        id              = 1;
+  string        conversation_id = 2;
+  string        sender_id       = 3;
+  SenderType    sender_type     = 4;
+  Channel       channel         = 5;
+  ContentType   content_type    = 6;
+  string        content         = 7; // JSON
+  MessageStatus status          = 8;
+  string        external_id     = 9;
+  string        created_at      = 10;
+}
+
+// Envelope pushed over the streaming RPC.
+message ConversationUpdate {
+  string       event_type       = 1; // "conversation.updated" | "message.received" | "assigned" | "resolved" | "typing" | "presence_update"
+  string       conversation_id  = 2;
+  int64        timestamp        = 3;
+  optional Conversation conversation = 4;
+  optional Message message      = 5;
+  optional string payload       = 6; // JSON payload for custom events
+}
+
+// ── Request / Response messages ───────────────────────────────────────────────
+
+message CreateConversationRequest {
+  string               org_id       = 1;
+  string               workspace_id = 2;
+  Channel              channel      = 3;
+  string               channel_ref  = 4;
+  string               contact_id   = 5;
+  string               subject      = 6;
+  ConversationPriority priority     = 7;
+  string               meta         = 8; // JSON
+}
+
+message GetConversationRequest {
+  string id     = 1;
+  string org_id = 2;
+}
+
+message ListConversationsRequest {
+  string               org_id       = 1;
+  string               workspace_id = 2;
+  ConversationStatus   status       = 3;
+  Channel              channel      = 4;
+  string               assigned_to  = 5;
+  int32                page_size    = 6;
+  string               page_token   = 7;
+  bool                 active_only  = 8; // Filter out resolved conversations
+}
+
+message ListConversationsResponse {
+  repeated Conversation conversations  = 1;
+  string                next_page_token = 2;
+  int32                 total           = 3;
+}
+
+message AssignConversationRequest {
+  string id          = 1;
+  string org_id      = 2;
+  string assigned_to = 3; // user_id; empty string = unassign
+  string team_id     = 4;
+}
+
+message UpdateConversationStatusRequest {
+  string             id            = 1;
+  string             org_id        = 2;
+  ConversationStatus status        = 3;
+  optional string    snoozed_until = 4; // RFC3339, required when status=SNOOZED
+}
+
+message ResolveConversationRequest {
+  string id     = 1;
+  string org_id = 2;
+}
+
+message SendMessageRequest {
+  string      conversation_id = 1;
+  string      org_id          = 2;
+  ContentType content_type    = 3;
+  string      content         = 4; // JSON: {"text": "..."}
+}
+
+message ListMessagesRequest {
+  string conversation_id = 1;
+  string org_id          = 2;
+  int32  limit           = 3;
+  string before          = 4; // message_id cursor — returns messages older than this
+}
+
+message ListMessagesResponse {
+  repeated Message messages       = 1;
+  bool             has_more       = 2;
+}
+
+message StreamConversationUpdatesRequest {
+  string workspace_id = 1;
+  string org_id       = 2;
+}
+
+message SendTypingIndicatorRequest {
+  string org_id          = 1;
+  string workspace_id    = 2;
+  string conversation_id = 3;
+  string user_id         = 4;
+  bool   is_typing       = 5;
+}
+
+message SendTypingIndicatorResponse {
+  bool success = 1;
+}
+
+message GetConversationTimelineRequest {
+  string id     = 1;
+  string org_id = 2;
+  int32  limit  = 3;
+}
+
+message TimelineEvent {
+  string id         = 1;
+  string object_id  = 2;
+  string actor_id   = 3;
+  string actor_type = 4;
+  string event_type = 5;
+  string payload    = 6; // JSON
+  string created_at = 7;
+}
+
+message GetConversationTimelineResponse {
+  repeated TimelineEvent events = 1;
+}
+
+// ── Routing messages ──────────────────────────────────────────────────────────
+
+message RoutingRule {
+  string id           = 1;
+  string org_id       = 2;
+  string workspace_id = 3;
+  string name         = 4;
+  int32  priority     = 5;
+  string conditions   = 6; // JSON: [{field,op,value}]
+  string actions      = 7; // JSON: [{type,target_id}]
+  string strategy     = 8; // "round_robin" | "skill_based" | "direct"
+  bool   is_active    = 9;
+  string created_at   = 10;
+  string updated_at   = 11;
+}
+
+message CreateRoutingRuleRequest {
+  string org_id       = 1;
+  string workspace_id = 2;
+  string name         = 3;
+  int32  priority     = 4;
+  string conditions   = 5; // JSON
+  string actions      = 6; // JSON
+  string strategy     = 7;
+}
+
+message GetRoutingRuleRequest {
+  string id     = 1;
+  string org_id = 2;
+}
+
+message ListRoutingRulesRequest {
+  string org_id       = 1;
+  string workspace_id = 2;
+  bool   active_only  = 3;
+}
+
+message ListRoutingRulesResponse {
+  repeated RoutingRule rules = 1;
+}
+
+message UpdateRoutingRuleRequest {
+  string id           = 1;
+  string org_id       = 2;
+  string name         = 3;
+  int32  priority     = 4;
+  string conditions   = 5; // JSON
+  string actions      = 6; // JSON
+  string strategy     = 7;
+  bool   is_active    = 8;
+}
+
+message DeleteRoutingRuleRequest {
+  string id     = 1;
+  string org_id = 2;
+}
+
+message DeleteRoutingRuleResponse {
+  bool success = 1;
+}
+
+// ── SLA messages ──────────────────────────────────────────────────────────────
+
+message SLAPolicy {
+  string id           = 1;
+  string org_id       = 2;
+  string workspace_id = 3;
+  string name         = 4;
+  string conditions   = 5; // JSON: [{field,op,value}]
+  string metrics      = 6; // JSON: {first_response_hours,resolution_hours}
+  bool   is_default   = 7;
+  bool   is_active    = 8;
+  string created_at   = 9;
+  string updated_at   = 10;
+}
+
+message SLARecord {
+  string id                       = 1;
+  string conversation_id          = 2;
+  string policy_id                = 3;
+  string org_id                   = 4;
+  string started_at               = 5;
+  optional string first_response_deadline = 6;
+  optional string first_responded_at      = 7;
+  optional string resolution_deadline     = 8;
+  optional string resolved_at             = 9;
+  bool   first_response_breached  = 10;
+  bool   resolution_breached      = 11;
+  string created_at               = 12;
+  string updated_at               = 13;
+}
+
+message CreateSLAPolicyRequest {
+  string org_id       = 1;
+  string workspace_id = 2;
+  string name         = 3;
+  string conditions   = 4; // JSON
+  string metrics      = 5; // JSON
+  bool   is_default   = 6;
+}
+
+message GetSLAPolicyRequest {
+  string id     = 1;
+  string org_id = 2;
+}
+
+message ListSLAPoliciesRequest {
+  string org_id       = 1;
+  string workspace_id = 2;
+  bool   active_only  = 3;
+}
+
+message ListSLAPoliciesResponse {
+  repeated SLAPolicy policies = 1;
+}
+
+message UpdateSLAPolicyRequest {
+  string id           = 1;
+  string org_id       = 2;
+  string name         = 3;
+  string conditions   = 4; // JSON
+  string metrics      = 5; // JSON
+  bool   is_default   = 6;
+  bool   is_active    = 7;
+}
+
+message DeleteSLAPolicyRequest {
+  string id     = 1;
+  string org_id = 2;
+}
+
+message DeleteSLAPolicyResponse {
+  bool success = 1;
+}
+
+message GetSLARecordRequest {
+  string conversation_id = 1;
+  string org_id          = 2;
+}
+
+// ── Service ───────────────────────────────────────────────────────────────────
+
+service ConversationService {
+  // Conversation lifecycle
+  rpc CreateConversation(CreateConversationRequest)              returns (Conversation);
+  rpc GetConversation(GetConversationRequest)                    returns (Conversation);
+  rpc ListConversations(ListConversationsRequest)                returns (ListConversationsResponse);
+  rpc AssignConversation(AssignConversationRequest)              returns (Conversation);
+  rpc UpdateConversationStatus(UpdateConversationStatusRequest)  returns (Conversation);
+  rpc ResolveConversation(ResolveConversationRequest)            returns (Conversation);
+
+  // Messaging
+  rpc SendMessage(SendMessageRequest)     returns (Message);
+  rpc ListMessages(ListMessagesRequest)   returns (ListMessagesResponse);
+
+  // Realtime (Task 3 — stub implementation in this phase)
+  rpc StreamConversationUpdates(StreamConversationUpdatesRequest) returns (stream ConversationUpdate);
+  rpc SendTypingIndicator(SendTypingIndicatorRequest) returns (SendTypingIndicatorResponse);
+
+  // Timeline via Object Core
+  rpc GetConversationTimeline(GetConversationTimelineRequest) returns (GetConversationTimelineResponse);
+
+  // Routing Rules
+  rpc CreateRoutingRule(CreateRoutingRuleRequest)  returns (RoutingRule);
+  rpc GetRoutingRule(GetRoutingRuleRequest)        returns (RoutingRule);
+  rpc ListRoutingRules(ListRoutingRulesRequest)    returns (ListRoutingRulesResponse);
+  rpc UpdateRoutingRule(UpdateRoutingRuleRequest)  returns (RoutingRule);
+  rpc DeleteRoutingRule(DeleteRoutingRuleRequest)  returns (DeleteRoutingRuleResponse);
+
+  // SLA Policies
+  rpc CreateSLAPolicy(CreateSLAPolicyRequest)      returns (SLAPolicy);
+  rpc GetSLAPolicy(GetSLAPolicyRequest)            returns (SLAPolicy);
+  rpc ListSLAPolicies(ListSLAPoliciesRequest)      returns (ListSLAPoliciesResponse);
+  rpc UpdateSLAPolicy(UpdateSLAPolicyRequest)      returns (SLAPolicy);
+  rpc DeleteSLAPolicy(DeleteSLAPolicyRequest)      returns (DeleteSLAPolicyResponse);
+  rpc GetSLARecord(GetSLARecordRequest)            returns (SLARecord);
+}

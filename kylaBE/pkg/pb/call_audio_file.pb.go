@@ -24,19 +24,19 @@ const (
 type FileOrigin int32
 
 const (
-	FileOrigin_UPLOADED_FILE  FileOrigin = 0
-	FileOrigin_GENERATED_FILE FileOrigin = 1
+	FileOrigin_FILE_ORIGIN_UPLOADED_FILE  FileOrigin = 0
+	FileOrigin_FILE_ORIGIN_GENERATED_FILE FileOrigin = 1
 )
 
 // Enum value maps for FileOrigin.
 var (
 	FileOrigin_name = map[int32]string{
-		0: "UPLOADED_FILE",
-		1: "GENERATED_FILE",
+		0: "FILE_ORIGIN_UPLOADED_FILE",
+		1: "FILE_ORIGIN_GENERATED_FILE",
 	}
 	FileOrigin_value = map[string]int32{
-		"UPLOADED_FILE":  0,
-		"GENERATED_FILE": 1,
+		"FILE_ORIGIN_UPLOADED_FILE":  0,
+		"FILE_ORIGIN_GENERATED_FILE": 1,
 	}
 )
 
@@ -134,7 +134,7 @@ func (x *CallAudioFile) GetOrigin() FileOrigin {
 	if x != nil {
 		return x.Origin
 	}
-	return FileOrigin_UPLOADED_FILE
+	return FileOrigin_FILE_ORIGIN_UPLOADED_FILE
 }
 
 func (x *CallAudioFile) GetMessage() string {
@@ -259,7 +259,7 @@ func (x *CreateAudioFileRequest) GetOrigin() FileOrigin {
 	if x != nil {
 		return x.Origin
 	}
-	return FileOrigin_UPLOADED_FILE
+	return FileOrigin_FILE_ORIGIN_UPLOADED_FILE
 }
 
 func (x *CreateAudioFileRequest) GetMessage() string {
@@ -567,11 +567,11 @@ const file_call_audio_file_proto_rawDesc = "" +
 	"\tdomain_id\x18\x03 \x01(\tR\bdomainId\"]\n" +
 	"\x16ReadAudioFilesResponse\x12\x14\n" +
 	"\x05total\x18\x01 \x01(\x03R\x05total\x12-\n" +
-	"\x05items\x18\x02 \x03(\v2\x17.da.proto.CallAudioFileR\x05items*3\n" +
+	"\x05items\x18\x02 \x03(\v2\x17.da.proto.CallAudioFileR\x05items*K\n" +
 	"\n" +
-	"FileOrigin\x12\x11\n" +
-	"\rUPLOADED_FILE\x10\x00\x12\x12\n" +
-	"\x0eGENERATED_FILE\x10\x012\xaa\x03\n" +
+	"FileOrigin\x12\x1d\n" +
+	"\x19FILE_ORIGIN_UPLOADED_FILE\x10\x00\x12\x1e\n" +
+	"\x1aFILE_ORIGIN_GENERATED_FILE\x10\x012\xaa\x03\n" +
 	"\x14CallAudioFileService\x12T\n" +
 	"\n" +
 	"UploadFile\x12 .da.proto.CreateAudioFileRequest\x1a\".da.proto.SuccessAudioFileResponse(\x01\x12C\n" +

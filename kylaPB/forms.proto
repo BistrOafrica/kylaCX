@@ -1,0 +1,116 @@
+syntax = "proto3";
+
+package da.proto;
+option go_package = "./pb";
+
+// ── Enums ─────────────────────────────────────────────────────────────────────
+
+enum FormStatus {
+  FORM_STATUS_UNSPECIFIED = 0;
+  FORM_STATUS_DRAFT       = 1;
+  FORM_STATUS_ACTIVE      = 2;
+  FORM_STATUS_CLOSED      = 3;
+}
+
+// ── Form ──────────────────────────────────────────────────────────────────────
+
+message FormDefinition {
+  string     id               = 1;
+  string     org_id           = 2;
+  string     workspace_id     = 3;
+  string     name             = 4;
+  string     description      = 5;
+  string     fields           = 6;  // JSON: []FormField definition
+  FormStatus status           = 7;
+  string     submit_redirect  = 8;  // URL to redirect after submit
+  int32      submission_count = 9;
+  string     created_by       = 10;
+  string     created_at       = 11;
+  string     updated_at       = 12;
+}
+
+message FormSubmission {
+  string          id         = 1;
+  string          form_id    = 2;
+  string          org_id     = 3;
+  string          data       = 4;   // JSON: {field_key: value}
+  optional string object_id  = 5;   // Object Core record created for this submission
+  string          created_at = 6;
+}
+
+// ── Request / Response messages ───────────────────────────────────────────────
+
+message CreateFormRequest {
+  string     org_id          = 1;
+  string     workspace_id    = 2;
+  string     name            = 3;
+  string     description     = 4;
+  string     fields          = 5; // JSON
+  string     submit_redirect = 6;
+}
+
+message GetFormRequest {
+  string id     = 1;
+  string org_id = 2;
+}
+
+message ListFormsRequest {
+  string     org_id       = 1;
+  string     workspace_id = 2;
+  FormStatus status       = 3;
+}
+
+message ListFormsResponse {
+  repeated FormDefinition forms = 1;
+}
+
+message UpdateFormRequest {
+  string     id             = 1;
+  string     org_id         = 2;
+  string     name           = 3;
+  string     description    = 4;
+  string     fields         = 5; // JSON
+  FormStatus status         = 6;
+  string     submit_redirect = 7;
+}
+
+message DeleteFormRequest {
+  string id     = 1;
+  string org_id = 2;
+}
+
+message DeleteFormResponse {
+  bool success = 1;
+}
+
+message SubmitFormRequest {
+  string org_id  = 1;
+  string form_id = 2;
+  string data    = 3; // JSON: {field_key: value}
+}
+
+message ListSubmissionsRequest {
+  string org_id   = 1;
+  string form_id  = 2;
+  int32  page_size = 3;
+  string page_token = 4;
+}
+
+message ListSubmissionsResponse {
+  repeated FormSubmission submissions    = 1;
+  string                  next_page_token = 2;
+  int32                   total           = 3;
+}
+
+// ── Service ───────────────────────────────────────────────────────────────────
+
+service FormsService {
+  rpc CreateForm(CreateFormRequest)              returns (FormDefinition);
+  rpc GetForm(GetFormRequest)                    returns (FormDefinition);
+  rpc ListForms(ListFormsRequest)                returns (ListFormsResponse);
+  rpc UpdateForm(UpdateFormRequest)              returns (FormDefinition);
+  rpc DeleteForm(DeleteFormRequest)              returns (DeleteFormResponse);
+
+  rpc SubmitForm(SubmitFormRequest)              returns (FormSubmission);
+  rpc ListSubmissions(ListSubmissionsRequest)    returns (ListSubmissionsResponse);
+}

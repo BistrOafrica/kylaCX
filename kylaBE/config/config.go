@@ -18,13 +18,13 @@ type PostgresConfig struct {
 }
 
 type EnvConfigs struct {
-	Environment          string `mapstructure:"ENVIRONMENT"`
-	Port                 string `mapstructure:"PORT"`
-	JwtSecret            string `mapstructure:"JWT_SECRET_KEY"`
-	AuthSvcUrl           string `mapstructure:"AUTH_SVC_URL"`
-	NatsURL              string `mapstructure:"NATS_URL"`
+	Environment           string `mapstructure:"ENVIRONMENT"`
+	Port                  string `mapstructure:"PORT"`
+	JwtSecret             string `mapstructure:"JWT_SECRET_KEY"`
+	AuthSvcUrl            string `mapstructure:"AUTH_SVC_URL"`
+	NatsURL               string `mapstructure:"NATS_URL"`
 	WhatsAppWebhookSecret string `mapstructure:"WA_WEBHOOK_SECRET"`
-	WhatsAppVerifyToken  string `mapstructure:"WA_VERIFY_TOKEN"`
+	WhatsAppVerifyToken   string `mapstructure:"WA_VERIFY_TOKEN"`
 	WhatsAppAccessToken   string `mapstructure:"WA_ACCESS_TOKEN"`
 	WhatsAppPhoneNumberID string `mapstructure:"WA_PHONE_NUMBER_ID"`
 
@@ -50,6 +50,21 @@ type EnvConfigs struct {
 	AfricasTalkingFrom     string `mapstructure:"AT_FROM"`
 
 	SLAScanIntervalSecs int `mapstructure:"SLA_SCAN_INTERVAL_SECS"`
+
+	// Temporal — durable workflow execution
+	TemporalHostPort  string `mapstructure:"TEMPORAL_HOST_PORT"`
+	TemporalNamespace string `mapstructure:"TEMPORAL_NAMESPACE"`
+	TemporalTaskQueue string `mapstructure:"TEMPORAL_TASK_QUEUE"`
+
+	// AI / LLM provider configuration
+	// LLMProvider selects which provider implementation backs internal/ai.
+	// Supported values: "openai" (default), "anthropic", "noop".
+	LLMProvider     string `mapstructure:"LLM_PROVIDER"`
+	OpenAIAPIKey    string `mapstructure:"OPENAI_API_KEY"`
+	OpenAIModel     string `mapstructure:"OPENAI_MODEL"`
+	OpenAIBaseURL   string `mapstructure:"OPENAI_BASE_URL"`
+	AnthropicAPIKey string `mapstructure:"ANTHROPIC_API_KEY"`
+	AnthropicModel  string `mapstructure:"ANTHROPIC_MODEL"`
 }
 
 type RsConfig struct {
@@ -109,6 +124,7 @@ func LoadConfig() (*Config, error) {
 	leadsAddress := os.Getenv("LEADS_ADDRESS")
 	webAuthnRPID, webAuthnRPOrigin, webAuthnRPDisplayName := os.Getenv("WEB_AUTHN_RP_ID"), os.Getenv("WEB_AUTHN_RP_ORIGIN"), os.Getenv("WEB_AUTHN_RP_DISPLAY_NAME")
 	awsRegion, awsAccessKey, awsSecretKey := os.Getenv("AWS_REGION"), os.Getenv("AWS_ACCESS_KEY"), os.Getenv("AWS_SECRET_KEY")
+	redisAddr, redisPass := os.Getenv("REDIS_ADDR"), os.Getenv("REDIS_PASSWORD")
 
 	fbCredentials := os.Getenv("FB_CREDENTIALS")
 	waWebhookSecret := os.Getenv("WA_WEBHOOK_SECRET")
@@ -148,6 +164,12 @@ func LoadConfig() (*Config, error) {
 		if err = viper.Unmarshal(&config.WebAuthnConfig); err != nil {
 			log.Fatalf("Unable to decode into struct, %v", err)
 		}
+		if err = viper.Unmarshal(&config.RedisConfig); err != nil {
+			log.Fatalf("Unable to decode into struct, %v", err)
+		}
+		if err = viper.Unmarshal(&config.AwsCredentialsConfig); err != nil {
+			log.Fatalf("Unable to decode into struct, %v", err)
+		}
 
 		return config, nil
 	} else {
@@ -184,6 +206,17 @@ func LoadConfig() (*Config, error) {
 				AfricasTalkingFrom:     os.Getenv("AT_FROM"),
 
 				SLAScanIntervalSecs: getIntEnv("SLA_SCAN_INTERVAL_SECS", 60),
+
+				TemporalHostPort:  os.Getenv("TEMPORAL_HOST_PORT"),
+				TemporalNamespace: os.Getenv("TEMPORAL_NAMESPACE"),
+				TemporalTaskQueue: os.Getenv("TEMPORAL_TASK_QUEUE"),
+
+				LLMProvider:     os.Getenv("LLM_PROVIDER"),
+				OpenAIAPIKey:    os.Getenv("OPENAI_API_KEY"),
+				OpenAIModel:     os.Getenv("OPENAI_MODEL"),
+				OpenAIBaseURL:   os.Getenv("OPENAI_BASE_URL"),
+				AnthropicAPIKey: os.Getenv("ANTHROPIC_API_KEY"),
+				AnthropicModel:  os.Getenv("ANTHROPIC_MODEL"),
 			},
 			RsConfig: RsConfig{
 				ResendApiKey:       resendapikey,
@@ -213,6 +246,11 @@ func LoadConfig() (*Config, error) {
 				AwsRegion:    awsRegion,
 				AwsAccessKey: awsAccessKey,
 				AwsSecretKey: awsSecretKey,
+			},
+			RedisConfig: RedisConfig{
+				Addr:     redisAddr,
+				Password: redisPass,
+				DB:       getIntEnv("REDIS_DB", 0),
 			},
 		}
 		return config, nil

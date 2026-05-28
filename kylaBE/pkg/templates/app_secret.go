@@ -67,7 +67,7 @@ func APP_SECRET(data AppSecretData) (string, error) {
     <body>
         <div class="container">
             <div style="text-align: left; width: min-content;">
-                <img src="https://dialafrika.com/_next/image?url=%2Flogo-color.png&w=384&q=75" alt="Company Logo" style="display: block; margin: 0 auto; width: 150px;">
+                <img src="https://kyla.com/_next/image?url=%2Flogo-color.png&w=384&q=75" alt="Company Logo" style="display: block; margin: 0 auto; width: 150px;">
             </div>
             <!-- caution emoji -->
             <div style="text-align: center; font-size: 30px; color: #ff8c00;"></div>
@@ -85,18 +85,18 @@ func APP_SECRET(data AppSecretData) (string, error) {
                 <p><strong>App Secret:</strong> {{.Secret}}</p> 
             </div>
             <br/>
-            <p>Kindly keep these details safe and secure. You will need them to authenticate your app with Dialafrika API.</p>
+            <p>Kindly keep these details safe and secure. You will need them to authenticate your app with kyla API.</p>
             <p>For more information on how to authenticate your app, please contact our support team at <a href="mailto:{{.SupportEmail}}" style="color: #be7012; text-decoration: none;">{{.SupportEmail}}</a></p>
-            <p>Please note that your app will be reviewed and approved by our team before it can be used to access Dialafrika API.</p>
+            <p>Please note that your app will be reviewed and approved by our team before it can be used to access kyla API.</p>
             <p>You will receive an email notification once your app has been reviewed within the next 24 hours.</p>
             <br/>
             <p>Thank you!</p>
-            <p>Team Dialafrika</p>
+            <p>Team kyla</p>
 
             <hr style="margin: 20px 0; border: 1px solid #e1e1e1;">
-			<p style="text-align: center; color: #b2b2b2;">This message was sent to {{.ClientEmail}} by Dialafrika Accounts Service for app creation</p>
+			<p style="text-align: center; color: #b2b2b2;">This message was sent to {{.ClientEmail}} by kyla Accounts Service for app creation</p>
             <p style="text-align: center; color: #b2b2b2;">If you have any questions, please contact us at <a href="mailto:{{.SupportEmail}}" style="color: #be7012; text-decoration: none;">{{.SupportEmail}}</a></p>
-            <p style="text-align: center; color: #b2b2b2;">&copy; {{.Year}} Dialafrika.Inc All rights reserved.</p>
+            <p style="text-align: center; color: #b2b2b2;">&copy; {{.Year}} kyla.Inc All rights reserved.</p>
         </div>       
     </body>
     </html>

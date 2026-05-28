@@ -4,8 +4,8 @@ package da.proto;
 option go_package = "./pb";
 
 enum FileOrigin {
-	UPLOADED_FILE = 0;
-	GENERATED_FILE = 1;
+  FILE_ORIGIN_UPLOADED_FILE = 0;
+  FILE_ORIGIN_GENERATED_FILE = 1;
 }
 
 message CallAudioFile {

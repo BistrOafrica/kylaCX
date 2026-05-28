@@ -73,7 +73,7 @@ func INVITATION_EMAIL(data InvitationEmailData) (string, error) {
         <div class="container">
         <div style="text-align: left; width: min-content">
             <img
-            src="https://dialafrika.com/_next/image?url=%2Flogo-color.png&w=384&q=75"
+            src="https://kyla.com/_next/image?url=%2Flogo-color.png&w=384&q=75"
             alt="Company Logo"
             style="display: block; margin: 0 auto; width: 150px"
             />
@@ -83,7 +83,7 @@ func INVITATION_EMAIL(data InvitationEmailData) (string, error) {
         <p>Hello,</p>
         <br />
         <p>
-            You've been invited to join {{ .OrganisationName }} on Bonga by Dialafrika.
+            You've been invited to join {{ .OrganisationName }} on Bonga by kyla.
             We're excited to have you on board!
         </p>
         <p>
@@ -94,29 +94,29 @@ func INVITATION_EMAIL(data InvitationEmailData) (string, error) {
         <a href="{{ .InvitationURL }}" class="button">Accept Invitation 🚀</a>
         <br />
         <p>Have the best Day,</p>
-        <p>The Bonga Team at Dialafrika.Inc</p>
+        <p>The Bonga Team at kyla.Inc</p>
 
         <hr style="margin: 20px 0; border: 1px solid #e1e1e1" />
         <p style="text-align: left; color: #b2b2b2">
-            This message was sent to {{.ClientEmail}} by Dialafrika Accounts Service
+            This message was sent to {{.ClientEmail}} by kyla Accounts Service
             for your invitation to join {{ .OrganisationName }}<br />If you have any questions, please
             contact us at <a href="mailto:{{ .SupportEmail}}">{{ .SupportEmail}}</a>
         </p>
 
         <p style="text-align: left; color: #b2b2b2">
-            Bonga: A product of Dialafrika Inc. <br /> 16192 coastal Highway, Lewes,
+            Bonga: A product of kyla Inc. <br /> 16192 coastal Highway, Lewes,
             Delaware 19958, County of Sussex
         </p>
         <br />
         <div style="display: flex; width:100%; justify-content: space-evenly">
             <a href="#">Unsubscribe</a>|
-            <a href="https://dialafrika.com/privacy">Privacy Policy</a>|
-            <a href="https://dialafrika.com/terms">Terms of Service</a>|
-            <a href="https://dialafrika.com/contact">Contact Us</a>|
-            <a href="https://dialafrika.com/about">About Us</a>|
+            <a href="https://kyla.com/privacy">Privacy Policy</a>|
+            <a href="https://kyla.com/terms">Terms of Service</a>|
+            <a href="https://kyla.com/contact">Contact Us</a>|
+            <a href="https://kyla.com/about">About Us</a>|
         </div>
         <p style="text-align: center; color: #b2b2b2">
-            &copy; {{ .Year}} Dialafrika.Inc. All rights reserved.
+            &copy; {{ .Year}} kyla.Inc. All rights reserved.
         </p>
         </div>
     </body>

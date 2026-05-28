@@ -156,11 +156,11 @@ export interface ReadAudioFilesResponse {
  */
 export enum FileOrigin {
     /**
-     * @generated from protobuf enum value: UPLOADED_FILE = 0;
+     * @generated from protobuf enum value: FILE_ORIGIN_UPLOADED_FILE = 0;
      */
     UPLOADED_FILE = 0,
     /**
-     * @generated from protobuf enum value: GENERATED_FILE = 1;
+     * @generated from protobuf enum value: FILE_ORIGIN_GENERATED_FILE = 1;
      */
     GENERATED_FILE = 1
 }
@@ -170,7 +170,7 @@ class CallAudioFile$Type extends MessageType<CallAudioFile> {
         super("da.proto.CallAudioFile", [
             { no: 1, name: "id", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
             { no: 2, name: "name", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
-            { no: 3, name: "origin", kind: "enum", T: () => ["da.proto.FileOrigin", FileOrigin] },
+            { no: 3, name: "origin", kind: "enum", T: () => ["da.proto.FileOrigin", FileOrigin, "FILE_ORIGIN_"] },
             { no: 4, name: "message", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
             { no: 5, name: "filename", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
             { no: 6, name: "duration", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
@@ -312,7 +312,7 @@ class CreateAudioFileRequest$Type extends MessageType<CreateAudioFileRequest> {
     constructor() {
         super("da.proto.CreateAudioFileRequest", [
             { no: 1, name: "name", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
-            { no: 2, name: "origin", kind: "enum", T: () => ["da.proto.FileOrigin", FileOrigin] },
+            { no: 2, name: "origin", kind: "enum", T: () => ["da.proto.FileOrigin", FileOrigin, "FILE_ORIGIN_"] },
             { no: 3, name: "message", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
             { no: 4, name: "chunks", kind: "scalar", T: 12 /*ScalarType.BYTES*/ },
             { no: 5, name: "description", kind: "scalar", T: 9 /*ScalarType.STRING*/ }

@@ -1,0 +1,169 @@
+syntax = "proto3";
+
+package da.proto;
+option go_package = "./pb";
+
+// ── Enums ─────────────────────────────────────────────────────────────────────
+
+enum ArticleStatus {
+  ARTICLE_STATUS_UNSPECIFIED = 0;
+  ARTICLE_STATUS_DRAFT       = 1;
+  ARTICLE_STATUS_PUBLISHED   = 2;
+  ARTICLE_STATUS_ARCHIVED    = 3;
+}
+
+// ── Knowledge Base Category ───────────────────────────────────────────────────
+
+message KBCategory {
+  string          id           = 1;
+  string          org_id       = 2;
+  string          workspace_id = 3;
+  string          name         = 4;
+  string          slug         = 5;
+  string          icon         = 6;
+  optional string parent_id   = 7;
+  int32           position     = 8;
+  int32           article_count = 9;
+  string          created_at   = 10;
+  string          updated_at   = 11;
+}
+
+// ── Knowledge Base Article ────────────────────────────────────────────────────
+
+message KBArticle {
+  string          id           = 1;
+  string          org_id       = 2;
+  string          workspace_id = 3;
+  string          category_id  = 4;
+  string          title        = 5;
+  string          slug         = 6;
+  string          content      = 7; // Markdown / HTML body
+  string          excerpt      = 8;
+  ArticleStatus   status       = 9;
+  string          author_id    = 10;
+  optional string published_at = 11;
+  int32           view_count   = 12;
+  string          created_at   = 13;
+  string          updated_at   = 14;
+}
+
+// ── Request / Response messages ───────────────────────────────────────────────
+
+// Categories
+message CreateKBCategoryRequest {
+  string          org_id       = 1;
+  string          workspace_id = 2;
+  string          name         = 3;
+  string          icon         = 4;
+  optional string parent_id   = 5;
+  int32           position     = 6;
+}
+
+message ListKBCategoriesRequest {
+  string org_id       = 1;
+  string workspace_id = 2;
+}
+
+message ListKBCategoriesResponse {
+  repeated KBCategory categories = 1;
+}
+
+message UpdateKBCategoryRequest {
+  string id       = 1;
+  string org_id   = 2;
+  string name     = 3;
+  string icon     = 4;
+  int32  position = 5;
+}
+
+message DeleteKBCategoryRequest {
+  string id     = 1;
+  string org_id = 2;
+}
+
+message DeleteKBCategoryResponse {
+  bool success = 1;
+}
+
+// Articles
+message CreateKBArticleRequest {
+  string org_id       = 1;
+  string workspace_id = 2;
+  string category_id  = 3;
+  string title        = 4;
+  string content      = 5;
+  string excerpt      = 6;
+}
+
+message GetKBArticleRequest {
+  string id     = 1;
+  string org_id = 2;
+}
+
+message ListKBArticlesRequest {
+  string        org_id       = 1;
+  string        workspace_id = 2;
+  string        category_id  = 3;
+  ArticleStatus status       = 4;
+  int32         page_size    = 5;
+  string        page_token   = 6;
+}
+
+message ListKBArticlesResponse {
+  repeated KBArticle articles       = 1;
+  string             next_page_token = 2;
+  int32              total           = 3;
+}
+
+message UpdateKBArticleRequest {
+  string id          = 1;
+  string org_id      = 2;
+  string category_id = 3;
+  string title       = 4;
+  string content     = 5;
+  string excerpt     = 6;
+}
+
+message DeleteKBArticleRequest {
+  string id     = 1;
+  string org_id = 2;
+}
+
+message DeleteKBArticleResponse {
+  bool success = 1;
+}
+
+message PublishKBArticleRequest {
+  string id     = 1;
+  string org_id = 2;
+}
+
+message SearchKBArticlesRequest {
+  string org_id       = 1;
+  string workspace_id = 2;
+  string query        = 3;
+  int32  limit        = 4;
+}
+
+message SearchKBArticlesResponse {
+  repeated KBArticle articles = 1;
+}
+
+// ── Service ───────────────────────────────────────────────────────────────────
+
+service KnowledgeService {
+  // Categories
+  rpc CreateKBCategory(CreateKBCategoryRequest)  returns (KBCategory);
+  rpc ListKBCategories(ListKBCategoriesRequest)  returns (ListKBCategoriesResponse);
+  rpc UpdateKBCategory(UpdateKBCategoryRequest)  returns (KBCategory);
+  rpc DeleteKBCategory(DeleteKBCategoryRequest)  returns (DeleteKBCategoryResponse);
+
+  // Articles
+  rpc CreateKBArticle(CreateKBArticleRequest)    returns (KBArticle);
+  rpc GetKBArticle(GetKBArticleRequest)          returns (KBArticle);
+  rpc ListKBArticles(ListKBArticlesRequest)      returns (ListKBArticlesResponse);
+  rpc UpdateKBArticle(UpdateKBArticleRequest)    returns (KBArticle);
+  rpc DeleteKBArticle(DeleteKBArticleRequest)    returns (DeleteKBArticleResponse);
+  rpc PublishKBArticle(PublishKBArticleRequest)  returns (KBArticle);
+  rpc SearchKBArticles(SearchKBArticlesRequest)  returns (SearchKBArticlesResponse);
+}
