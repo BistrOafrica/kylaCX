@@ -6,10 +6,25 @@
 
 FROM node:22-slim AS builder
 WORKDIR /app
+
+# Build essentials — some transitive deps (esbuild fallback, node-gyp users)
+# need python3 / make / g++ to compile on ARM hosts (Raspberry Pi etc).
+# ca-certificates fixes any registry-fetch TLS issues on bare-bones bases.
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+        python3 make g++ ca-certificates git && \
+    rm -rf /var/lib/apt/lists/*
+
 RUN corepack enable && corepack prepare pnpm@9.15.9 --activate
+RUN pnpm config set store-dir /pnpm-store
 
 COPY kylaFE/package.json kylaFE/pnpm-lock.yaml ./
-RUN pnpm install --frozen-lockfile
+
+# --prefer-frozen-lockfile (not --frozen-lockfile) tolerates the lockfile
+# being slightly out of step on rebuilds — fails loudly on real drift but
+# survives e.g. a new optional platform dep being needed by ARM/musl.
+RUN --mount=type=cache,id=pnpm-store,target=/pnpm-store \
+    pnpm install --prefer-frozen-lockfile
 
 COPY kylaFE/ ./
 
