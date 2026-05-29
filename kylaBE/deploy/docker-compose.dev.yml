@@ -1,0 +1,115 @@
+# Local full-stack dev environment (generated, gitignored).
+# Brings up: Postgres + Redis + NATS(JetStream) + Go backend (air hot-reload)
+# + Envoy (gRPC-web) + Vite frontend.
+#
+#   docker compose -f kylaBE/deploy/docker-compose.dev.yml up --build
+#
+# URLs once healthy:
+#   Frontend (Vite)      http://localhost:5173
+#   Envoy gRPC-web       http://localhost:8081
+#   Envoy admin          http://localhost:9090
+#   Backend gRPC         localhost:50050
+#   Postgres             localhost:5433  (db: kyla / kyla)
+
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: kyla
+      POSTGRES_PASSWORD: kyla
+      POSTGRES_DB: kyla
+    ports:
+      - "5433:5432"
+    volumes:
+      - kyla_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U kyla -d kyla"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    networks:
+      - kyla
+
+  redis:
+    image: redis:7-alpine
+    networks:
+      - kyla
+
+  nats:
+    image: nats:2.10-alpine
+    command: ["-js", "-m", "8222"]
+    ports:
+      - "4222:4222"
+      - "8222:8222"
+    networks:
+      - kyla
+
+  # Backend service. MUST be named "core-svc": envoy.yaml's cluster targets
+  # the host "core-svc:50050" by DNS.
+  core-svc:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.dev
+      target: development
+    ports:
+      - "50050:50050"
+    volumes:
+      - ../:/app
+      - /app/tmp
+    # The Dockerfile's air invocation doesn't reliably honor its build flags
+    # in this image, and deploy/.air.toml isn't auto-loaded from /app. Build
+    # and run explicitly — deterministic. Use `make dev-be` to rebuild/restart
+    # after Go changes.
+    command: ["sh", "-c", "CGO_ENABLED=0 go build -o /app/tmp/server ./cmd/server && exec /app/tmp/server"]
+    env_file:
+      - ../envs/.env
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      nats:
+        condition: service_started
+    networks:
+      - kyla
+
+  envoy-proxy:
+    image: envoyproxy/envoy:v1.25-latest
+    volumes:
+      - ../envoy.yaml:/etc/envoy/envoy.yaml
+    ports:
+      - "8081:8081"
+      - "9090:9090"
+    depends_on:
+      - core-svc
+    command: ["envoy", "-c", "/etc/envoy/envoy.yaml"]
+    networks:
+      - kyla
+
+  frontend:
+    image: node:22-slim
+    working_dir: /app
+    volumes:
+      - ../../kylaFE:/app
+      - kyla_fe_node_modules:/app/node_modules
+    env_file:
+      - ../../kylaFE/.env
+    command: >
+      sh -c "corepack enable &&
+             corepack prepare pnpm@9.15.9 --activate &&
+             pnpm install &&
+             pnpm exec vite --host 0.0.0.0 --port 5173"
+    ports:
+      - "5173:5173"
+    depends_on:
+      - envoy-proxy
+    networks:
+      - kyla
+
+volumes:
+  kyla_pgdata:
+  kyla_fe_node_modules:
+
+networks:
+  kyla:
+    driver: bridge
