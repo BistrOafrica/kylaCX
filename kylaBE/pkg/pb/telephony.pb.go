@@ -1314,11 +1314,17 @@ func (x *TransferRequest) GetBlind() bool {
 }
 
 type TransferResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	Status        string                 `protobuf:"bytes,2,opt,name=status,proto3" json:"status,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state  protoimpl.MessageState `protogen:"open.v1"`
+	Id     string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Status string                 `protobuf:"bytes,2,opt,name=status,proto3" json:"status,omitempty"`
+	// For attended transfer: the PBX-assigned UUID for the consultation leg
+	// started between the agent and the target. The frontend calls
+	// CompleteTransfer with both id (original caller) and consultation_id to
+	// finalise the bridge, or HangupCall against consultation_id to abort and
+	// resume the caller. Empty for blind transfers.
+	ConsultationId string `protobuf:"bytes,3,opt,name=consultation_id,json=consultationId,proto3" json:"consultation_id,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
 }
 
 func (x *TransferResponse) Reset() {
@@ -1365,6 +1371,119 @@ func (x *TransferResponse) GetStatus() string {
 	return ""
 }
 
+func (x *TransferResponse) GetConsultationId() string {
+	if x != nil {
+		return x.ConsultationId
+	}
+	return ""
+}
+
+type CompleteTransferRequest struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// The original caller leg.
+	Id string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	// The consultation leg returned by TransferCall(blind=false).
+	ConsultationId string `protobuf:"bytes,2,opt,name=consultation_id,json=consultationId,proto3" json:"consultation_id,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
+}
+
+func (x *CompleteTransferRequest) Reset() {
+	*x = CompleteTransferRequest{}
+	mi := &file_telephony_proto_msgTypes[16]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CompleteTransferRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CompleteTransferRequest) ProtoMessage() {}
+
+func (x *CompleteTransferRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_telephony_proto_msgTypes[16]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CompleteTransferRequest.ProtoReflect.Descriptor instead.
+func (*CompleteTransferRequest) Descriptor() ([]byte, []int) {
+	return file_telephony_proto_rawDescGZIP(), []int{16}
+}
+
+func (x *CompleteTransferRequest) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *CompleteTransferRequest) GetConsultationId() string {
+	if x != nil {
+		return x.ConsultationId
+	}
+	return ""
+}
+
+type CompleteTransferResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Status        string                 `protobuf:"bytes,2,opt,name=status,proto3" json:"status,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CompleteTransferResponse) Reset() {
+	*x = CompleteTransferResponse{}
+	mi := &file_telephony_proto_msgTypes[17]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CompleteTransferResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CompleteTransferResponse) ProtoMessage() {}
+
+func (x *CompleteTransferResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_telephony_proto_msgTypes[17]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CompleteTransferResponse.ProtoReflect.Descriptor instead.
+func (*CompleteTransferResponse) Descriptor() ([]byte, []int) {
+	return file_telephony_proto_rawDescGZIP(), []int{17}
+}
+
+func (x *CompleteTransferResponse) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *CompleteTransferResponse) GetStatus() string {
+	if x != nil {
+		return x.Status
+	}
+	return ""
+}
+
 type HoldRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
@@ -1374,7 +1493,7 @@ type HoldRequest struct {
 
 func (x *HoldRequest) Reset() {
 	*x = HoldRequest{}
-	mi := &file_telephony_proto_msgTypes[16]
+	mi := &file_telephony_proto_msgTypes[18]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1386,7 +1505,7 @@ func (x *HoldRequest) String() string {
 func (*HoldRequest) ProtoMessage() {}
 
 func (x *HoldRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_telephony_proto_msgTypes[16]
+	mi := &file_telephony_proto_msgTypes[18]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1399,7 +1518,7 @@ func (x *HoldRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use HoldRequest.ProtoReflect.Descriptor instead.
 func (*HoldRequest) Descriptor() ([]byte, []int) {
-	return file_telephony_proto_rawDescGZIP(), []int{16}
+	return file_telephony_proto_rawDescGZIP(), []int{18}
 }
 
 func (x *HoldRequest) GetId() string {
@@ -1419,7 +1538,7 @@ type HoldResponse struct {
 
 func (x *HoldResponse) Reset() {
 	*x = HoldResponse{}
-	mi := &file_telephony_proto_msgTypes[17]
+	mi := &file_telephony_proto_msgTypes[19]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1431,7 +1550,7 @@ func (x *HoldResponse) String() string {
 func (*HoldResponse) ProtoMessage() {}
 
 func (x *HoldResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_telephony_proto_msgTypes[17]
+	mi := &file_telephony_proto_msgTypes[19]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1444,7 +1563,7 @@ func (x *HoldResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use HoldResponse.ProtoReflect.Descriptor instead.
 func (*HoldResponse) Descriptor() ([]byte, []int) {
-	return file_telephony_proto_rawDescGZIP(), []int{17}
+	return file_telephony_proto_rawDescGZIP(), []int{19}
 }
 
 func (x *HoldResponse) GetId() string {
@@ -1470,7 +1589,7 @@ type ResumeRequest struct {
 
 func (x *ResumeRequest) Reset() {
 	*x = ResumeRequest{}
-	mi := &file_telephony_proto_msgTypes[18]
+	mi := &file_telephony_proto_msgTypes[20]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1482,7 +1601,7 @@ func (x *ResumeRequest) String() string {
 func (*ResumeRequest) ProtoMessage() {}
 
 func (x *ResumeRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_telephony_proto_msgTypes[18]
+	mi := &file_telephony_proto_msgTypes[20]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1495,7 +1614,7 @@ func (x *ResumeRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ResumeRequest.ProtoReflect.Descriptor instead.
 func (*ResumeRequest) Descriptor() ([]byte, []int) {
-	return file_telephony_proto_rawDescGZIP(), []int{18}
+	return file_telephony_proto_rawDescGZIP(), []int{20}
 }
 
 func (x *ResumeRequest) GetId() string {
@@ -1515,7 +1634,7 @@ type ResumeResponse struct {
 
 func (x *ResumeResponse) Reset() {
 	*x = ResumeResponse{}
-	mi := &file_telephony_proto_msgTypes[19]
+	mi := &file_telephony_proto_msgTypes[21]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1527,7 +1646,7 @@ func (x *ResumeResponse) String() string {
 func (*ResumeResponse) ProtoMessage() {}
 
 func (x *ResumeResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_telephony_proto_msgTypes[19]
+	mi := &file_telephony_proto_msgTypes[21]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1540,7 +1659,7 @@ func (x *ResumeResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ResumeResponse.ProtoReflect.Descriptor instead.
 func (*ResumeResponse) Descriptor() ([]byte, []int) {
-	return file_telephony_proto_rawDescGZIP(), []int{19}
+	return file_telephony_proto_rawDescGZIP(), []int{21}
 }
 
 func (x *ResumeResponse) GetId() string {
@@ -1568,7 +1687,7 @@ type AppendCallEventRequest struct {
 
 func (x *AppendCallEventRequest) Reset() {
 	*x = AppendCallEventRequest{}
-	mi := &file_telephony_proto_msgTypes[20]
+	mi := &file_telephony_proto_msgTypes[22]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1580,7 +1699,7 @@ func (x *AppendCallEventRequest) String() string {
 func (*AppendCallEventRequest) ProtoMessage() {}
 
 func (x *AppendCallEventRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_telephony_proto_msgTypes[20]
+	mi := &file_telephony_proto_msgTypes[22]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1593,7 +1712,7 @@ func (x *AppendCallEventRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AppendCallEventRequest.ProtoReflect.Descriptor instead.
 func (*AppendCallEventRequest) Descriptor() ([]byte, []int) {
-	return file_telephony_proto_rawDescGZIP(), []int{20}
+	return file_telephony_proto_rawDescGZIP(), []int{22}
 }
 
 func (x *AppendCallEventRequest) GetCallSessionId() string {
@@ -1626,7 +1745,7 @@ type AppendCallEventResponse struct {
 
 func (x *AppendCallEventResponse) Reset() {
 	*x = AppendCallEventResponse{}
-	mi := &file_telephony_proto_msgTypes[21]
+	mi := &file_telephony_proto_msgTypes[23]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1638,7 +1757,7 @@ func (x *AppendCallEventResponse) String() string {
 func (*AppendCallEventResponse) ProtoMessage() {}
 
 func (x *AppendCallEventResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_telephony_proto_msgTypes[21]
+	mi := &file_telephony_proto_msgTypes[23]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1651,7 +1770,7 @@ func (x *AppendCallEventResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AppendCallEventResponse.ProtoReflect.Descriptor instead.
 func (*AppendCallEventResponse) Descriptor() ([]byte, []int) {
-	return file_telephony_proto_rawDescGZIP(), []int{21}
+	return file_telephony_proto_rawDescGZIP(), []int{23}
 }
 
 func (x *AppendCallEventResponse) GetLog() *CallEvent {
@@ -1670,7 +1789,7 @@ type ListCallEventsRequest struct {
 
 func (x *ListCallEventsRequest) Reset() {
 	*x = ListCallEventsRequest{}
-	mi := &file_telephony_proto_msgTypes[22]
+	mi := &file_telephony_proto_msgTypes[24]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1682,7 +1801,7 @@ func (x *ListCallEventsRequest) String() string {
 func (*ListCallEventsRequest) ProtoMessage() {}
 
 func (x *ListCallEventsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_telephony_proto_msgTypes[22]
+	mi := &file_telephony_proto_msgTypes[24]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1695,7 +1814,7 @@ func (x *ListCallEventsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListCallEventsRequest.ProtoReflect.Descriptor instead.
 func (*ListCallEventsRequest) Descriptor() ([]byte, []int) {
-	return file_telephony_proto_rawDescGZIP(), []int{22}
+	return file_telephony_proto_rawDescGZIP(), []int{24}
 }
 
 func (x *ListCallEventsRequest) GetCallSessionId() string {
@@ -1714,7 +1833,7 @@ type ListCallEventsResponse struct {
 
 func (x *ListCallEventsResponse) Reset() {
 	*x = ListCallEventsResponse{}
-	mi := &file_telephony_proto_msgTypes[23]
+	mi := &file_telephony_proto_msgTypes[25]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1726,7 +1845,7 @@ func (x *ListCallEventsResponse) String() string {
 func (*ListCallEventsResponse) ProtoMessage() {}
 
 func (x *ListCallEventsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_telephony_proto_msgTypes[23]
+	mi := &file_telephony_proto_msgTypes[25]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1739,7 +1858,7 @@ func (x *ListCallEventsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListCallEventsResponse.ProtoReflect.Descriptor instead.
 func (*ListCallEventsResponse) Descriptor() ([]byte, []int) {
-	return file_telephony_proto_rawDescGZIP(), []int{23}
+	return file_telephony_proto_rawDescGZIP(), []int{25}
 }
 
 func (x *ListCallEventsResponse) GetLogs() []*CallEvent {
@@ -1759,7 +1878,7 @@ type CreateSipExtensionRequest struct {
 
 func (x *CreateSipExtensionRequest) Reset() {
 	*x = CreateSipExtensionRequest{}
-	mi := &file_telephony_proto_msgTypes[24]
+	mi := &file_telephony_proto_msgTypes[26]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1771,7 +1890,7 @@ func (x *CreateSipExtensionRequest) String() string {
 func (*CreateSipExtensionRequest) ProtoMessage() {}
 
 func (x *CreateSipExtensionRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_telephony_proto_msgTypes[24]
+	mi := &file_telephony_proto_msgTypes[26]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1784,7 +1903,7 @@ func (x *CreateSipExtensionRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateSipExtensionRequest.ProtoReflect.Descriptor instead.
 func (*CreateSipExtensionRequest) Descriptor() ([]byte, []int) {
-	return file_telephony_proto_rawDescGZIP(), []int{24}
+	return file_telephony_proto_rawDescGZIP(), []int{26}
 }
 
 func (x *CreateSipExtensionRequest) GetExtension() *SipExtension {
@@ -1803,7 +1922,7 @@ type GetSipExtensionRequest struct {
 
 func (x *GetSipExtensionRequest) Reset() {
 	*x = GetSipExtensionRequest{}
-	mi := &file_telephony_proto_msgTypes[25]
+	mi := &file_telephony_proto_msgTypes[27]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1815,7 +1934,7 @@ func (x *GetSipExtensionRequest) String() string {
 func (*GetSipExtensionRequest) ProtoMessage() {}
 
 func (x *GetSipExtensionRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_telephony_proto_msgTypes[25]
+	mi := &file_telephony_proto_msgTypes[27]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1828,7 +1947,7 @@ func (x *GetSipExtensionRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetSipExtensionRequest.ProtoReflect.Descriptor instead.
 func (*GetSipExtensionRequest) Descriptor() ([]byte, []int) {
-	return file_telephony_proto_rawDescGZIP(), []int{25}
+	return file_telephony_proto_rawDescGZIP(), []int{27}
 }
 
 func (x *GetSipExtensionRequest) GetId() string {
@@ -1847,7 +1966,7 @@ type ListSipExtensionsRequest struct {
 
 func (x *ListSipExtensionsRequest) Reset() {
 	*x = ListSipExtensionsRequest{}
-	mi := &file_telephony_proto_msgTypes[26]
+	mi := &file_telephony_proto_msgTypes[28]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1859,7 +1978,7 @@ func (x *ListSipExtensionsRequest) String() string {
 func (*ListSipExtensionsRequest) ProtoMessage() {}
 
 func (x *ListSipExtensionsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_telephony_proto_msgTypes[26]
+	mi := &file_telephony_proto_msgTypes[28]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1872,7 +1991,7 @@ func (x *ListSipExtensionsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListSipExtensionsRequest.ProtoReflect.Descriptor instead.
 func (*ListSipExtensionsRequest) Descriptor() ([]byte, []int) {
-	return file_telephony_proto_rawDescGZIP(), []int{26}
+	return file_telephony_proto_rawDescGZIP(), []int{28}
 }
 
 func (x *ListSipExtensionsRequest) GetWorkspaceId() string {
@@ -1891,7 +2010,7 @@ type ListSipExtensionsResponse struct {
 
 func (x *ListSipExtensionsResponse) Reset() {
 	*x = ListSipExtensionsResponse{}
-	mi := &file_telephony_proto_msgTypes[27]
+	mi := &file_telephony_proto_msgTypes[29]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1903,7 +2022,7 @@ func (x *ListSipExtensionsResponse) String() string {
 func (*ListSipExtensionsResponse) ProtoMessage() {}
 
 func (x *ListSipExtensionsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_telephony_proto_msgTypes[27]
+	mi := &file_telephony_proto_msgTypes[29]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1916,7 +2035,7 @@ func (x *ListSipExtensionsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListSipExtensionsResponse.ProtoReflect.Descriptor instead.
 func (*ListSipExtensionsResponse) Descriptor() ([]byte, []int) {
-	return file_telephony_proto_rawDescGZIP(), []int{27}
+	return file_telephony_proto_rawDescGZIP(), []int{29}
 }
 
 func (x *ListSipExtensionsResponse) GetExtensions() []*SipExtension {
@@ -1935,7 +2054,7 @@ type DeleteSipExtensionRequest struct {
 
 func (x *DeleteSipExtensionRequest) Reset() {
 	*x = DeleteSipExtensionRequest{}
-	mi := &file_telephony_proto_msgTypes[28]
+	mi := &file_telephony_proto_msgTypes[30]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1947,7 +2066,7 @@ func (x *DeleteSipExtensionRequest) String() string {
 func (*DeleteSipExtensionRequest) ProtoMessage() {}
 
 func (x *DeleteSipExtensionRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_telephony_proto_msgTypes[28]
+	mi := &file_telephony_proto_msgTypes[30]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1960,7 +2079,7 @@ func (x *DeleteSipExtensionRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteSipExtensionRequest.ProtoReflect.Descriptor instead.
 func (*DeleteSipExtensionRequest) Descriptor() ([]byte, []int) {
-	return file_telephony_proto_rawDescGZIP(), []int{28}
+	return file_telephony_proto_rawDescGZIP(), []int{30}
 }
 
 func (x *DeleteSipExtensionRequest) GetId() string {
@@ -1979,7 +2098,7 @@ type DeleteSipExtensionResponse struct {
 
 func (x *DeleteSipExtensionResponse) Reset() {
 	*x = DeleteSipExtensionResponse{}
-	mi := &file_telephony_proto_msgTypes[29]
+	mi := &file_telephony_proto_msgTypes[31]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1991,7 +2110,7 @@ func (x *DeleteSipExtensionResponse) String() string {
 func (*DeleteSipExtensionResponse) ProtoMessage() {}
 
 func (x *DeleteSipExtensionResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_telephony_proto_msgTypes[29]
+	mi := &file_telephony_proto_msgTypes[31]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2004,7 +2123,7 @@ func (x *DeleteSipExtensionResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteSipExtensionResponse.ProtoReflect.Descriptor instead.
 func (*DeleteSipExtensionResponse) Descriptor() ([]byte, []int) {
-	return file_telephony_proto_rawDescGZIP(), []int{29}
+	return file_telephony_proto_rawDescGZIP(), []int{31}
 }
 
 func (x *DeleteSipExtensionResponse) GetOk() bool {
@@ -2023,7 +2142,7 @@ type CreateSipTrunkRequest struct {
 
 func (x *CreateSipTrunkRequest) Reset() {
 	*x = CreateSipTrunkRequest{}
-	mi := &file_telephony_proto_msgTypes[30]
+	mi := &file_telephony_proto_msgTypes[32]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2035,7 +2154,7 @@ func (x *CreateSipTrunkRequest) String() string {
 func (*CreateSipTrunkRequest) ProtoMessage() {}
 
 func (x *CreateSipTrunkRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_telephony_proto_msgTypes[30]
+	mi := &file_telephony_proto_msgTypes[32]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2048,7 +2167,7 @@ func (x *CreateSipTrunkRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateSipTrunkRequest.ProtoReflect.Descriptor instead.
 func (*CreateSipTrunkRequest) Descriptor() ([]byte, []int) {
-	return file_telephony_proto_rawDescGZIP(), []int{30}
+	return file_telephony_proto_rawDescGZIP(), []int{32}
 }
 
 func (x *CreateSipTrunkRequest) GetTrunk() *SipTrunk {
@@ -2067,7 +2186,7 @@ type GetSipTrunkRequest struct {
 
 func (x *GetSipTrunkRequest) Reset() {
 	*x = GetSipTrunkRequest{}
-	mi := &file_telephony_proto_msgTypes[31]
+	mi := &file_telephony_proto_msgTypes[33]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2079,7 +2198,7 @@ func (x *GetSipTrunkRequest) String() string {
 func (*GetSipTrunkRequest) ProtoMessage() {}
 
 func (x *GetSipTrunkRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_telephony_proto_msgTypes[31]
+	mi := &file_telephony_proto_msgTypes[33]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2092,7 +2211,7 @@ func (x *GetSipTrunkRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetSipTrunkRequest.ProtoReflect.Descriptor instead.
 func (*GetSipTrunkRequest) Descriptor() ([]byte, []int) {
-	return file_telephony_proto_rawDescGZIP(), []int{31}
+	return file_telephony_proto_rawDescGZIP(), []int{33}
 }
 
 func (x *GetSipTrunkRequest) GetId() string {
@@ -2111,7 +2230,7 @@ type ListSipTrunksRequest struct {
 
 func (x *ListSipTrunksRequest) Reset() {
 	*x = ListSipTrunksRequest{}
-	mi := &file_telephony_proto_msgTypes[32]
+	mi := &file_telephony_proto_msgTypes[34]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2123,7 +2242,7 @@ func (x *ListSipTrunksRequest) String() string {
 func (*ListSipTrunksRequest) ProtoMessage() {}
 
 func (x *ListSipTrunksRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_telephony_proto_msgTypes[32]
+	mi := &file_telephony_proto_msgTypes[34]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2136,7 +2255,7 @@ func (x *ListSipTrunksRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListSipTrunksRequest.ProtoReflect.Descriptor instead.
 func (*ListSipTrunksRequest) Descriptor() ([]byte, []int) {
-	return file_telephony_proto_rawDescGZIP(), []int{32}
+	return file_telephony_proto_rawDescGZIP(), []int{34}
 }
 
 func (x *ListSipTrunksRequest) GetOrgId() string {
@@ -2155,7 +2274,7 @@ type ListSipTrunksResponse struct {
 
 func (x *ListSipTrunksResponse) Reset() {
 	*x = ListSipTrunksResponse{}
-	mi := &file_telephony_proto_msgTypes[33]
+	mi := &file_telephony_proto_msgTypes[35]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2167,7 +2286,7 @@ func (x *ListSipTrunksResponse) String() string {
 func (*ListSipTrunksResponse) ProtoMessage() {}
 
 func (x *ListSipTrunksResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_telephony_proto_msgTypes[33]
+	mi := &file_telephony_proto_msgTypes[35]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2180,7 +2299,7 @@ func (x *ListSipTrunksResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListSipTrunksResponse.ProtoReflect.Descriptor instead.
 func (*ListSipTrunksResponse) Descriptor() ([]byte, []int) {
-	return file_telephony_proto_rawDescGZIP(), []int{33}
+	return file_telephony_proto_rawDescGZIP(), []int{35}
 }
 
 func (x *ListSipTrunksResponse) GetTrunks() []*SipTrunk {
@@ -2199,7 +2318,7 @@ type UpdateSipTrunkRequest struct {
 
 func (x *UpdateSipTrunkRequest) Reset() {
 	*x = UpdateSipTrunkRequest{}
-	mi := &file_telephony_proto_msgTypes[34]
+	mi := &file_telephony_proto_msgTypes[36]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2211,7 +2330,7 @@ func (x *UpdateSipTrunkRequest) String() string {
 func (*UpdateSipTrunkRequest) ProtoMessage() {}
 
 func (x *UpdateSipTrunkRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_telephony_proto_msgTypes[34]
+	mi := &file_telephony_proto_msgTypes[36]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2224,7 +2343,7 @@ func (x *UpdateSipTrunkRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateSipTrunkRequest.ProtoReflect.Descriptor instead.
 func (*UpdateSipTrunkRequest) Descriptor() ([]byte, []int) {
-	return file_telephony_proto_rawDescGZIP(), []int{34}
+	return file_telephony_proto_rawDescGZIP(), []int{36}
 }
 
 func (x *UpdateSipTrunkRequest) GetTrunk() *SipTrunk {
@@ -2243,7 +2362,7 @@ type DeleteSipTrunkRequest struct {
 
 func (x *DeleteSipTrunkRequest) Reset() {
 	*x = DeleteSipTrunkRequest{}
-	mi := &file_telephony_proto_msgTypes[35]
+	mi := &file_telephony_proto_msgTypes[37]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2255,7 +2374,7 @@ func (x *DeleteSipTrunkRequest) String() string {
 func (*DeleteSipTrunkRequest) ProtoMessage() {}
 
 func (x *DeleteSipTrunkRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_telephony_proto_msgTypes[35]
+	mi := &file_telephony_proto_msgTypes[37]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2268,7 +2387,7 @@ func (x *DeleteSipTrunkRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteSipTrunkRequest.ProtoReflect.Descriptor instead.
 func (*DeleteSipTrunkRequest) Descriptor() ([]byte, []int) {
-	return file_telephony_proto_rawDescGZIP(), []int{35}
+	return file_telephony_proto_rawDescGZIP(), []int{37}
 }
 
 func (x *DeleteSipTrunkRequest) GetId() string {
@@ -2287,7 +2406,7 @@ type DeleteSipTrunkResponse struct {
 
 func (x *DeleteSipTrunkResponse) Reset() {
 	*x = DeleteSipTrunkResponse{}
-	mi := &file_telephony_proto_msgTypes[36]
+	mi := &file_telephony_proto_msgTypes[38]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2299,7 +2418,7 @@ func (x *DeleteSipTrunkResponse) String() string {
 func (*DeleteSipTrunkResponse) ProtoMessage() {}
 
 func (x *DeleteSipTrunkResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_telephony_proto_msgTypes[36]
+	mi := &file_telephony_proto_msgTypes[38]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2312,7 +2431,7 @@ func (x *DeleteSipTrunkResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteSipTrunkResponse.ProtoReflect.Descriptor instead.
 func (*DeleteSipTrunkResponse) Descriptor() ([]byte, []int) {
-	return file_telephony_proto_rawDescGZIP(), []int{36}
+	return file_telephony_proto_rawDescGZIP(), []int{38}
 }
 
 func (x *DeleteSipTrunkResponse) GetOk() bool {
@@ -2331,7 +2450,7 @@ type CreateSipDomainRequest struct {
 
 func (x *CreateSipDomainRequest) Reset() {
 	*x = CreateSipDomainRequest{}
-	mi := &file_telephony_proto_msgTypes[37]
+	mi := &file_telephony_proto_msgTypes[39]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2343,7 +2462,7 @@ func (x *CreateSipDomainRequest) String() string {
 func (*CreateSipDomainRequest) ProtoMessage() {}
 
 func (x *CreateSipDomainRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_telephony_proto_msgTypes[37]
+	mi := &file_telephony_proto_msgTypes[39]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2356,7 +2475,7 @@ func (x *CreateSipDomainRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateSipDomainRequest.ProtoReflect.Descriptor instead.
 func (*CreateSipDomainRequest) Descriptor() ([]byte, []int) {
-	return file_telephony_proto_rawDescGZIP(), []int{37}
+	return file_telephony_proto_rawDescGZIP(), []int{39}
 }
 
 func (x *CreateSipDomainRequest) GetDomain() *SipDomain {
@@ -2375,7 +2494,7 @@ type ListSipDomainsRequest struct {
 
 func (x *ListSipDomainsRequest) Reset() {
 	*x = ListSipDomainsRequest{}
-	mi := &file_telephony_proto_msgTypes[38]
+	mi := &file_telephony_proto_msgTypes[40]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2387,7 +2506,7 @@ func (x *ListSipDomainsRequest) String() string {
 func (*ListSipDomainsRequest) ProtoMessage() {}
 
 func (x *ListSipDomainsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_telephony_proto_msgTypes[38]
+	mi := &file_telephony_proto_msgTypes[40]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2400,7 +2519,7 @@ func (x *ListSipDomainsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListSipDomainsRequest.ProtoReflect.Descriptor instead.
 func (*ListSipDomainsRequest) Descriptor() ([]byte, []int) {
-	return file_telephony_proto_rawDescGZIP(), []int{38}
+	return file_telephony_proto_rawDescGZIP(), []int{40}
 }
 
 func (x *ListSipDomainsRequest) GetOrgId() string {
@@ -2419,7 +2538,7 @@ type ListSipDomainsResponse struct {
 
 func (x *ListSipDomainsResponse) Reset() {
 	*x = ListSipDomainsResponse{}
-	mi := &file_telephony_proto_msgTypes[39]
+	mi := &file_telephony_proto_msgTypes[41]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2431,7 +2550,7 @@ func (x *ListSipDomainsResponse) String() string {
 func (*ListSipDomainsResponse) ProtoMessage() {}
 
 func (x *ListSipDomainsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_telephony_proto_msgTypes[39]
+	mi := &file_telephony_proto_msgTypes[41]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2444,7 +2563,7 @@ func (x *ListSipDomainsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListSipDomainsResponse.ProtoReflect.Descriptor instead.
 func (*ListSipDomainsResponse) Descriptor() ([]byte, []int) {
-	return file_telephony_proto_rawDescGZIP(), []int{39}
+	return file_telephony_proto_rawDescGZIP(), []int{41}
 }
 
 func (x *ListSipDomainsResponse) GetDomains() []*SipDomain {
@@ -2463,7 +2582,7 @@ type DeleteSipDomainRequest struct {
 
 func (x *DeleteSipDomainRequest) Reset() {
 	*x = DeleteSipDomainRequest{}
-	mi := &file_telephony_proto_msgTypes[40]
+	mi := &file_telephony_proto_msgTypes[42]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2475,7 +2594,7 @@ func (x *DeleteSipDomainRequest) String() string {
 func (*DeleteSipDomainRequest) ProtoMessage() {}
 
 func (x *DeleteSipDomainRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_telephony_proto_msgTypes[40]
+	mi := &file_telephony_proto_msgTypes[42]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2488,7 +2607,7 @@ func (x *DeleteSipDomainRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteSipDomainRequest.ProtoReflect.Descriptor instead.
 func (*DeleteSipDomainRequest) Descriptor() ([]byte, []int) {
-	return file_telephony_proto_rawDescGZIP(), []int{40}
+	return file_telephony_proto_rawDescGZIP(), []int{42}
 }
 
 func (x *DeleteSipDomainRequest) GetId() string {
@@ -2507,7 +2626,7 @@ type DeleteSipDomainResponse struct {
 
 func (x *DeleteSipDomainResponse) Reset() {
 	*x = DeleteSipDomainResponse{}
-	mi := &file_telephony_proto_msgTypes[41]
+	mi := &file_telephony_proto_msgTypes[43]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2519,7 +2638,7 @@ func (x *DeleteSipDomainResponse) String() string {
 func (*DeleteSipDomainResponse) ProtoMessage() {}
 
 func (x *DeleteSipDomainResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_telephony_proto_msgTypes[41]
+	mi := &file_telephony_proto_msgTypes[43]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2532,7 +2651,7 @@ func (x *DeleteSipDomainResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteSipDomainResponse.ProtoReflect.Descriptor instead.
 func (*DeleteSipDomainResponse) Descriptor() ([]byte, []int) {
-	return file_telephony_proto_rawDescGZIP(), []int{41}
+	return file_telephony_proto_rawDescGZIP(), []int{43}
 }
 
 func (x *DeleteSipDomainResponse) GetOk() bool {
@@ -2552,7 +2671,7 @@ type IssueSoftphoneTokenRequest struct {
 
 func (x *IssueSoftphoneTokenRequest) Reset() {
 	*x = IssueSoftphoneTokenRequest{}
-	mi := &file_telephony_proto_msgTypes[42]
+	mi := &file_telephony_proto_msgTypes[44]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2564,7 +2683,7 @@ func (x *IssueSoftphoneTokenRequest) String() string {
 func (*IssueSoftphoneTokenRequest) ProtoMessage() {}
 
 func (x *IssueSoftphoneTokenRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_telephony_proto_msgTypes[42]
+	mi := &file_telephony_proto_msgTypes[44]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2577,7 +2696,7 @@ func (x *IssueSoftphoneTokenRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use IssueSoftphoneTokenRequest.ProtoReflect.Descriptor instead.
 func (*IssueSoftphoneTokenRequest) Descriptor() ([]byte, []int) {
-	return file_telephony_proto_rawDescGZIP(), []int{42}
+	return file_telephony_proto_rawDescGZIP(), []int{44}
 }
 
 func (x *IssueSoftphoneTokenRequest) GetAgentId() string {
@@ -2596,7 +2715,7 @@ type IssueSoftphoneTokenResponse struct {
 
 func (x *IssueSoftphoneTokenResponse) Reset() {
 	*x = IssueSoftphoneTokenResponse{}
-	mi := &file_telephony_proto_msgTypes[43]
+	mi := &file_telephony_proto_msgTypes[45]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2608,7 +2727,7 @@ func (x *IssueSoftphoneTokenResponse) String() string {
 func (*IssueSoftphoneTokenResponse) ProtoMessage() {}
 
 func (x *IssueSoftphoneTokenResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_telephony_proto_msgTypes[43]
+	mi := &file_telephony_proto_msgTypes[45]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2621,7 +2740,7 @@ func (x *IssueSoftphoneTokenResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use IssueSoftphoneTokenResponse.ProtoReflect.Descriptor instead.
 func (*IssueSoftphoneTokenResponse) Descriptor() ([]byte, []int) {
-	return file_telephony_proto_rawDescGZIP(), []int{43}
+	return file_telephony_proto_rawDescGZIP(), []int{45}
 }
 
 func (x *IssueSoftphoneTokenResponse) GetToken() *SoftphoneToken {
@@ -2766,8 +2885,15 @@ const file_telephony_proto_rawDesc = "" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12)\n" +
 	"\x10target_extension\x18\x02 \x01(\tR\x0ftargetExtension\x12#\n" +
 	"\rtarget_number\x18\x03 \x01(\tR\ftargetNumber\x12\x14\n" +
-	"\x05blind\x18\x04 \x01(\bR\x05blind\":\n" +
+	"\x05blind\x18\x04 \x01(\bR\x05blind\"c\n" +
 	"\x10TransferResponse\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x16\n" +
+	"\x06status\x18\x02 \x01(\tR\x06status\x12'\n" +
+	"\x0fconsultation_id\x18\x03 \x01(\tR\x0econsultationId\"R\n" +
+	"\x17CompleteTransferRequest\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12'\n" +
+	"\x0fconsultation_id\x18\x02 \x01(\tR\x0econsultationId\"B\n" +
+	"\x18CompleteTransferResponse\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x16\n" +
 	"\x06status\x18\x02 \x01(\tR\x06status\"\x1d\n" +
 	"\vHoldRequest\x12\x0e\n" +
@@ -2832,12 +2958,13 @@ const file_telephony_proto_rawDesc = "" +
 	"\x1aIssueSoftphoneTokenRequest\x12\x19\n" +
 	"\bagent_id\x18\x01 \x01(\tR\aagentId\"M\n" +
 	"\x1bIssueSoftphoneTokenResponse\x12.\n" +
-	"\x05token\x18\x01 \x01(\v2\x18.da.proto.SoftphoneTokenR\x05token2\xc0\r\n" +
+	"\x05token\x18\x01 \x01(\v2\x18.da.proto.SoftphoneTokenR\x05token2\x9b\x0e\n" +
 	"\x10TelephonyService\x12P\n" +
 	"\rOriginateCall\x12\x1e.da.proto.OriginateCallRequest\x1a\x1f.da.proto.OriginateCallResponse\x12?\n" +
 	"\n" +
 	"HangupCall\x12\x17.da.proto.HangupRequest\x1a\x18.da.proto.HangupResponse\x12E\n" +
-	"\fTransferCall\x12\x19.da.proto.TransferRequest\x1a\x1a.da.proto.TransferResponse\x129\n" +
+	"\fTransferCall\x12\x19.da.proto.TransferRequest\x1a\x1a.da.proto.TransferResponse\x12Y\n" +
+	"\x10CompleteTransfer\x12!.da.proto.CompleteTransferRequest\x1a\".da.proto.CompleteTransferResponse\x129\n" +
 	"\bHoldCall\x12\x15.da.proto.HoldRequest\x1a\x16.da.proto.HoldResponse\x12?\n" +
 	"\n" +
 	"ResumeCall\x12\x17.da.proto.ResumeRequest\x1a\x18.da.proto.ResumeResponse\x123\n" +
@@ -2871,7 +2998,7 @@ func file_telephony_proto_rawDescGZIP() []byte {
 	return file_telephony_proto_rawDescData
 }
 
-var file_telephony_proto_msgTypes = make([]protoimpl.MessageInfo, 44)
+var file_telephony_proto_msgTypes = make([]protoimpl.MessageInfo, 46)
 var file_telephony_proto_goTypes = []any{
 	(*Call)(nil),                        // 0: da.proto.Call
 	(*CallEvent)(nil),                   // 1: da.proto.CallEvent
@@ -2889,49 +3016,51 @@ var file_telephony_proto_goTypes = []any{
 	(*HangupResponse)(nil),              // 13: da.proto.HangupResponse
 	(*TransferRequest)(nil),             // 14: da.proto.TransferRequest
 	(*TransferResponse)(nil),            // 15: da.proto.TransferResponse
-	(*HoldRequest)(nil),                 // 16: da.proto.HoldRequest
-	(*HoldResponse)(nil),                // 17: da.proto.HoldResponse
-	(*ResumeRequest)(nil),               // 18: da.proto.ResumeRequest
-	(*ResumeResponse)(nil),              // 19: da.proto.ResumeResponse
-	(*AppendCallEventRequest)(nil),      // 20: da.proto.AppendCallEventRequest
-	(*AppendCallEventResponse)(nil),     // 21: da.proto.AppendCallEventResponse
-	(*ListCallEventsRequest)(nil),       // 22: da.proto.ListCallEventsRequest
-	(*ListCallEventsResponse)(nil),      // 23: da.proto.ListCallEventsResponse
-	(*CreateSipExtensionRequest)(nil),   // 24: da.proto.CreateSipExtensionRequest
-	(*GetSipExtensionRequest)(nil),      // 25: da.proto.GetSipExtensionRequest
-	(*ListSipExtensionsRequest)(nil),    // 26: da.proto.ListSipExtensionsRequest
-	(*ListSipExtensionsResponse)(nil),   // 27: da.proto.ListSipExtensionsResponse
-	(*DeleteSipExtensionRequest)(nil),   // 28: da.proto.DeleteSipExtensionRequest
-	(*DeleteSipExtensionResponse)(nil),  // 29: da.proto.DeleteSipExtensionResponse
-	(*CreateSipTrunkRequest)(nil),       // 30: da.proto.CreateSipTrunkRequest
-	(*GetSipTrunkRequest)(nil),          // 31: da.proto.GetSipTrunkRequest
-	(*ListSipTrunksRequest)(nil),        // 32: da.proto.ListSipTrunksRequest
-	(*ListSipTrunksResponse)(nil),       // 33: da.proto.ListSipTrunksResponse
-	(*UpdateSipTrunkRequest)(nil),       // 34: da.proto.UpdateSipTrunkRequest
-	(*DeleteSipTrunkRequest)(nil),       // 35: da.proto.DeleteSipTrunkRequest
-	(*DeleteSipTrunkResponse)(nil),      // 36: da.proto.DeleteSipTrunkResponse
-	(*CreateSipDomainRequest)(nil),      // 37: da.proto.CreateSipDomainRequest
-	(*ListSipDomainsRequest)(nil),       // 38: da.proto.ListSipDomainsRequest
-	(*ListSipDomainsResponse)(nil),      // 39: da.proto.ListSipDomainsResponse
-	(*DeleteSipDomainRequest)(nil),      // 40: da.proto.DeleteSipDomainRequest
-	(*DeleteSipDomainResponse)(nil),     // 41: da.proto.DeleteSipDomainResponse
-	(*IssueSoftphoneTokenRequest)(nil),  // 42: da.proto.IssueSoftphoneTokenRequest
-	(*IssueSoftphoneTokenResponse)(nil), // 43: da.proto.IssueSoftphoneTokenResponse
-	(*timestamppb.Timestamp)(nil),       // 44: google.protobuf.Timestamp
+	(*CompleteTransferRequest)(nil),     // 16: da.proto.CompleteTransferRequest
+	(*CompleteTransferResponse)(nil),    // 17: da.proto.CompleteTransferResponse
+	(*HoldRequest)(nil),                 // 18: da.proto.HoldRequest
+	(*HoldResponse)(nil),                // 19: da.proto.HoldResponse
+	(*ResumeRequest)(nil),               // 20: da.proto.ResumeRequest
+	(*ResumeResponse)(nil),              // 21: da.proto.ResumeResponse
+	(*AppendCallEventRequest)(nil),      // 22: da.proto.AppendCallEventRequest
+	(*AppendCallEventResponse)(nil),     // 23: da.proto.AppendCallEventResponse
+	(*ListCallEventsRequest)(nil),       // 24: da.proto.ListCallEventsRequest
+	(*ListCallEventsResponse)(nil),      // 25: da.proto.ListCallEventsResponse
+	(*CreateSipExtensionRequest)(nil),   // 26: da.proto.CreateSipExtensionRequest
+	(*GetSipExtensionRequest)(nil),      // 27: da.proto.GetSipExtensionRequest
+	(*ListSipExtensionsRequest)(nil),    // 28: da.proto.ListSipExtensionsRequest
+	(*ListSipExtensionsResponse)(nil),   // 29: da.proto.ListSipExtensionsResponse
+	(*DeleteSipExtensionRequest)(nil),   // 30: da.proto.DeleteSipExtensionRequest
+	(*DeleteSipExtensionResponse)(nil),  // 31: da.proto.DeleteSipExtensionResponse
+	(*CreateSipTrunkRequest)(nil),       // 32: da.proto.CreateSipTrunkRequest
+	(*GetSipTrunkRequest)(nil),          // 33: da.proto.GetSipTrunkRequest
+	(*ListSipTrunksRequest)(nil),        // 34: da.proto.ListSipTrunksRequest
+	(*ListSipTrunksResponse)(nil),       // 35: da.proto.ListSipTrunksResponse
+	(*UpdateSipTrunkRequest)(nil),       // 36: da.proto.UpdateSipTrunkRequest
+	(*DeleteSipTrunkRequest)(nil),       // 37: da.proto.DeleteSipTrunkRequest
+	(*DeleteSipTrunkResponse)(nil),      // 38: da.proto.DeleteSipTrunkResponse
+	(*CreateSipDomainRequest)(nil),      // 39: da.proto.CreateSipDomainRequest
+	(*ListSipDomainsRequest)(nil),       // 40: da.proto.ListSipDomainsRequest
+	(*ListSipDomainsResponse)(nil),      // 41: da.proto.ListSipDomainsResponse
+	(*DeleteSipDomainRequest)(nil),      // 42: da.proto.DeleteSipDomainRequest
+	(*DeleteSipDomainResponse)(nil),     // 43: da.proto.DeleteSipDomainResponse
+	(*IssueSoftphoneTokenRequest)(nil),  // 44: da.proto.IssueSoftphoneTokenRequest
+	(*IssueSoftphoneTokenResponse)(nil), // 45: da.proto.IssueSoftphoneTokenResponse
+	(*timestamppb.Timestamp)(nil),       // 46: google.protobuf.Timestamp
 }
 var file_telephony_proto_depIdxs = []int32{
-	44, // 0: da.proto.Call.started_at:type_name -> google.protobuf.Timestamp
-	44, // 1: da.proto.Call.answered_at:type_name -> google.protobuf.Timestamp
-	44, // 2: da.proto.Call.ended_at:type_name -> google.protobuf.Timestamp
-	44, // 3: da.proto.Call.created_at:type_name -> google.protobuf.Timestamp
-	44, // 4: da.proto.Call.updated_at:type_name -> google.protobuf.Timestamp
-	44, // 5: da.proto.CallEvent.at:type_name -> google.protobuf.Timestamp
-	44, // 6: da.proto.SipExtension.last_registration:type_name -> google.protobuf.Timestamp
-	44, // 7: da.proto.SipExtension.created_at:type_name -> google.protobuf.Timestamp
-	44, // 8: da.proto.SipExtension.updated_at:type_name -> google.protobuf.Timestamp
-	44, // 9: da.proto.SipTrunk.created_at:type_name -> google.protobuf.Timestamp
-	44, // 10: da.proto.SipTrunk.updated_at:type_name -> google.protobuf.Timestamp
-	44, // 11: da.proto.SipDomain.created_at:type_name -> google.protobuf.Timestamp
+	46, // 0: da.proto.Call.started_at:type_name -> google.protobuf.Timestamp
+	46, // 1: da.proto.Call.answered_at:type_name -> google.protobuf.Timestamp
+	46, // 2: da.proto.Call.ended_at:type_name -> google.protobuf.Timestamp
+	46, // 3: da.proto.Call.created_at:type_name -> google.protobuf.Timestamp
+	46, // 4: da.proto.Call.updated_at:type_name -> google.protobuf.Timestamp
+	46, // 5: da.proto.CallEvent.at:type_name -> google.protobuf.Timestamp
+	46, // 6: da.proto.SipExtension.last_registration:type_name -> google.protobuf.Timestamp
+	46, // 7: da.proto.SipExtension.created_at:type_name -> google.protobuf.Timestamp
+	46, // 8: da.proto.SipExtension.updated_at:type_name -> google.protobuf.Timestamp
+	46, // 9: da.proto.SipTrunk.created_at:type_name -> google.protobuf.Timestamp
+	46, // 10: da.proto.SipTrunk.updated_at:type_name -> google.protobuf.Timestamp
+	46, // 11: da.proto.SipDomain.created_at:type_name -> google.protobuf.Timestamp
 	6,  // 12: da.proto.SoftphoneToken.ice_servers:type_name -> da.proto.IceServer
 	0,  // 13: da.proto.OriginateCallResponse.session:type_name -> da.proto.Call
 	0,  // 14: da.proto.ListCallsResponse.sessions:type_name -> da.proto.Call
@@ -2948,49 +3077,51 @@ var file_telephony_proto_depIdxs = []int32{
 	7,  // 25: da.proto.TelephonyService.OriginateCall:input_type -> da.proto.OriginateCallRequest
 	12, // 26: da.proto.TelephonyService.HangupCall:input_type -> da.proto.HangupRequest
 	14, // 27: da.proto.TelephonyService.TransferCall:input_type -> da.proto.TransferRequest
-	16, // 28: da.proto.TelephonyService.HoldCall:input_type -> da.proto.HoldRequest
-	18, // 29: da.proto.TelephonyService.ResumeCall:input_type -> da.proto.ResumeRequest
-	9,  // 30: da.proto.TelephonyService.GetCall:input_type -> da.proto.GetCallRequest
-	10, // 31: da.proto.TelephonyService.ListCalls:input_type -> da.proto.ListCallsRequest
-	20, // 32: da.proto.TelephonyService.AppendCallEvent:input_type -> da.proto.AppendCallEventRequest
-	22, // 33: da.proto.TelephonyService.ListCallEvents:input_type -> da.proto.ListCallEventsRequest
-	24, // 34: da.proto.TelephonyService.CreateSipExtension:input_type -> da.proto.CreateSipExtensionRequest
-	25, // 35: da.proto.TelephonyService.GetSipExtension:input_type -> da.proto.GetSipExtensionRequest
-	26, // 36: da.proto.TelephonyService.ListSipExtensions:input_type -> da.proto.ListSipExtensionsRequest
-	28, // 37: da.proto.TelephonyService.DeleteSipExtension:input_type -> da.proto.DeleteSipExtensionRequest
-	30, // 38: da.proto.TelephonyService.CreateSipTrunk:input_type -> da.proto.CreateSipTrunkRequest
-	31, // 39: da.proto.TelephonyService.GetSipTrunk:input_type -> da.proto.GetSipTrunkRequest
-	32, // 40: da.proto.TelephonyService.ListSipTrunks:input_type -> da.proto.ListSipTrunksRequest
-	34, // 41: da.proto.TelephonyService.UpdateSipTrunk:input_type -> da.proto.UpdateSipTrunkRequest
-	35, // 42: da.proto.TelephonyService.DeleteSipTrunk:input_type -> da.proto.DeleteSipTrunkRequest
-	37, // 43: da.proto.TelephonyService.CreateSipDomain:input_type -> da.proto.CreateSipDomainRequest
-	38, // 44: da.proto.TelephonyService.ListSipDomains:input_type -> da.proto.ListSipDomainsRequest
-	40, // 45: da.proto.TelephonyService.DeleteSipDomain:input_type -> da.proto.DeleteSipDomainRequest
-	42, // 46: da.proto.TelephonyService.IssueSoftphoneToken:input_type -> da.proto.IssueSoftphoneTokenRequest
-	8,  // 47: da.proto.TelephonyService.OriginateCall:output_type -> da.proto.OriginateCallResponse
-	13, // 48: da.proto.TelephonyService.HangupCall:output_type -> da.proto.HangupResponse
-	15, // 49: da.proto.TelephonyService.TransferCall:output_type -> da.proto.TransferResponse
-	17, // 50: da.proto.TelephonyService.HoldCall:output_type -> da.proto.HoldResponse
-	19, // 51: da.proto.TelephonyService.ResumeCall:output_type -> da.proto.ResumeResponse
-	0,  // 52: da.proto.TelephonyService.GetCall:output_type -> da.proto.Call
-	11, // 53: da.proto.TelephonyService.ListCalls:output_type -> da.proto.ListCallsResponse
-	21, // 54: da.proto.TelephonyService.AppendCallEvent:output_type -> da.proto.AppendCallEventResponse
-	23, // 55: da.proto.TelephonyService.ListCallEvents:output_type -> da.proto.ListCallEventsResponse
-	2,  // 56: da.proto.TelephonyService.CreateSipExtension:output_type -> da.proto.SipExtension
-	2,  // 57: da.proto.TelephonyService.GetSipExtension:output_type -> da.proto.SipExtension
-	27, // 58: da.proto.TelephonyService.ListSipExtensions:output_type -> da.proto.ListSipExtensionsResponse
-	29, // 59: da.proto.TelephonyService.DeleteSipExtension:output_type -> da.proto.DeleteSipExtensionResponse
-	3,  // 60: da.proto.TelephonyService.CreateSipTrunk:output_type -> da.proto.SipTrunk
-	3,  // 61: da.proto.TelephonyService.GetSipTrunk:output_type -> da.proto.SipTrunk
-	33, // 62: da.proto.TelephonyService.ListSipTrunks:output_type -> da.proto.ListSipTrunksResponse
-	3,  // 63: da.proto.TelephonyService.UpdateSipTrunk:output_type -> da.proto.SipTrunk
-	36, // 64: da.proto.TelephonyService.DeleteSipTrunk:output_type -> da.proto.DeleteSipTrunkResponse
-	4,  // 65: da.proto.TelephonyService.CreateSipDomain:output_type -> da.proto.SipDomain
-	39, // 66: da.proto.TelephonyService.ListSipDomains:output_type -> da.proto.ListSipDomainsResponse
-	41, // 67: da.proto.TelephonyService.DeleteSipDomain:output_type -> da.proto.DeleteSipDomainResponse
-	43, // 68: da.proto.TelephonyService.IssueSoftphoneToken:output_type -> da.proto.IssueSoftphoneTokenResponse
-	47, // [47:69] is the sub-list for method output_type
-	25, // [25:47] is the sub-list for method input_type
+	16, // 28: da.proto.TelephonyService.CompleteTransfer:input_type -> da.proto.CompleteTransferRequest
+	18, // 29: da.proto.TelephonyService.HoldCall:input_type -> da.proto.HoldRequest
+	20, // 30: da.proto.TelephonyService.ResumeCall:input_type -> da.proto.ResumeRequest
+	9,  // 31: da.proto.TelephonyService.GetCall:input_type -> da.proto.GetCallRequest
+	10, // 32: da.proto.TelephonyService.ListCalls:input_type -> da.proto.ListCallsRequest
+	22, // 33: da.proto.TelephonyService.AppendCallEvent:input_type -> da.proto.AppendCallEventRequest
+	24, // 34: da.proto.TelephonyService.ListCallEvents:input_type -> da.proto.ListCallEventsRequest
+	26, // 35: da.proto.TelephonyService.CreateSipExtension:input_type -> da.proto.CreateSipExtensionRequest
+	27, // 36: da.proto.TelephonyService.GetSipExtension:input_type -> da.proto.GetSipExtensionRequest
+	28, // 37: da.proto.TelephonyService.ListSipExtensions:input_type -> da.proto.ListSipExtensionsRequest
+	30, // 38: da.proto.TelephonyService.DeleteSipExtension:input_type -> da.proto.DeleteSipExtensionRequest
+	32, // 39: da.proto.TelephonyService.CreateSipTrunk:input_type -> da.proto.CreateSipTrunkRequest
+	33, // 40: da.proto.TelephonyService.GetSipTrunk:input_type -> da.proto.GetSipTrunkRequest
+	34, // 41: da.proto.TelephonyService.ListSipTrunks:input_type -> da.proto.ListSipTrunksRequest
+	36, // 42: da.proto.TelephonyService.UpdateSipTrunk:input_type -> da.proto.UpdateSipTrunkRequest
+	37, // 43: da.proto.TelephonyService.DeleteSipTrunk:input_type -> da.proto.DeleteSipTrunkRequest
+	39, // 44: da.proto.TelephonyService.CreateSipDomain:input_type -> da.proto.CreateSipDomainRequest
+	40, // 45: da.proto.TelephonyService.ListSipDomains:input_type -> da.proto.ListSipDomainsRequest
+	42, // 46: da.proto.TelephonyService.DeleteSipDomain:input_type -> da.proto.DeleteSipDomainRequest
+	44, // 47: da.proto.TelephonyService.IssueSoftphoneToken:input_type -> da.proto.IssueSoftphoneTokenRequest
+	8,  // 48: da.proto.TelephonyService.OriginateCall:output_type -> da.proto.OriginateCallResponse
+	13, // 49: da.proto.TelephonyService.HangupCall:output_type -> da.proto.HangupResponse
+	15, // 50: da.proto.TelephonyService.TransferCall:output_type -> da.proto.TransferResponse
+	17, // 51: da.proto.TelephonyService.CompleteTransfer:output_type -> da.proto.CompleteTransferResponse
+	19, // 52: da.proto.TelephonyService.HoldCall:output_type -> da.proto.HoldResponse
+	21, // 53: da.proto.TelephonyService.ResumeCall:output_type -> da.proto.ResumeResponse
+	0,  // 54: da.proto.TelephonyService.GetCall:output_type -> da.proto.Call
+	11, // 55: da.proto.TelephonyService.ListCalls:output_type -> da.proto.ListCallsResponse
+	23, // 56: da.proto.TelephonyService.AppendCallEvent:output_type -> da.proto.AppendCallEventResponse
+	25, // 57: da.proto.TelephonyService.ListCallEvents:output_type -> da.proto.ListCallEventsResponse
+	2,  // 58: da.proto.TelephonyService.CreateSipExtension:output_type -> da.proto.SipExtension
+	2,  // 59: da.proto.TelephonyService.GetSipExtension:output_type -> da.proto.SipExtension
+	29, // 60: da.proto.TelephonyService.ListSipExtensions:output_type -> da.proto.ListSipExtensionsResponse
+	31, // 61: da.proto.TelephonyService.DeleteSipExtension:output_type -> da.proto.DeleteSipExtensionResponse
+	3,  // 62: da.proto.TelephonyService.CreateSipTrunk:output_type -> da.proto.SipTrunk
+	3,  // 63: da.proto.TelephonyService.GetSipTrunk:output_type -> da.proto.SipTrunk
+	35, // 64: da.proto.TelephonyService.ListSipTrunks:output_type -> da.proto.ListSipTrunksResponse
+	3,  // 65: da.proto.TelephonyService.UpdateSipTrunk:output_type -> da.proto.SipTrunk
+	38, // 66: da.proto.TelephonyService.DeleteSipTrunk:output_type -> da.proto.DeleteSipTrunkResponse
+	4,  // 67: da.proto.TelephonyService.CreateSipDomain:output_type -> da.proto.SipDomain
+	41, // 68: da.proto.TelephonyService.ListSipDomains:output_type -> da.proto.ListSipDomainsResponse
+	43, // 69: da.proto.TelephonyService.DeleteSipDomain:output_type -> da.proto.DeleteSipDomainResponse
+	45, // 70: da.proto.TelephonyService.IssueSoftphoneToken:output_type -> da.proto.IssueSoftphoneTokenResponse
+	48, // [48:71] is the sub-list for method output_type
+	25, // [25:48] is the sub-list for method input_type
 	25, // [25:25] is the sub-list for extension type_name
 	25, // [25:25] is the sub-list for extension extendee
 	0,  // [0:25] is the sub-list for field type_name
@@ -3007,7 +3138,7 @@ func file_telephony_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_telephony_proto_rawDesc), len(file_telephony_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   44,
+			NumMessages:   46,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

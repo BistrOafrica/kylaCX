@@ -29,6 +29,7 @@ const (
 	QueueService_ListQueueMembers_FullMethodName     = "/da.proto.QueueService/ListQueueMembers"
 	QueueService_SetQueueMemberActive_FullMethodName = "/da.proto.QueueService/SetQueueMemberActive"
 	QueueService_ListQueueEntries_FullMethodName     = "/da.proto.QueueService/ListQueueEntries"
+	QueueService_WatchQueueEntries_FullMethodName    = "/da.proto.QueueService/WatchQueueEntries"
 )
 
 // QueueServiceClient is the client API for QueueService service.
@@ -48,6 +49,7 @@ type QueueServiceClient interface {
 	SetQueueMemberActive(ctx context.Context, in *SetQueueMemberActiveRequest, opts ...grpc.CallOption) (*SetQueueMemberActiveResponse, error)
 	// Wallboard
 	ListQueueEntries(ctx context.Context, in *ListQueueEntriesRequest, opts ...grpc.CallOption) (*ListQueueEntriesResponse, error)
+	WatchQueueEntries(ctx context.Context, in *WatchQueueEntriesRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[WatchQueueEntriesUpdate], error)
 }
 
 type queueServiceClient struct {
@@ -158,6 +160,25 @@ func (c *queueServiceClient) ListQueueEntries(ctx context.Context, in *ListQueue
 	return out, nil
 }
 
+func (c *queueServiceClient) WatchQueueEntries(ctx context.Context, in *WatchQueueEntriesRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[WatchQueueEntriesUpdate], error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	stream, err := c.cc.NewStream(ctx, &QueueService_ServiceDesc.Streams[0], QueueService_WatchQueueEntries_FullMethodName, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &grpc.GenericClientStream[WatchQueueEntriesRequest, WatchQueueEntriesUpdate]{ClientStream: stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type QueueService_WatchQueueEntriesClient = grpc.ServerStreamingClient[WatchQueueEntriesUpdate]
+
 // QueueServiceServer is the server API for QueueService service.
 // All implementations must embed UnimplementedQueueServiceServer
 // for forward compatibility.
@@ -175,6 +196,7 @@ type QueueServiceServer interface {
 	SetQueueMemberActive(context.Context, *SetQueueMemberActiveRequest) (*SetQueueMemberActiveResponse, error)
 	// Wallboard
 	ListQueueEntries(context.Context, *ListQueueEntriesRequest) (*ListQueueEntriesResponse, error)
+	WatchQueueEntries(*WatchQueueEntriesRequest, grpc.ServerStreamingServer[WatchQueueEntriesUpdate]) error
 	mustEmbedUnimplementedQueueServiceServer()
 }
 
@@ -214,6 +236,9 @@ func (UnimplementedQueueServiceServer) SetQueueMemberActive(context.Context, *Se
 }
 func (UnimplementedQueueServiceServer) ListQueueEntries(context.Context, *ListQueueEntriesRequest) (*ListQueueEntriesResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListQueueEntries not implemented")
+}
+func (UnimplementedQueueServiceServer) WatchQueueEntries(*WatchQueueEntriesRequest, grpc.ServerStreamingServer[WatchQueueEntriesUpdate]) error {
+	return status.Errorf(codes.Unimplemented, "method WatchQueueEntries not implemented")
 }
 func (UnimplementedQueueServiceServer) mustEmbedUnimplementedQueueServiceServer() {}
 func (UnimplementedQueueServiceServer) testEmbeddedByValue()                      {}
@@ -416,6 +441,17 @@ func _QueueService_ListQueueEntries_Handler(srv interface{}, ctx context.Context
 	return interceptor(ctx, in, info, handler)
 }
 
+func _QueueService_WatchQueueEntries_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(WatchQueueEntriesRequest)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(QueueServiceServer).WatchQueueEntries(m, &grpc.GenericServerStream[WatchQueueEntriesRequest, WatchQueueEntriesUpdate]{ServerStream: stream})
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type QueueService_WatchQueueEntriesServer = grpc.ServerStreamingServer[WatchQueueEntriesUpdate]
+
 // QueueService_ServiceDesc is the grpc.ServiceDesc for QueueService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -464,6 +500,12 @@ var QueueService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _QueueService_ListQueueEntries_Handler,
 		},
 	},
-	Streams:  []grpc.StreamDesc{},
+	Streams: []grpc.StreamDesc{
+		{
+			StreamName:    "WatchQueueEntries",
+			Handler:       _QueueService_WatchQueueEntries_Handler,
+			ServerStreams: true,
+		},
+	},
 	Metadata: "queues.proto",
 }

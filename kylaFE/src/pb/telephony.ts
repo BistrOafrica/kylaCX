@@ -501,6 +501,46 @@ export interface TransferResponse {
      * @generated from protobuf field: string status = 2
      */
     status: string;
+    /**
+     * For attended transfer: the PBX-assigned UUID for the consultation leg
+     * started between the agent and the target. The frontend calls
+     * CompleteTransfer with both id (original caller) and consultation_id to
+     * finalise the bridge, or HangupCall against consultation_id to abort and
+     * resume the caller. Empty for blind transfers.
+     *
+     * @generated from protobuf field: string consultation_id = 3
+     */
+    consultationId: string;
+}
+/**
+ * @generated from protobuf message da.proto.CompleteTransferRequest
+ */
+export interface CompleteTransferRequest {
+    /**
+     * The original caller leg.
+     *
+     * @generated from protobuf field: string id = 1
+     */
+    id: string;
+    /**
+     * The consultation leg returned by TransferCall(blind=false).
+     *
+     * @generated from protobuf field: string consultation_id = 2
+     */
+    consultationId: string;
+}
+/**
+ * @generated from protobuf message da.proto.CompleteTransferResponse
+ */
+export interface CompleteTransferResponse {
+    /**
+     * @generated from protobuf field: string id = 1
+     */
+    id: string;
+    /**
+     * @generated from protobuf field: string status = 2
+     */
+    status: string;
 }
 /**
  * @generated from protobuf message da.proto.HoldRequest
@@ -2095,18 +2135,136 @@ class TransferResponse$Type extends MessageType<TransferResponse> {
     constructor() {
         super("da.proto.TransferResponse", [
             { no: 1, name: "id", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
-            { no: 2, name: "status", kind: "scalar", T: 9 /*ScalarType.STRING*/ }
+            { no: 2, name: "status", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
+            { no: 3, name: "consultation_id", kind: "scalar", T: 9 /*ScalarType.STRING*/ }
         ]);
     }
     create(value?: PartialMessage<TransferResponse>): TransferResponse {
         const message = globalThis.Object.create((this.messagePrototype!));
         message.id = "";
         message.status = "";
+        message.consultationId = "";
         if (value !== undefined)
             reflectionMergePartial<TransferResponse>(this, message, value);
         return message;
     }
     internalBinaryRead(reader: IBinaryReader, length: number, options: BinaryReadOptions, target?: TransferResponse): TransferResponse {
+        let message = target ?? this.create(), end = reader.pos + length;
+        while (reader.pos < end) {
+            let [fieldNo, wireType] = reader.tag();
+            switch (fieldNo) {
+                case /* string id */ 1:
+                    message.id = reader.string();
+                    break;
+                case /* string status */ 2:
+                    message.status = reader.string();
+                    break;
+                case /* string consultation_id */ 3:
+                    message.consultationId = reader.string();
+                    break;
+                default:
+                    let u = options.readUnknownField;
+                    if (u === "throw")
+                        throw new globalThis.Error(`Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`);
+                    let d = reader.skip(wireType);
+                    if (u !== false)
+                        (u === true ? UnknownFieldHandler.onRead : u)(this.typeName, message, fieldNo, wireType, d);
+            }
+        }
+        return message;
+    }
+    internalBinaryWrite(message: TransferResponse, writer: IBinaryWriter, options: BinaryWriteOptions): IBinaryWriter {
+        /* string id = 1; */
+        if (message.id !== "")
+            writer.tag(1, WireType.LengthDelimited).string(message.id);
+        /* string status = 2; */
+        if (message.status !== "")
+            writer.tag(2, WireType.LengthDelimited).string(message.status);
+        /* string consultation_id = 3; */
+        if (message.consultationId !== "")
+            writer.tag(3, WireType.LengthDelimited).string(message.consultationId);
+        let u = options.writeUnknownFields;
+        if (u !== false)
+            (u == true ? UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);
+        return writer;
+    }
+}
+/**
+ * @generated MessageType for protobuf message da.proto.TransferResponse
+ */
+export const TransferResponse = new TransferResponse$Type();
+// @generated message type with reflection information, may provide speed optimized methods
+class CompleteTransferRequest$Type extends MessageType<CompleteTransferRequest> {
+    constructor() {
+        super("da.proto.CompleteTransferRequest", [
+            { no: 1, name: "id", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
+            { no: 2, name: "consultation_id", kind: "scalar", T: 9 /*ScalarType.STRING*/ }
+        ]);
+    }
+    create(value?: PartialMessage<CompleteTransferRequest>): CompleteTransferRequest {
+        const message = globalThis.Object.create((this.messagePrototype!));
+        message.id = "";
+        message.consultationId = "";
+        if (value !== undefined)
+            reflectionMergePartial<CompleteTransferRequest>(this, message, value);
+        return message;
+    }
+    internalBinaryRead(reader: IBinaryReader, length: number, options: BinaryReadOptions, target?: CompleteTransferRequest): CompleteTransferRequest {
+        let message = target ?? this.create(), end = reader.pos + length;
+        while (reader.pos < end) {
+            let [fieldNo, wireType] = reader.tag();
+            switch (fieldNo) {
+                case /* string id */ 1:
+                    message.id = reader.string();
+                    break;
+                case /* string consultation_id */ 2:
+                    message.consultationId = reader.string();
+                    break;
+                default:
+                    let u = options.readUnknownField;
+                    if (u === "throw")
+                        throw new globalThis.Error(`Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`);
+                    let d = reader.skip(wireType);
+                    if (u !== false)
+                        (u === true ? UnknownFieldHandler.onRead : u)(this.typeName, message, fieldNo, wireType, d);
+            }
+        }
+        return message;
+    }
+    internalBinaryWrite(message: CompleteTransferRequest, writer: IBinaryWriter, options: BinaryWriteOptions): IBinaryWriter {
+        /* string id = 1; */
+        if (message.id !== "")
+            writer.tag(1, WireType.LengthDelimited).string(message.id);
+        /* string consultation_id = 2; */
+        if (message.consultationId !== "")
+            writer.tag(2, WireType.LengthDelimited).string(message.consultationId);
+        let u = options.writeUnknownFields;
+        if (u !== false)
+            (u == true ? UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);
+        return writer;
+    }
+}
+/**
+ * @generated MessageType for protobuf message da.proto.CompleteTransferRequest
+ */
+export const CompleteTransferRequest = new CompleteTransferRequest$Type();
+// @generated message type with reflection information, may provide speed optimized methods
+class CompleteTransferResponse$Type extends MessageType<CompleteTransferResponse> {
+    constructor() {
+        super("da.proto.CompleteTransferResponse", [
+            { no: 1, name: "id", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
+            { no: 2, name: "status", kind: "scalar", T: 9 /*ScalarType.STRING*/ }
+        ]);
+    }
+    create(value?: PartialMessage<CompleteTransferResponse>): CompleteTransferResponse {
+        const message = globalThis.Object.create((this.messagePrototype!));
+        message.id = "";
+        message.status = "";
+        if (value !== undefined)
+            reflectionMergePartial<CompleteTransferResponse>(this, message, value);
+        return message;
+    }
+    internalBinaryRead(reader: IBinaryReader, length: number, options: BinaryReadOptions, target?: CompleteTransferResponse): CompleteTransferResponse {
         let message = target ?? this.create(), end = reader.pos + length;
         while (reader.pos < end) {
             let [fieldNo, wireType] = reader.tag();
@@ -2128,7 +2286,7 @@ class TransferResponse$Type extends MessageType<TransferResponse> {
         }
         return message;
     }
-    internalBinaryWrite(message: TransferResponse, writer: IBinaryWriter, options: BinaryWriteOptions): IBinaryWriter {
+    internalBinaryWrite(message: CompleteTransferResponse, writer: IBinaryWriter, options: BinaryWriteOptions): IBinaryWriter {
         /* string id = 1; */
         if (message.id !== "")
             writer.tag(1, WireType.LengthDelimited).string(message.id);
@@ -2142,9 +2300,9 @@ class TransferResponse$Type extends MessageType<TransferResponse> {
     }
 }
 /**
- * @generated MessageType for protobuf message da.proto.TransferResponse
+ * @generated MessageType for protobuf message da.proto.CompleteTransferResponse
  */
-export const TransferResponse = new TransferResponse$Type();
+export const CompleteTransferResponse = new CompleteTransferResponse$Type();
 // @generated message type with reflection information, may provide speed optimized methods
 class HoldRequest$Type extends MessageType<HoldRequest> {
     constructor() {
@@ -3494,6 +3652,7 @@ export const TelephonyService = new ServiceType("da.proto.TelephonyService", [
     { name: "OriginateCall", options: {}, I: OriginateCallRequest, O: OriginateCallResponse },
     { name: "HangupCall", options: {}, I: HangupRequest, O: HangupResponse },
     { name: "TransferCall", options: {}, I: TransferRequest, O: TransferResponse },
+    { name: "CompleteTransfer", options: {}, I: CompleteTransferRequest, O: CompleteTransferResponse },
     { name: "HoldCall", options: {}, I: HoldRequest, O: HoldResponse },
     { name: "ResumeCall", options: {}, I: ResumeRequest, O: ResumeResponse },
     { name: "GetCall", options: {}, I: GetCallRequest, O: Call },

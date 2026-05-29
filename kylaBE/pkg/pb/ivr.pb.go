@@ -1259,6 +1259,190 @@ func (x *ListIVRRunsResponse) GetTotal() int64 {
 	return 0
 }
 
+type TestRunIVRFlowRequest struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Either id (look up the saved flow) or definition (validate without saving).
+	Id            string         `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Definition    *IVRDefinition `protobuf:"bytes,2,opt,name=definition,proto3" json:"definition,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *TestRunIVRFlowRequest) Reset() {
+	*x = TestRunIVRFlowRequest{}
+	mi := &file_ivr_proto_msgTypes[21]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *TestRunIVRFlowRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*TestRunIVRFlowRequest) ProtoMessage() {}
+
+func (x *TestRunIVRFlowRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_ivr_proto_msgTypes[21]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use TestRunIVRFlowRequest.ProtoReflect.Descriptor instead.
+func (*TestRunIVRFlowRequest) Descriptor() ([]byte, []int) {
+	return file_ivr_proto_rawDescGZIP(), []int{21}
+}
+
+func (x *TestRunIVRFlowRequest) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *TestRunIVRFlowRequest) GetDefinition() *IVRDefinition {
+	if x != nil {
+		return x.Definition
+	}
+	return nil
+}
+
+type TestRunIVRFlowResponse struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// True when the flow has no fatal issues. Issues may still be non-empty
+	// even when ok=true (warnings).
+	Ok     bool            `protobuf:"varint,1,opt,name=ok,proto3" json:"ok,omitempty"`
+	Issues []*IVRFlowIssue `protobuf:"bytes,2,rep,name=issues,proto3" json:"issues,omitempty"`
+	// Reachability map keyed by node_id. true = reachable from start_node_id.
+	Reachability  map[string]bool `protobuf:"bytes,3,rep,name=reachability,proto3" json:"reachability,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"varint,2,opt,name=value"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *TestRunIVRFlowResponse) Reset() {
+	*x = TestRunIVRFlowResponse{}
+	mi := &file_ivr_proto_msgTypes[22]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *TestRunIVRFlowResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*TestRunIVRFlowResponse) ProtoMessage() {}
+
+func (x *TestRunIVRFlowResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_ivr_proto_msgTypes[22]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use TestRunIVRFlowResponse.ProtoReflect.Descriptor instead.
+func (*TestRunIVRFlowResponse) Descriptor() ([]byte, []int) {
+	return file_ivr_proto_rawDescGZIP(), []int{22}
+}
+
+func (x *TestRunIVRFlowResponse) GetOk() bool {
+	if x != nil {
+		return x.Ok
+	}
+	return false
+}
+
+func (x *TestRunIVRFlowResponse) GetIssues() []*IVRFlowIssue {
+	if x != nil {
+		return x.Issues
+	}
+	return nil
+}
+
+func (x *TestRunIVRFlowResponse) GetReachability() map[string]bool {
+	if x != nil {
+		return x.Reachability
+	}
+	return nil
+}
+
+type IVRFlowIssue struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Severity      string                 `protobuf:"bytes,1,opt,name=severity,proto3" json:"severity,omitempty"`           // "error" | "warning"
+	NodeId        string                 `protobuf:"bytes,2,opt,name=node_id,json=nodeId,proto3" json:"node_id,omitempty"` // empty when the issue applies to the flow as a whole
+	Code          string                 `protobuf:"bytes,3,opt,name=code,proto3" json:"code,omitempty"`                   // "missing_start" | "unreachable" | "bad_branch" | ...
+	Message       string                 `protobuf:"bytes,4,opt,name=message,proto3" json:"message,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *IVRFlowIssue) Reset() {
+	*x = IVRFlowIssue{}
+	mi := &file_ivr_proto_msgTypes[23]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *IVRFlowIssue) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*IVRFlowIssue) ProtoMessage() {}
+
+func (x *IVRFlowIssue) ProtoReflect() protoreflect.Message {
+	mi := &file_ivr_proto_msgTypes[23]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use IVRFlowIssue.ProtoReflect.Descriptor instead.
+func (*IVRFlowIssue) Descriptor() ([]byte, []int) {
+	return file_ivr_proto_rawDescGZIP(), []int{23}
+}
+
+func (x *IVRFlowIssue) GetSeverity() string {
+	if x != nil {
+		return x.Severity
+	}
+	return ""
+}
+
+func (x *IVRFlowIssue) GetNodeId() string {
+	if x != nil {
+		return x.NodeId
+	}
+	return ""
+}
+
+func (x *IVRFlowIssue) GetCode() string {
+	if x != nil {
+		return x.Code
+	}
+	return ""
+}
+
+func (x *IVRFlowIssue) GetMessage() string {
+	if x != nil {
+		return x.Message
+	}
+	return ""
+}
+
 var File_ivr_proto protoreflect.FileDescriptor
 
 const file_ivr_proto_rawDesc = "" +
@@ -1361,7 +1545,24 @@ const file_ivr_proto_rawDesc = "" +
 	"\x13ListIVRRunsResponse\x12$\n" +
 	"\x04runs\x18\x01 \x03(\v2\x10.da.proto.IVRRunR\x04runs\x12&\n" +
 	"\x0fnext_page_token\x18\x02 \x01(\tR\rnextPageToken\x12\x14\n" +
-	"\x05total\x18\x03 \x01(\x03R\x05total2\x95\x06\n" +
+	"\x05total\x18\x03 \x01(\x03R\x05total\"`\n" +
+	"\x15TestRunIVRFlowRequest\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x127\n" +
+	"\n" +
+	"definition\x18\x02 \x01(\v2\x17.da.proto.IVRDefinitionR\n" +
+	"definition\"\xf1\x01\n" +
+	"\x16TestRunIVRFlowResponse\x12\x0e\n" +
+	"\x02ok\x18\x01 \x01(\bR\x02ok\x12.\n" +
+	"\x06issues\x18\x02 \x03(\v2\x16.da.proto.IVRFlowIssueR\x06issues\x12V\n" +
+	"\freachability\x18\x03 \x03(\v22.da.proto.TestRunIVRFlowResponse.ReachabilityEntryR\freachability\x1a?\n" +
+	"\x11ReachabilityEntry\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
+	"\x05value\x18\x02 \x01(\bR\x05value:\x028\x01\"q\n" +
+	"\fIVRFlowIssue\x12\x1a\n" +
+	"\bseverity\x18\x01 \x01(\tR\bseverity\x12\x17\n" +
+	"\anode_id\x18\x02 \x01(\tR\x06nodeId\x12\x12\n" +
+	"\x04code\x18\x03 \x01(\tR\x04code\x12\x18\n" +
+	"\amessage\x18\x04 \x01(\tR\amessage2\xea\x06\n" +
 	"\n" +
 	"IVRService\x12B\n" +
 	"\rCreateIVRFlow\x12\x1e.da.proto.CreateIVRFlowRequest\x1a\x11.da.proto.IVRFlow\x12<\n" +
@@ -1374,7 +1575,8 @@ const file_ivr_proto_rawDesc = "" +
 	"\x12ListIVRDIDMappings\x12#.da.proto.ListIVRDIDMappingsRequest\x1a$.da.proto.ListIVRDIDMappingsResponse\x12b\n" +
 	"\x13DeleteIVRDIDMapping\x12$.da.proto.DeleteIVRDIDMappingRequest\x1a%.da.proto.DeleteIVRDIDMappingResponse\x129\n" +
 	"\tGetIVRRun\x12\x1a.da.proto.GetIVRRunRequest\x1a\x10.da.proto.IVRRun\x12J\n" +
-	"\vListIVRRuns\x12\x1c.da.proto.ListIVRRunsRequest\x1a\x1d.da.proto.ListIVRRunsResponseB\x06Z\x04./pbb\x06proto3"
+	"\vListIVRRuns\x12\x1c.da.proto.ListIVRRunsRequest\x1a\x1d.da.proto.ListIVRRunsResponse\x12S\n" +
+	"\x0eTestRunIVRFlow\x12\x1f.da.proto.TestRunIVRFlowRequest\x1a .da.proto.TestRunIVRFlowResponseB\x06Z\x04./pbb\x06proto3"
 
 var (
 	file_ivr_proto_rawDescOnce sync.Once
@@ -1388,7 +1590,7 @@ func file_ivr_proto_rawDescGZIP() []byte {
 	return file_ivr_proto_rawDescData
 }
 
-var file_ivr_proto_msgTypes = make([]protoimpl.MessageInfo, 22)
+var file_ivr_proto_msgTypes = make([]protoimpl.MessageInfo, 26)
 var file_ivr_proto_goTypes = []any{
 	(*IVRFlow)(nil),                     // 0: da.proto.IVRFlow
 	(*IVRDefinition)(nil),               // 1: da.proto.IVRDefinition
@@ -1411,53 +1613,62 @@ var file_ivr_proto_goTypes = []any{
 	(*GetIVRRunRequest)(nil),            // 18: da.proto.GetIVRRunRequest
 	(*ListIVRRunsRequest)(nil),          // 19: da.proto.ListIVRRunsRequest
 	(*ListIVRRunsResponse)(nil),         // 20: da.proto.ListIVRRunsResponse
-	nil,                                 // 21: da.proto.IVRNode.BranchesEntry
-	(*timestamppb.Timestamp)(nil),       // 22: google.protobuf.Timestamp
-	(*structpb.Struct)(nil),             // 23: google.protobuf.Struct
+	(*TestRunIVRFlowRequest)(nil),       // 21: da.proto.TestRunIVRFlowRequest
+	(*TestRunIVRFlowResponse)(nil),      // 22: da.proto.TestRunIVRFlowResponse
+	(*IVRFlowIssue)(nil),                // 23: da.proto.IVRFlowIssue
+	nil,                                 // 24: da.proto.IVRNode.BranchesEntry
+	nil,                                 // 25: da.proto.TestRunIVRFlowResponse.ReachabilityEntry
+	(*timestamppb.Timestamp)(nil),       // 26: google.protobuf.Timestamp
+	(*structpb.Struct)(nil),             // 27: google.protobuf.Struct
 }
 var file_ivr_proto_depIdxs = []int32{
 	1,  // 0: da.proto.IVRFlow.definition:type_name -> da.proto.IVRDefinition
-	22, // 1: da.proto.IVRFlow.created_at:type_name -> google.protobuf.Timestamp
-	22, // 2: da.proto.IVRFlow.updated_at:type_name -> google.protobuf.Timestamp
+	26, // 1: da.proto.IVRFlow.created_at:type_name -> google.protobuf.Timestamp
+	26, // 2: da.proto.IVRFlow.updated_at:type_name -> google.protobuf.Timestamp
 	2,  // 3: da.proto.IVRDefinition.nodes:type_name -> da.proto.IVRNode
-	23, // 4: da.proto.IVRNode.config:type_name -> google.protobuf.Struct
-	21, // 5: da.proto.IVRNode.branches:type_name -> da.proto.IVRNode.BranchesEntry
-	22, // 6: da.proto.IVRDIDMapping.created_at:type_name -> google.protobuf.Timestamp
+	27, // 4: da.proto.IVRNode.config:type_name -> google.protobuf.Struct
+	24, // 5: da.proto.IVRNode.branches:type_name -> da.proto.IVRNode.BranchesEntry
+	26, // 6: da.proto.IVRDIDMapping.created_at:type_name -> google.protobuf.Timestamp
 	5,  // 7: da.proto.IVRRun.visited_nodes:type_name -> da.proto.IVRRunStep
-	22, // 8: da.proto.IVRRun.started_at:type_name -> google.protobuf.Timestamp
-	22, // 9: da.proto.IVRRun.ended_at:type_name -> google.protobuf.Timestamp
-	22, // 10: da.proto.IVRRunStep.entered_at:type_name -> google.protobuf.Timestamp
+	26, // 8: da.proto.IVRRun.started_at:type_name -> google.protobuf.Timestamp
+	26, // 9: da.proto.IVRRun.ended_at:type_name -> google.protobuf.Timestamp
+	26, // 10: da.proto.IVRRunStep.entered_at:type_name -> google.protobuf.Timestamp
 	0,  // 11: da.proto.CreateIVRFlowRequest.flow:type_name -> da.proto.IVRFlow
 	0,  // 12: da.proto.ListIVRFlowsResponse.flows:type_name -> da.proto.IVRFlow
 	0,  // 13: da.proto.UpdateIVRFlowRequest.flow:type_name -> da.proto.IVRFlow
 	3,  // 14: da.proto.CreateIVRDIDMappingRequest.mapping:type_name -> da.proto.IVRDIDMapping
 	3,  // 15: da.proto.ListIVRDIDMappingsResponse.mappings:type_name -> da.proto.IVRDIDMapping
 	4,  // 16: da.proto.ListIVRRunsResponse.runs:type_name -> da.proto.IVRRun
-	6,  // 17: da.proto.IVRService.CreateIVRFlow:input_type -> da.proto.CreateIVRFlowRequest
-	7,  // 18: da.proto.IVRService.GetIVRFlow:input_type -> da.proto.GetIVRFlowRequest
-	8,  // 19: da.proto.IVRService.ListIVRFlows:input_type -> da.proto.ListIVRFlowsRequest
-	10, // 20: da.proto.IVRService.UpdateIVRFlow:input_type -> da.proto.UpdateIVRFlowRequest
-	11, // 21: da.proto.IVRService.DeleteIVRFlow:input_type -> da.proto.DeleteIVRFlowRequest
-	13, // 22: da.proto.IVRService.CreateIVRDIDMapping:input_type -> da.proto.CreateIVRDIDMappingRequest
-	14, // 23: da.proto.IVRService.ListIVRDIDMappings:input_type -> da.proto.ListIVRDIDMappingsRequest
-	16, // 24: da.proto.IVRService.DeleteIVRDIDMapping:input_type -> da.proto.DeleteIVRDIDMappingRequest
-	18, // 25: da.proto.IVRService.GetIVRRun:input_type -> da.proto.GetIVRRunRequest
-	19, // 26: da.proto.IVRService.ListIVRRuns:input_type -> da.proto.ListIVRRunsRequest
-	0,  // 27: da.proto.IVRService.CreateIVRFlow:output_type -> da.proto.IVRFlow
-	0,  // 28: da.proto.IVRService.GetIVRFlow:output_type -> da.proto.IVRFlow
-	9,  // 29: da.proto.IVRService.ListIVRFlows:output_type -> da.proto.ListIVRFlowsResponse
-	0,  // 30: da.proto.IVRService.UpdateIVRFlow:output_type -> da.proto.IVRFlow
-	12, // 31: da.proto.IVRService.DeleteIVRFlow:output_type -> da.proto.DeleteIVRFlowResponse
-	3,  // 32: da.proto.IVRService.CreateIVRDIDMapping:output_type -> da.proto.IVRDIDMapping
-	15, // 33: da.proto.IVRService.ListIVRDIDMappings:output_type -> da.proto.ListIVRDIDMappingsResponse
-	17, // 34: da.proto.IVRService.DeleteIVRDIDMapping:output_type -> da.proto.DeleteIVRDIDMappingResponse
-	4,  // 35: da.proto.IVRService.GetIVRRun:output_type -> da.proto.IVRRun
-	20, // 36: da.proto.IVRService.ListIVRRuns:output_type -> da.proto.ListIVRRunsResponse
-	27, // [27:37] is the sub-list for method output_type
-	17, // [17:27] is the sub-list for method input_type
-	17, // [17:17] is the sub-list for extension type_name
-	17, // [17:17] is the sub-list for extension extendee
-	0,  // [0:17] is the sub-list for field type_name
+	1,  // 17: da.proto.TestRunIVRFlowRequest.definition:type_name -> da.proto.IVRDefinition
+	23, // 18: da.proto.TestRunIVRFlowResponse.issues:type_name -> da.proto.IVRFlowIssue
+	25, // 19: da.proto.TestRunIVRFlowResponse.reachability:type_name -> da.proto.TestRunIVRFlowResponse.ReachabilityEntry
+	6,  // 20: da.proto.IVRService.CreateIVRFlow:input_type -> da.proto.CreateIVRFlowRequest
+	7,  // 21: da.proto.IVRService.GetIVRFlow:input_type -> da.proto.GetIVRFlowRequest
+	8,  // 22: da.proto.IVRService.ListIVRFlows:input_type -> da.proto.ListIVRFlowsRequest
+	10, // 23: da.proto.IVRService.UpdateIVRFlow:input_type -> da.proto.UpdateIVRFlowRequest
+	11, // 24: da.proto.IVRService.DeleteIVRFlow:input_type -> da.proto.DeleteIVRFlowRequest
+	13, // 25: da.proto.IVRService.CreateIVRDIDMapping:input_type -> da.proto.CreateIVRDIDMappingRequest
+	14, // 26: da.proto.IVRService.ListIVRDIDMappings:input_type -> da.proto.ListIVRDIDMappingsRequest
+	16, // 27: da.proto.IVRService.DeleteIVRDIDMapping:input_type -> da.proto.DeleteIVRDIDMappingRequest
+	18, // 28: da.proto.IVRService.GetIVRRun:input_type -> da.proto.GetIVRRunRequest
+	19, // 29: da.proto.IVRService.ListIVRRuns:input_type -> da.proto.ListIVRRunsRequest
+	21, // 30: da.proto.IVRService.TestRunIVRFlow:input_type -> da.proto.TestRunIVRFlowRequest
+	0,  // 31: da.proto.IVRService.CreateIVRFlow:output_type -> da.proto.IVRFlow
+	0,  // 32: da.proto.IVRService.GetIVRFlow:output_type -> da.proto.IVRFlow
+	9,  // 33: da.proto.IVRService.ListIVRFlows:output_type -> da.proto.ListIVRFlowsResponse
+	0,  // 34: da.proto.IVRService.UpdateIVRFlow:output_type -> da.proto.IVRFlow
+	12, // 35: da.proto.IVRService.DeleteIVRFlow:output_type -> da.proto.DeleteIVRFlowResponse
+	3,  // 36: da.proto.IVRService.CreateIVRDIDMapping:output_type -> da.proto.IVRDIDMapping
+	15, // 37: da.proto.IVRService.ListIVRDIDMappings:output_type -> da.proto.ListIVRDIDMappingsResponse
+	17, // 38: da.proto.IVRService.DeleteIVRDIDMapping:output_type -> da.proto.DeleteIVRDIDMappingResponse
+	4,  // 39: da.proto.IVRService.GetIVRRun:output_type -> da.proto.IVRRun
+	20, // 40: da.proto.IVRService.ListIVRRuns:output_type -> da.proto.ListIVRRunsResponse
+	22, // 41: da.proto.IVRService.TestRunIVRFlow:output_type -> da.proto.TestRunIVRFlowResponse
+	31, // [31:42] is the sub-list for method output_type
+	20, // [20:31] is the sub-list for method input_type
+	20, // [20:20] is the sub-list for extension type_name
+	20, // [20:20] is the sub-list for extension extendee
+	0,  // [0:20] is the sub-list for field type_name
 }
 
 func init() { file_ivr_proto_init() }
@@ -1471,7 +1682,7 @@ func file_ivr_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_ivr_proto_rawDesc), len(file_ivr_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   22,
+			NumMessages:   26,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

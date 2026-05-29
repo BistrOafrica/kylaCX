@@ -129,4 +129,29 @@ service IVRService {
   // Runs (read-only — runs are created by the executor, not via gRPC)
   rpc GetIVRRun(GetIVRRunRequest)     returns (IVRRun);
   rpc ListIVRRuns(ListIVRRunsRequest) returns (ListIVRRunsResponse);
+
+  // Builder helpers — TestRunIVRFlow does a dry-run validation: walks the
+  // node graph and reports unreachable nodes, missing branch targets, and
+  // misconfigured node configs without contacting the PBX.
+  rpc TestRunIVRFlow(TestRunIVRFlowRequest) returns (TestRunIVRFlowResponse);
+}
+
+message TestRunIVRFlowRequest {
+  // Either id (look up the saved flow) or definition (validate without saving).
+  string id = 1;
+  IVRDefinition definition = 2;
+}
+message TestRunIVRFlowResponse {
+  // True when the flow has no fatal issues. Issues may still be non-empty
+  // even when ok=true (warnings).
+  bool ok = 1;
+  repeated IVRFlowIssue issues = 2;
+  // Reachability map keyed by node_id. true = reachable from start_node_id.
+  map<string, bool> reachability = 3;
+}
+message IVRFlowIssue {
+  string severity = 1;   // "error" | "warning"
+  string node_id = 2;    // empty when the issue applies to the flow as a whole
+  string code = 3;       // "missing_start" | "unreachable" | "bad_branch" | ...
+  string message = 4;
 }

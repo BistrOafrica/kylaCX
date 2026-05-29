@@ -179,11 +179,34 @@ func (s *Server) TransferCall(ctx context.Context, req *pb.TransferRequest) (*pb
 	if target == "" {
 		return nil, status.Error(codes.InvalidArgument, "target_extension or target_number is required")
 	}
-	if err := s.pbx.Transfer(ctx, req.GetId(), target, req.GetBlind()); err != nil {
+	consultID, err := s.pbx.Transfer(ctx, req.GetId(), target, req.GetBlind())
+	if err != nil {
 		log.Printf("[telephony] transfer %s: %v", req.GetId(), err)
 		return nil, status.Error(codes.Internal, "transfer failed")
 	}
-	return &pb.TransferResponse{Id: req.GetId(), Status: "transfer_requested"}, nil
+	resp := &pb.TransferResponse{Id: req.GetId(), Status: "transfer_requested", ConsultationId: consultID}
+	if req.GetBlind() {
+		resp.Status = "transferred"
+	} else {
+		resp.Status = "consultation_started"
+	}
+	return resp, nil
+}
+
+// CompleteTransfer finalises an attended transfer by bridging the original
+// caller leg to the consultation leg started by TransferCall(blind=false).
+func (s *Server) CompleteTransfer(ctx context.Context, req *pb.CompleteTransferRequest) (*pb.CompleteTransferResponse, error) {
+	if _, err := s.requireAuth(ctx); err != nil {
+		return nil, err
+	}
+	if req.GetId() == "" || req.GetConsultationId() == "" {
+		return nil, status.Error(codes.InvalidArgument, "id and consultation_id required")
+	}
+	if err := s.pbx.CompleteTransfer(ctx, req.GetId(), req.GetConsultationId()); err != nil {
+		log.Printf("[telephony] complete_transfer %s: %v", req.GetId(), err)
+		return nil, status.Error(codes.Internal, "complete_transfer failed")
+	}
+	return &pb.CompleteTransferResponse{Id: req.GetId(), Status: "transfer_completed"}, nil
 }
 
 func (s *Server) HoldCall(ctx context.Context, req *pb.HoldRequest) (*pb.HoldResponse, error) {

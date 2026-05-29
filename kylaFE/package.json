@@ -74,6 +74,7 @@
     "react-i18next": "^17.0.8",
     "react-router-dom": "^7.13.0",
     "recharts": "2.15.4",
+    "@dagrejs/dagre": "^1.1.6",
     "sip.js": "^0.21.2",
     "sonner": "^2.0.7",
     "tailwind-merge": "^3.4.0",

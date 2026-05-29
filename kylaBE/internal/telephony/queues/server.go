@@ -3,6 +3,7 @@ package queues
 import (
 	"context"
 	"log"
+	"time"
 
 	"kyla-be/internal/authctx"
 	"kyla-be/pkg/k"
@@ -174,6 +175,99 @@ func (s *Server) ListQueueEntries(ctx context.Context, req *pb.ListQueueEntriesR
 		out = append(out, EntryToPb(r))
 	}
 	return &pb.ListQueueEntriesResponse{Entries: out}, nil
+}
+
+// WatchQueueEntries is a server-side streaming RPC that pushes a fresh
+// snapshot whenever the queue's entry set changes. Uses a polling tick under
+// the hood — keeps the implementation simple and provider-agnostic (no NATS
+// fan-out required). Clamped to [500ms, 10s] regardless of the requested
+// interval.
+//
+// The first message is always sent (so clients see the initial state); after
+// that we send only when the snapshot changed, plus a heartbeat every 15s
+// so the connection stays open through gRPC-web proxies.
+func (s *Server) WatchQueueEntries(req *pb.WatchQueueEntriesRequest, stream pb.QueueService_WatchQueueEntriesServer) error {
+	if _, err := s.requireAuth(stream.Context()); err != nil {
+		return err
+	}
+	if req.GetQueueId() == "" {
+		return status.Error(codes.InvalidArgument, "queue_id is required")
+	}
+
+	interval := time.Duration(req.GetIntervalMs()) * time.Millisecond
+	if interval < 500*time.Millisecond {
+		interval = 500 * time.Millisecond
+	}
+	if interval > 10*time.Second {
+		interval = 10 * time.Second
+	}
+
+	ticker := time.NewTicker(interval)
+	defer ticker.Stop()
+	heartbeat := time.NewTicker(15 * time.Second)
+	defer heartbeat.Stop()
+
+	// previous signature is the concatenation of (entry.id, status) — cheap
+	// to compute and stable for change detection.
+	var previousSig string
+	first := true
+
+	for {
+		select {
+		case <-stream.Context().Done():
+			return nil
+		case <-ticker.C:
+			rows, err := s.store.ListLiveEntries(req.GetQueueId(), "")
+			if err != nil {
+				// Don't tear the stream down on a transient DB error; log and
+				// retry on the next tick.
+				log.Printf("[queues] watch entries DB error: %v", err)
+				continue
+			}
+			sig := snapshotSignature(rows)
+			changed := sig != previousSig
+			if !changed && !first {
+				continue
+			}
+			previousSig = sig
+			first = false
+			out := make([]*pb.QueueEntry, 0, len(rows))
+			for _, r := range rows {
+				out = append(out, EntryToPb(r))
+			}
+			if err := stream.Send(&pb.WatchQueueEntriesUpdate{
+				Entries: out,
+				Changed: changed,
+			}); err != nil {
+				return err
+			}
+		case <-heartbeat.C:
+			// Send an empty changed=false update so gRPC-web / Envoy proxies
+			// don't time the connection out during quiet periods.
+			if err := stream.Send(&pb.WatchQueueEntriesUpdate{Changed: false}); err != nil {
+				return err
+			}
+		}
+	}
+}
+
+// snapshotSignature builds a stable change-detection key from the entry list.
+// status + id covers waiting→ringing→connected transitions and entries
+// entering/leaving the live set; entered_at differences alone wouldn't be
+// caught but those are not user-visible state changes.
+func snapshotSignature(rows []*Entry) string {
+	if len(rows) == 0 {
+		return ""
+	}
+	const sep = "|"
+	out := make([]byte, 0, len(rows)*40)
+	for _, r := range rows {
+		out = append(out, r.ID...)
+		out = append(out, ':')
+		out = append(out, r.Status...)
+		out = append(out, sep...)
+	}
+	return string(out)
 }
 
 // ── helpers ──────────────────────────────────────────────────────────────────

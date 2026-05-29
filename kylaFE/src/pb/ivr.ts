@@ -380,6 +380,66 @@ export interface ListIVRRunsResponse {
      */
     total: bigint;
 }
+/**
+ * @generated from protobuf message da.proto.TestRunIVRFlowRequest
+ */
+export interface TestRunIVRFlowRequest {
+    /**
+     * Either id (look up the saved flow) or definition (validate without saving).
+     *
+     * @generated from protobuf field: string id = 1
+     */
+    id: string;
+    /**
+     * @generated from protobuf field: da.proto.IVRDefinition definition = 2
+     */
+    definition?: IVRDefinition;
+}
+/**
+ * @generated from protobuf message da.proto.TestRunIVRFlowResponse
+ */
+export interface TestRunIVRFlowResponse {
+    /**
+     * True when the flow has no fatal issues. Issues may still be non-empty
+     * even when ok=true (warnings).
+     *
+     * @generated from protobuf field: bool ok = 1
+     */
+    ok: boolean;
+    /**
+     * @generated from protobuf field: repeated da.proto.IVRFlowIssue issues = 2
+     */
+    issues: IVRFlowIssue[];
+    /**
+     * Reachability map keyed by node_id. true = reachable from start_node_id.
+     *
+     * @generated from protobuf field: map<string, bool> reachability = 3
+     */
+    reachability: {
+        [key: string]: boolean;
+    };
+}
+/**
+ * @generated from protobuf message da.proto.IVRFlowIssue
+ */
+export interface IVRFlowIssue {
+    /**
+     * @generated from protobuf field: string severity = 1
+     */
+    severity: string; // "error" | "warning"
+    /**
+     * @generated from protobuf field: string node_id = 2
+     */
+    nodeId: string; // empty when the issue applies to the flow as a whole
+    /**
+     * @generated from protobuf field: string code = 3
+     */
+    code: string; // "missing_start" | "unreachable" | "bad_branch" | ...
+    /**
+     * @generated from protobuf field: string message = 4
+     */
+    message: string;
+}
 // @generated message type with reflection information, may provide speed optimized methods
 class IVRFlow$Type extends MessageType<IVRFlow> {
     constructor() {
@@ -1676,6 +1736,210 @@ class ListIVRRunsResponse$Type extends MessageType<ListIVRRunsResponse> {
  * @generated MessageType for protobuf message da.proto.ListIVRRunsResponse
  */
 export const ListIVRRunsResponse = new ListIVRRunsResponse$Type();
+// @generated message type with reflection information, may provide speed optimized methods
+class TestRunIVRFlowRequest$Type extends MessageType<TestRunIVRFlowRequest> {
+    constructor() {
+        super("da.proto.TestRunIVRFlowRequest", [
+            { no: 1, name: "id", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
+            { no: 2, name: "definition", kind: "message", T: () => IVRDefinition }
+        ]);
+    }
+    create(value?: PartialMessage<TestRunIVRFlowRequest>): TestRunIVRFlowRequest {
+        const message = globalThis.Object.create((this.messagePrototype!));
+        message.id = "";
+        if (value !== undefined)
+            reflectionMergePartial<TestRunIVRFlowRequest>(this, message, value);
+        return message;
+    }
+    internalBinaryRead(reader: IBinaryReader, length: number, options: BinaryReadOptions, target?: TestRunIVRFlowRequest): TestRunIVRFlowRequest {
+        let message = target ?? this.create(), end = reader.pos + length;
+        while (reader.pos < end) {
+            let [fieldNo, wireType] = reader.tag();
+            switch (fieldNo) {
+                case /* string id */ 1:
+                    message.id = reader.string();
+                    break;
+                case /* da.proto.IVRDefinition definition */ 2:
+                    message.definition = IVRDefinition.internalBinaryRead(reader, reader.uint32(), options, message.definition);
+                    break;
+                default:
+                    let u = options.readUnknownField;
+                    if (u === "throw")
+                        throw new globalThis.Error(`Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`);
+                    let d = reader.skip(wireType);
+                    if (u !== false)
+                        (u === true ? UnknownFieldHandler.onRead : u)(this.typeName, message, fieldNo, wireType, d);
+            }
+        }
+        return message;
+    }
+    internalBinaryWrite(message: TestRunIVRFlowRequest, writer: IBinaryWriter, options: BinaryWriteOptions): IBinaryWriter {
+        /* string id = 1; */
+        if (message.id !== "")
+            writer.tag(1, WireType.LengthDelimited).string(message.id);
+        /* da.proto.IVRDefinition definition = 2; */
+        if (message.definition)
+            IVRDefinition.internalBinaryWrite(message.definition, writer.tag(2, WireType.LengthDelimited).fork(), options).join();
+        let u = options.writeUnknownFields;
+        if (u !== false)
+            (u == true ? UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);
+        return writer;
+    }
+}
+/**
+ * @generated MessageType for protobuf message da.proto.TestRunIVRFlowRequest
+ */
+export const TestRunIVRFlowRequest = new TestRunIVRFlowRequest$Type();
+// @generated message type with reflection information, may provide speed optimized methods
+class TestRunIVRFlowResponse$Type extends MessageType<TestRunIVRFlowResponse> {
+    constructor() {
+        super("da.proto.TestRunIVRFlowResponse", [
+            { no: 1, name: "ok", kind: "scalar", T: 8 /*ScalarType.BOOL*/ },
+            { no: 2, name: "issues", kind: "message", repeat: 2 /*RepeatType.UNPACKED*/, T: () => IVRFlowIssue },
+            { no: 3, name: "reachability", kind: "map", K: 9 /*ScalarType.STRING*/, V: { kind: "scalar", T: 8 /*ScalarType.BOOL*/ } }
+        ]);
+    }
+    create(value?: PartialMessage<TestRunIVRFlowResponse>): TestRunIVRFlowResponse {
+        const message = globalThis.Object.create((this.messagePrototype!));
+        message.ok = false;
+        message.issues = [];
+        message.reachability = {};
+        if (value !== undefined)
+            reflectionMergePartial<TestRunIVRFlowResponse>(this, message, value);
+        return message;
+    }
+    internalBinaryRead(reader: IBinaryReader, length: number, options: BinaryReadOptions, target?: TestRunIVRFlowResponse): TestRunIVRFlowResponse {
+        let message = target ?? this.create(), end = reader.pos + length;
+        while (reader.pos < end) {
+            let [fieldNo, wireType] = reader.tag();
+            switch (fieldNo) {
+                case /* bool ok */ 1:
+                    message.ok = reader.bool();
+                    break;
+                case /* repeated da.proto.IVRFlowIssue issues */ 2:
+                    message.issues.push(IVRFlowIssue.internalBinaryRead(reader, reader.uint32(), options));
+                    break;
+                case /* map<string, bool> reachability */ 3:
+                    this.binaryReadMap3(message.reachability, reader, options);
+                    break;
+                default:
+                    let u = options.readUnknownField;
+                    if (u === "throw")
+                        throw new globalThis.Error(`Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`);
+                    let d = reader.skip(wireType);
+                    if (u !== false)
+                        (u === true ? UnknownFieldHandler.onRead : u)(this.typeName, message, fieldNo, wireType, d);
+            }
+        }
+        return message;
+    }
+    private binaryReadMap3(map: TestRunIVRFlowResponse["reachability"], reader: IBinaryReader, options: BinaryReadOptions): void {
+        let len = reader.uint32(), end = reader.pos + len, key: keyof TestRunIVRFlowResponse["reachability"] | undefined, val: TestRunIVRFlowResponse["reachability"][any] | undefined;
+        while (reader.pos < end) {
+            let [fieldNo, wireType] = reader.tag();
+            switch (fieldNo) {
+                case 1:
+                    key = reader.string();
+                    break;
+                case 2:
+                    val = reader.bool();
+                    break;
+                default: throw new globalThis.Error("unknown map entry field for da.proto.TestRunIVRFlowResponse.reachability");
+            }
+        }
+        map[key ?? ""] = val ?? false;
+    }
+    internalBinaryWrite(message: TestRunIVRFlowResponse, writer: IBinaryWriter, options: BinaryWriteOptions): IBinaryWriter {
+        /* bool ok = 1; */
+        if (message.ok !== false)
+            writer.tag(1, WireType.Varint).bool(message.ok);
+        /* repeated da.proto.IVRFlowIssue issues = 2; */
+        for (let i = 0; i < message.issues.length; i++)
+            IVRFlowIssue.internalBinaryWrite(message.issues[i], writer.tag(2, WireType.LengthDelimited).fork(), options).join();
+        /* map<string, bool> reachability = 3; */
+        for (let k of globalThis.Object.keys(message.reachability))
+            writer.tag(3, WireType.LengthDelimited).fork().tag(1, WireType.LengthDelimited).string(k).tag(2, WireType.Varint).bool(message.reachability[k]).join();
+        let u = options.writeUnknownFields;
+        if (u !== false)
+            (u == true ? UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);
+        return writer;
+    }
+}
+/**
+ * @generated MessageType for protobuf message da.proto.TestRunIVRFlowResponse
+ */
+export const TestRunIVRFlowResponse = new TestRunIVRFlowResponse$Type();
+// @generated message type with reflection information, may provide speed optimized methods
+class IVRFlowIssue$Type extends MessageType<IVRFlowIssue> {
+    constructor() {
+        super("da.proto.IVRFlowIssue", [
+            { no: 1, name: "severity", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
+            { no: 2, name: "node_id", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
+            { no: 3, name: "code", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
+            { no: 4, name: "message", kind: "scalar", T: 9 /*ScalarType.STRING*/ }
+        ]);
+    }
+    create(value?: PartialMessage<IVRFlowIssue>): IVRFlowIssue {
+        const message = globalThis.Object.create((this.messagePrototype!));
+        message.severity = "";
+        message.nodeId = "";
+        message.code = "";
+        message.message = "";
+        if (value !== undefined)
+            reflectionMergePartial<IVRFlowIssue>(this, message, value);
+        return message;
+    }
+    internalBinaryRead(reader: IBinaryReader, length: number, options: BinaryReadOptions, target?: IVRFlowIssue): IVRFlowIssue {
+        let message = target ?? this.create(), end = reader.pos + length;
+        while (reader.pos < end) {
+            let [fieldNo, wireType] = reader.tag();
+            switch (fieldNo) {
+                case /* string severity */ 1:
+                    message.severity = reader.string();
+                    break;
+                case /* string node_id */ 2:
+                    message.nodeId = reader.string();
+                    break;
+                case /* string code */ 3:
+                    message.code = reader.string();
+                    break;
+                case /* string message */ 4:
+                    message.message = reader.string();
+                    break;
+                default:
+                    let u = options.readUnknownField;
+                    if (u === "throw")
+                        throw new globalThis.Error(`Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`);
+                    let d = reader.skip(wireType);
+                    if (u !== false)
+                        (u === true ? UnknownFieldHandler.onRead : u)(this.typeName, message, fieldNo, wireType, d);
+            }
+        }
+        return message;
+    }
+    internalBinaryWrite(message: IVRFlowIssue, writer: IBinaryWriter, options: BinaryWriteOptions): IBinaryWriter {
+        /* string severity = 1; */
+        if (message.severity !== "")
+            writer.tag(1, WireType.LengthDelimited).string(message.severity);
+        /* string node_id = 2; */
+        if (message.nodeId !== "")
+            writer.tag(2, WireType.LengthDelimited).string(message.nodeId);
+        /* string code = 3; */
+        if (message.code !== "")
+            writer.tag(3, WireType.LengthDelimited).string(message.code);
+        /* string message = 4; */
+        if (message.message !== "")
+            writer.tag(4, WireType.LengthDelimited).string(message.message);
+        let u = options.writeUnknownFields;
+        if (u !== false)
+            (u == true ? UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);
+        return writer;
+    }
+}
+/**
+ * @generated MessageType for protobuf message da.proto.IVRFlowIssue
+ */
+export const IVRFlowIssue = new IVRFlowIssue$Type();
 /**
  * @generated ServiceType for protobuf service da.proto.IVRService
  */
@@ -1689,5 +1953,6 @@ export const IVRService = new ServiceType("da.proto.IVRService", [
     { name: "ListIVRDIDMappings", options: {}, I: ListIVRDIDMappingsRequest, O: ListIVRDIDMappingsResponse },
     { name: "DeleteIVRDIDMapping", options: {}, I: DeleteIVRDIDMappingRequest, O: DeleteIVRDIDMappingResponse },
     { name: "GetIVRRun", options: {}, I: GetIVRRunRequest, O: IVRRun },
-    { name: "ListIVRRuns", options: {}, I: ListIVRRunsRequest, O: ListIVRRunsResponse }
+    { name: "ListIVRRuns", options: {}, I: ListIVRRunsRequest, O: ListIVRRunsResponse },
+    { name: "TestRunIVRFlow", options: {}, I: TestRunIVRFlowRequest, O: TestRunIVRFlowResponse }
 ]);

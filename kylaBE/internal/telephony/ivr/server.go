@@ -165,6 +165,61 @@ func (s *Server) GetIVRRun(ctx context.Context, req *pb.GetIVRRunRequest) (*pb.I
 	return RunToPb(r), nil
 }
 
+// TestRunIVRFlow validates a flow without contacting the PBX. Walks the node
+// graph from start_node_id, reports unreachable nodes and dangling branch
+// targets. Either looks up the saved flow by ID or validates an inline
+// definition.
+func (s *Server) TestRunIVRFlow(ctx context.Context, req *pb.TestRunIVRFlowRequest) (*pb.TestRunIVRFlowResponse, error) {
+	md, err := s.requireAuth(ctx)
+	if err != nil {
+		return nil, err
+	}
+	var def Definition
+	if req.GetId() != "" {
+		f, err := s.store.GetFlow(req.GetId(), md.OrganisationID.String())
+		if err != nil {
+			return nil, status.Error(codes.NotFound, "flow not found")
+		}
+		def, err = DecodeDefinition(f.Definition)
+		if err != nil {
+			return nil, status.Error(codes.InvalidArgument, "definition is malformed: "+err.Error())
+		}
+	} else if req.GetDefinition() != nil {
+		// Inline validation — accept a pb.IVRDefinition and convert via the
+		// FromPb path used by the builder.
+		raw := definitionFromPb(req.GetDefinition())
+		def, err = DecodeDefinition(raw)
+		if err != nil {
+			return nil, status.Error(codes.InvalidArgument, "definition is invalid: "+err.Error())
+		}
+	} else {
+		return nil, status.Error(codes.InvalidArgument, "id or definition required")
+	}
+
+	issues, reachability := validateFlow(def)
+	hasError := false
+	for _, i := range issues {
+		if i.Severity == "error" {
+			hasError = true
+			break
+		}
+	}
+	pbIssues := make([]*pb.IVRFlowIssue, 0, len(issues))
+	for _, i := range issues {
+		pbIssues = append(pbIssues, &pb.IVRFlowIssue{
+			Severity: i.Severity,
+			NodeId:   i.NodeID,
+			Code:     i.Code,
+			Message:  i.Message,
+		})
+	}
+	return &pb.TestRunIVRFlowResponse{
+		Ok:           !hasError,
+		Issues:       pbIssues,
+		Reachability: reachability,
+	}, nil
+}
+
 func (s *Server) ListIVRRuns(ctx context.Context, req *pb.ListIVRRunsRequest) (*pb.ListIVRRunsResponse, error) {
 	if _, err := s.requireAuth(ctx); err != nil {
 		return nil, err

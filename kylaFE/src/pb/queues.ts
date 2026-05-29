@@ -338,6 +338,40 @@ export interface ListQueueEntriesResponse {
      */
     entries: QueueEntry[];
 }
+/**
+ * WatchQueueEntries streams entry snapshots as the queue changes. Server
+ * pushes a fresh full snapshot whenever the entry set transitions; clients
+ * replace local state on each message. interval_ms is a hint for the server's
+ * polling cadence; the server clamps to a sane range.
+ *
+ * @generated from protobuf message da.proto.WatchQueueEntriesRequest
+ */
+export interface WatchQueueEntriesRequest {
+    /**
+     * @generated from protobuf field: string queue_id = 1
+     */
+    queueId: string;
+    /**
+     * @generated from protobuf field: int32 interval_ms = 2
+     */
+    intervalMs: number;
+}
+/**
+ * @generated from protobuf message da.proto.WatchQueueEntriesUpdate
+ */
+export interface WatchQueueEntriesUpdate {
+    /**
+     * @generated from protobuf field: repeated da.proto.QueueEntry entries = 1
+     */
+    entries: QueueEntry[];
+    /**
+     * True when at least one entry differs from the previous snapshot. Clients
+     * may use this to ignore no-op ticks (e.g. for animations).
+     *
+     * @generated from protobuf field: bool changed = 2
+     */
+    changed: boolean;
+}
 // @generated message type with reflection information, may provide speed optimized methods
 class Queue$Type extends MessageType<Queue> {
     constructor() {
@@ -1499,6 +1533,116 @@ class ListQueueEntriesResponse$Type extends MessageType<ListQueueEntriesResponse
  * @generated MessageType for protobuf message da.proto.ListQueueEntriesResponse
  */
 export const ListQueueEntriesResponse = new ListQueueEntriesResponse$Type();
+// @generated message type with reflection information, may provide speed optimized methods
+class WatchQueueEntriesRequest$Type extends MessageType<WatchQueueEntriesRequest> {
+    constructor() {
+        super("da.proto.WatchQueueEntriesRequest", [
+            { no: 1, name: "queue_id", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
+            { no: 2, name: "interval_ms", kind: "scalar", T: 5 /*ScalarType.INT32*/ }
+        ]);
+    }
+    create(value?: PartialMessage<WatchQueueEntriesRequest>): WatchQueueEntriesRequest {
+        const message = globalThis.Object.create((this.messagePrototype!));
+        message.queueId = "";
+        message.intervalMs = 0;
+        if (value !== undefined)
+            reflectionMergePartial<WatchQueueEntriesRequest>(this, message, value);
+        return message;
+    }
+    internalBinaryRead(reader: IBinaryReader, length: number, options: BinaryReadOptions, target?: WatchQueueEntriesRequest): WatchQueueEntriesRequest {
+        let message = target ?? this.create(), end = reader.pos + length;
+        while (reader.pos < end) {
+            let [fieldNo, wireType] = reader.tag();
+            switch (fieldNo) {
+                case /* string queue_id */ 1:
+                    message.queueId = reader.string();
+                    break;
+                case /* int32 interval_ms */ 2:
+                    message.intervalMs = reader.int32();
+                    break;
+                default:
+                    let u = options.readUnknownField;
+                    if (u === "throw")
+                        throw new globalThis.Error(`Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`);
+                    let d = reader.skip(wireType);
+                    if (u !== false)
+                        (u === true ? UnknownFieldHandler.onRead : u)(this.typeName, message, fieldNo, wireType, d);
+            }
+        }
+        return message;
+    }
+    internalBinaryWrite(message: WatchQueueEntriesRequest, writer: IBinaryWriter, options: BinaryWriteOptions): IBinaryWriter {
+        /* string queue_id = 1; */
+        if (message.queueId !== "")
+            writer.tag(1, WireType.LengthDelimited).string(message.queueId);
+        /* int32 interval_ms = 2; */
+        if (message.intervalMs !== 0)
+            writer.tag(2, WireType.Varint).int32(message.intervalMs);
+        let u = options.writeUnknownFields;
+        if (u !== false)
+            (u == true ? UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);
+        return writer;
+    }
+}
+/**
+ * @generated MessageType for protobuf message da.proto.WatchQueueEntriesRequest
+ */
+export const WatchQueueEntriesRequest = new WatchQueueEntriesRequest$Type();
+// @generated message type with reflection information, may provide speed optimized methods
+class WatchQueueEntriesUpdate$Type extends MessageType<WatchQueueEntriesUpdate> {
+    constructor() {
+        super("da.proto.WatchQueueEntriesUpdate", [
+            { no: 1, name: "entries", kind: "message", repeat: 2 /*RepeatType.UNPACKED*/, T: () => QueueEntry },
+            { no: 2, name: "changed", kind: "scalar", T: 8 /*ScalarType.BOOL*/ }
+        ]);
+    }
+    create(value?: PartialMessage<WatchQueueEntriesUpdate>): WatchQueueEntriesUpdate {
+        const message = globalThis.Object.create((this.messagePrototype!));
+        message.entries = [];
+        message.changed = false;
+        if (value !== undefined)
+            reflectionMergePartial<WatchQueueEntriesUpdate>(this, message, value);
+        return message;
+    }
+    internalBinaryRead(reader: IBinaryReader, length: number, options: BinaryReadOptions, target?: WatchQueueEntriesUpdate): WatchQueueEntriesUpdate {
+        let message = target ?? this.create(), end = reader.pos + length;
+        while (reader.pos < end) {
+            let [fieldNo, wireType] = reader.tag();
+            switch (fieldNo) {
+                case /* repeated da.proto.QueueEntry entries */ 1:
+                    message.entries.push(QueueEntry.internalBinaryRead(reader, reader.uint32(), options));
+                    break;
+                case /* bool changed */ 2:
+                    message.changed = reader.bool();
+                    break;
+                default:
+                    let u = options.readUnknownField;
+                    if (u === "throw")
+                        throw new globalThis.Error(`Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`);
+                    let d = reader.skip(wireType);
+                    if (u !== false)
+                        (u === true ? UnknownFieldHandler.onRead : u)(this.typeName, message, fieldNo, wireType, d);
+            }
+        }
+        return message;
+    }
+    internalBinaryWrite(message: WatchQueueEntriesUpdate, writer: IBinaryWriter, options: BinaryWriteOptions): IBinaryWriter {
+        /* repeated da.proto.QueueEntry entries = 1; */
+        for (let i = 0; i < message.entries.length; i++)
+            QueueEntry.internalBinaryWrite(message.entries[i], writer.tag(1, WireType.LengthDelimited).fork(), options).join();
+        /* bool changed = 2; */
+        if (message.changed !== false)
+            writer.tag(2, WireType.Varint).bool(message.changed);
+        let u = options.writeUnknownFields;
+        if (u !== false)
+            (u == true ? UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);
+        return writer;
+    }
+}
+/**
+ * @generated MessageType for protobuf message da.proto.WatchQueueEntriesUpdate
+ */
+export const WatchQueueEntriesUpdate = new WatchQueueEntriesUpdate$Type();
 /**
  * @generated ServiceType for protobuf service da.proto.QueueService
  */
@@ -1512,5 +1656,6 @@ export const QueueService = new ServiceType("da.proto.QueueService", [
     { name: "RemoveQueueMember", options: {}, I: RemoveQueueMemberRequest, O: RemoveQueueMemberResponse },
     { name: "ListQueueMembers", options: {}, I: ListQueueMembersRequest, O: ListQueueMembersResponse },
     { name: "SetQueueMemberActive", options: {}, I: SetQueueMemberActiveRequest, O: SetQueueMemberActiveResponse },
-    { name: "ListQueueEntries", options: {}, I: ListQueueEntriesRequest, O: ListQueueEntriesResponse }
+    { name: "ListQueueEntries", options: {}, I: ListQueueEntriesRequest, O: ListQueueEntriesResponse },
+    { name: "WatchQueueEntries", serverStreaming: true, options: {}, I: WatchQueueEntriesRequest, O: WatchQueueEntriesUpdate }
 ]);

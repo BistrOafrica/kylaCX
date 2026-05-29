@@ -27,9 +27,21 @@ type PBXController interface {
 	// (e.g. "NORMAL_CLEARING").
 	Hangup(ctx context.Context, callUUID, reason string) error
 
-	// Transfer moves a leg to a different destination. blind=true is a
-	// release-and-redirect; blind=false is attended (consultation) transfer.
-	Transfer(ctx context.Context, callUUID, target string, blind bool) error
+	// Transfer moves a leg to a different destination.
+	//   blind=true   release-and-redirect: A → C, B drops out instantly.
+	//                Returns ("", nil) on success.
+	//   blind=false  attended (consultation): place A on hold, originate a
+	//                B → C consultation leg. Returns the consultation leg's
+	//                PBX UUID. The caller then either CompleteTransfer (bridge
+	//                A ↔ C, kill B's leg to C) or Hangup the consultation leg
+	//                to abort and resume A.
+	Transfer(ctx context.Context, callUUID, target string, blind bool) (consultationUUID string, err error)
+
+	// CompleteTransfer finalises an attended transfer started by
+	// Transfer(blind=false). callerUUID is the original A leg; consultationUUID
+	// is the UUID returned by the consultation Transfer call. The call bridges
+	// A ↔ C and tears down the agent's consultation leg.
+	CompleteTransfer(ctx context.Context, callerUUID, consultationUUID string) error
 
 	// Hold/Resume park the leg's media without ending the signalling.
 	Hold(ctx context.Context, callUUID string) error

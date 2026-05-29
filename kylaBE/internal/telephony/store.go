@@ -333,6 +333,16 @@ func (s *Store) ListTrunks(orgID string) ([]*SipTrunk, error) {
 	return out, err
 }
 
+// ListAllActiveTrunks returns active trunks across ALL orgs. Used by
+// mod_xml_curl's configuration handler to serve a sofia.conf populated with
+// every tenant's outbound gateway. Per-tenant FreeSWITCH instances are a
+// follow-up — today one PBX handles all orgs.
+func (s *Store) ListAllActiveTrunks() ([]*SipTrunk, error) {
+	var out []*SipTrunk
+	err := s.db.Where("is_active = ?", true).Order("org_id ASC, name ASC").Find(&out).Error
+	return out, err
+}
+
 // UpdateTrunk saves writable fields. Password is overwritten only if a
 // non-empty value is supplied — empty means "keep existing".
 func (s *Store) UpdateTrunk(t *SipTrunk) (*SipTrunk, error) {

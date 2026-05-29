@@ -40,6 +40,8 @@ import type { ResumeResponse } from "./telephony";
 import type { ResumeRequest } from "./telephony";
 import type { HoldResponse } from "./telephony";
 import type { HoldRequest } from "./telephony";
+import type { CompleteTransferResponse } from "./telephony";
+import type { CompleteTransferRequest } from "./telephony";
 import type { TransferResponse } from "./telephony";
 import type { TransferRequest } from "./telephony";
 import type { HangupResponse } from "./telephony";
@@ -69,6 +71,10 @@ export interface ITelephonyServiceClient {
      * @generated from protobuf rpc: TransferCall
      */
     transferCall(input: TransferRequest, options?: RpcOptions): UnaryCall<TransferRequest, TransferResponse>;
+    /**
+     * @generated from protobuf rpc: CompleteTransfer
+     */
+    completeTransfer(input: CompleteTransferRequest, options?: RpcOptions): UnaryCall<CompleteTransferRequest, CompleteTransferResponse>;
     /**
      * @generated from protobuf rpc: HoldCall
      */
@@ -187,17 +193,24 @@ export class TelephonyServiceClient implements ITelephonyServiceClient, ServiceI
         return stackIntercept<TransferRequest, TransferResponse>("unary", this._transport, method, opt, input);
     }
     /**
+     * @generated from protobuf rpc: CompleteTransfer
+     */
+    completeTransfer(input: CompleteTransferRequest, options?: RpcOptions): UnaryCall<CompleteTransferRequest, CompleteTransferResponse> {
+        const method = this.methods[3], opt = this._transport.mergeOptions(options);
+        return stackIntercept<CompleteTransferRequest, CompleteTransferResponse>("unary", this._transport, method, opt, input);
+    }
+    /**
      * @generated from protobuf rpc: HoldCall
      */
     holdCall(input: HoldRequest, options?: RpcOptions): UnaryCall<HoldRequest, HoldResponse> {
-        const method = this.methods[3], opt = this._transport.mergeOptions(options);
+        const method = this.methods[4], opt = this._transport.mergeOptions(options);
         return stackIntercept<HoldRequest, HoldResponse>("unary", this._transport, method, opt, input);
     }
     /**
      * @generated from protobuf rpc: ResumeCall
      */
     resumeCall(input: ResumeRequest, options?: RpcOptions): UnaryCall<ResumeRequest, ResumeResponse> {
-        const method = this.methods[4], opt = this._transport.mergeOptions(options);
+        const method = this.methods[5], opt = this._transport.mergeOptions(options);
         return stackIntercept<ResumeRequest, ResumeResponse>("unary", this._transport, method, opt, input);
     }
     /**
@@ -206,28 +219,28 @@ export class TelephonyServiceClient implements ITelephonyServiceClient, ServiceI
      * @generated from protobuf rpc: GetCall
      */
     getCall(input: GetCallRequest, options?: RpcOptions): UnaryCall<GetCallRequest, Call> {
-        const method = this.methods[5], opt = this._transport.mergeOptions(options);
+        const method = this.methods[6], opt = this._transport.mergeOptions(options);
         return stackIntercept<GetCallRequest, Call>("unary", this._transport, method, opt, input);
     }
     /**
      * @generated from protobuf rpc: ListCalls
      */
     listCalls(input: ListCallsRequest, options?: RpcOptions): UnaryCall<ListCallsRequest, ListCallsResponse> {
-        const method = this.methods[6], opt = this._transport.mergeOptions(options);
+        const method = this.methods[7], opt = this._transport.mergeOptions(options);
         return stackIntercept<ListCallsRequest, ListCallsResponse>("unary", this._transport, method, opt, input);
     }
     /**
      * @generated from protobuf rpc: AppendCallEvent
      */
     appendCallEvent(input: AppendCallEventRequest, options?: RpcOptions): UnaryCall<AppendCallEventRequest, AppendCallEventResponse> {
-        const method = this.methods[7], opt = this._transport.mergeOptions(options);
+        const method = this.methods[8], opt = this._transport.mergeOptions(options);
         return stackIntercept<AppendCallEventRequest, AppendCallEventResponse>("unary", this._transport, method, opt, input);
     }
     /**
      * @generated from protobuf rpc: ListCallEvents
      */
     listCallEvents(input: ListCallEventsRequest, options?: RpcOptions): UnaryCall<ListCallEventsRequest, ListCallEventsResponse> {
-        const method = this.methods[8], opt = this._transport.mergeOptions(options);
+        const method = this.methods[9], opt = this._transport.mergeOptions(options);
         return stackIntercept<ListCallEventsRequest, ListCallEventsResponse>("unary", this._transport, method, opt, input);
     }
     /**
@@ -236,84 +249,84 @@ export class TelephonyServiceClient implements ITelephonyServiceClient, ServiceI
      * @generated from protobuf rpc: CreateSipExtension
      */
     createSipExtension(input: CreateSipExtensionRequest, options?: RpcOptions): UnaryCall<CreateSipExtensionRequest, SipExtension> {
-        const method = this.methods[9], opt = this._transport.mergeOptions(options);
+        const method = this.methods[10], opt = this._transport.mergeOptions(options);
         return stackIntercept<CreateSipExtensionRequest, SipExtension>("unary", this._transport, method, opt, input);
     }
     /**
      * @generated from protobuf rpc: GetSipExtension
      */
     getSipExtension(input: GetSipExtensionRequest, options?: RpcOptions): UnaryCall<GetSipExtensionRequest, SipExtension> {
-        const method = this.methods[10], opt = this._transport.mergeOptions(options);
+        const method = this.methods[11], opt = this._transport.mergeOptions(options);
         return stackIntercept<GetSipExtensionRequest, SipExtension>("unary", this._transport, method, opt, input);
     }
     /**
      * @generated from protobuf rpc: ListSipExtensions
      */
     listSipExtensions(input: ListSipExtensionsRequest, options?: RpcOptions): UnaryCall<ListSipExtensionsRequest, ListSipExtensionsResponse> {
-        const method = this.methods[11], opt = this._transport.mergeOptions(options);
+        const method = this.methods[12], opt = this._transport.mergeOptions(options);
         return stackIntercept<ListSipExtensionsRequest, ListSipExtensionsResponse>("unary", this._transport, method, opt, input);
     }
     /**
      * @generated from protobuf rpc: DeleteSipExtension
      */
     deleteSipExtension(input: DeleteSipExtensionRequest, options?: RpcOptions): UnaryCall<DeleteSipExtensionRequest, DeleteSipExtensionResponse> {
-        const method = this.methods[12], opt = this._transport.mergeOptions(options);
+        const method = this.methods[13], opt = this._transport.mergeOptions(options);
         return stackIntercept<DeleteSipExtensionRequest, DeleteSipExtensionResponse>("unary", this._transport, method, opt, input);
     }
     /**
      * @generated from protobuf rpc: CreateSipTrunk
      */
     createSipTrunk(input: CreateSipTrunkRequest, options?: RpcOptions): UnaryCall<CreateSipTrunkRequest, SipTrunk> {
-        const method = this.methods[13], opt = this._transport.mergeOptions(options);
+        const method = this.methods[14], opt = this._transport.mergeOptions(options);
         return stackIntercept<CreateSipTrunkRequest, SipTrunk>("unary", this._transport, method, opt, input);
     }
     /**
      * @generated from protobuf rpc: GetSipTrunk
      */
     getSipTrunk(input: GetSipTrunkRequest, options?: RpcOptions): UnaryCall<GetSipTrunkRequest, SipTrunk> {
-        const method = this.methods[14], opt = this._transport.mergeOptions(options);
+        const method = this.methods[15], opt = this._transport.mergeOptions(options);
         return stackIntercept<GetSipTrunkRequest, SipTrunk>("unary", this._transport, method, opt, input);
     }
     /**
      * @generated from protobuf rpc: ListSipTrunks
      */
     listSipTrunks(input: ListSipTrunksRequest, options?: RpcOptions): UnaryCall<ListSipTrunksRequest, ListSipTrunksResponse> {
-        const method = this.methods[15], opt = this._transport.mergeOptions(options);
+        const method = this.methods[16], opt = this._transport.mergeOptions(options);
         return stackIntercept<ListSipTrunksRequest, ListSipTrunksResponse>("unary", this._transport, method, opt, input);
     }
     /**
      * @generated from protobuf rpc: UpdateSipTrunk
      */
     updateSipTrunk(input: UpdateSipTrunkRequest, options?: RpcOptions): UnaryCall<UpdateSipTrunkRequest, SipTrunk> {
-        const method = this.methods[16], opt = this._transport.mergeOptions(options);
+        const method = this.methods[17], opt = this._transport.mergeOptions(options);
         return stackIntercept<UpdateSipTrunkRequest, SipTrunk>("unary", this._transport, method, opt, input);
     }
     /**
      * @generated from protobuf rpc: DeleteSipTrunk
      */
     deleteSipTrunk(input: DeleteSipTrunkRequest, options?: RpcOptions): UnaryCall<DeleteSipTrunkRequest, DeleteSipTrunkResponse> {
-        const method = this.methods[17], opt = this._transport.mergeOptions(options);
+        const method = this.methods[18], opt = this._transport.mergeOptions(options);
         return stackIntercept<DeleteSipTrunkRequest, DeleteSipTrunkResponse>("unary", this._transport, method, opt, input);
     }
     /**
      * @generated from protobuf rpc: CreateSipDomain
      */
     createSipDomain(input: CreateSipDomainRequest, options?: RpcOptions): UnaryCall<CreateSipDomainRequest, SipDomain> {
-        const method = this.methods[18], opt = this._transport.mergeOptions(options);
+        const method = this.methods[19], opt = this._transport.mergeOptions(options);
         return stackIntercept<CreateSipDomainRequest, SipDomain>("unary", this._transport, method, opt, input);
     }
     /**
      * @generated from protobuf rpc: ListSipDomains
      */
     listSipDomains(input: ListSipDomainsRequest, options?: RpcOptions): UnaryCall<ListSipDomainsRequest, ListSipDomainsResponse> {
-        const method = this.methods[19], opt = this._transport.mergeOptions(options);
+        const method = this.methods[20], opt = this._transport.mergeOptions(options);
         return stackIntercept<ListSipDomainsRequest, ListSipDomainsResponse>("unary", this._transport, method, opt, input);
     }
     /**
      * @generated from protobuf rpc: DeleteSipDomain
      */
     deleteSipDomain(input: DeleteSipDomainRequest, options?: RpcOptions): UnaryCall<DeleteSipDomainRequest, DeleteSipDomainResponse> {
-        const method = this.methods[20], opt = this._transport.mergeOptions(options);
+        const method = this.methods[21], opt = this._transport.mergeOptions(options);
         return stackIntercept<DeleteSipDomainRequest, DeleteSipDomainResponse>("unary", this._transport, method, opt, input);
     }
     /**
@@ -322,7 +335,7 @@ export class TelephonyServiceClient implements ITelephonyServiceClient, ServiceI
      * @generated from protobuf rpc: IssueSoftphoneToken
      */
     issueSoftphoneToken(input: IssueSoftphoneTokenRequest, options?: RpcOptions): UnaryCall<IssueSoftphoneTokenRequest, IssueSoftphoneTokenResponse> {
-        const method = this.methods[21], opt = this._transport.mergeOptions(options);
+        const method = this.methods[22], opt = this._transport.mergeOptions(options);
         return stackIntercept<IssueSoftphoneTokenRequest, IssueSoftphoneTokenResponse>("unary", this._transport, method, opt, input);
     }
 }

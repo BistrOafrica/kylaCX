@@ -37,13 +37,27 @@ Wiring lives in `autoload_configs/xml_curl.conf.xml`. **Replace the placeholder 
 
 The handler enforces an RFC1918 source-IP allowlist as defence in depth, so a leaked token from a public IP is still rejected.
 
+## Dynamic sofia gateways (live as of slice 5 polish)
+
+The `configuration` section of mod_xml_curl now serves a complete `sofia.conf` populated with every `sip_trunks` row (where `is_active = true`) as a gateway on the **external** profile.
+
+To enable:
+
+1. Remove (or rename) `sip_profiles/external.xml` so FreeSWITCH doesn't load a static external profile that conflicts with the dynamic one.
+2. Restart FreeSWITCH (or run `reload mod_sofia` from `fs_cli`).
+3. CRUD via the SIP admin UI now propagates to the PBX on the next sofia reload — after editing a trunk, run `sofia profile external rescan` from `fs_cli` to pick up the new gateway.
+
+The internal + webrtc profiles are deliberately **not** served by xml-curl. They stay statically configured because their behaviour rarely changes per-tenant. The external profile is the one most likely to need tenant-specific gateways.
+
 ## What's deliberately deferred
 
 1. **TLS certs for WSS** — the dev image uses a self-signed certificate. For production replace `/etc/freeswitch/tls/wss.pem` with a real cert (Let's Encrypt fullchain + privkey concatenated).
 
-2. **Sofia gateway provisioning via xml_curl** — `sip_trunks` rows hold credentials but the configuration handler returns `not found` today. Until that lands, gateways must be added under `sip_profiles/external/<trunk_name>.xml` manually.
+2. **Per-tenant PBX instances** — the dynamic sofia config serves trunks from every org under a single external profile, scoped by gateway name. Genuine tenant isolation requires one FreeSWITCH per org or a per-profile xml-curl binding.
 
 3. **Legacy static directory** — the `directory/default/*.xml` path is still searched by FS before consulting mod_xml_curl. Empty by default; remove unused entries to avoid surprise authorisations.
+
+4. **Live trunk reload via gRPC** — `UpdateSipTrunk` writes to Postgres but doesn't trigger `sofia profile external rescan` automatically. Operators must reload manually or wait for the next FS restart.
 
 ## Verifying the stack
 

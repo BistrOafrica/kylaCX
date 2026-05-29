@@ -1,4 +1,4 @@
-import { useMemo } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { useQuery } from "@tanstack/react-query"
 import {
   IconUsers,
@@ -16,6 +16,7 @@ import {
   listQueuesV2,
   listQueueEntriesV2,
   listQueueMembersV2,
+  subscribeQueueEntriesV2,
 } from "../api/queuesV2"
 import type { Queue, QueueEntry, QueueMembership } from "@/pb/queues"
 import { useWorkspaceStore } from "@/lib/workspace"
@@ -76,19 +77,45 @@ interface QueueCardProps {
 }
 
 function QueueCard({ queue }: QueueCardProps) {
-  // Live entry stream — refetches at the same cadence the operator expects.
-  const entries = useQuery({
+  // Entries: prefer the server stream so transitions land sub-second.
+  // Fall back to a one-shot fetch when the stream fails to open (older
+  // backends, gRPC-web proxy misconfig, etc.) — the polling React Query
+  // below sticks around as a safety net.
+  const [streamEntries, setStreamEntries] = useState<QueueEntry[] | null>(null)
+  useEffect(() => {
+    const sub = subscribeQueueEntriesV2(
+      queue.id,
+      (msg) => {
+        // Heartbeat messages may carry an empty entries array with
+        // changed=false; ignore so the UI doesn't flicker.
+        if (msg.entries && msg.entries.length === 0 && !msg.changed) return
+        setStreamEntries(msg.entries ?? [])
+      },
+      1500,
+      (err) => {
+        // Stream failed to open or dropped — leave streamEntries null so
+        // the polling fallback below drives the UI.
+        console.warn(`[wallboard] stream for queue ${queue.id} failed:`, err)
+        setStreamEntries(null)
+      },
+    )
+    return () => sub.cancel()
+  }, [queue.id])
+
+  const fallback = useQuery({
     queryKey: ["queue-entries-v2", queue.id],
     queryFn: () => listQueueEntriesV2(queue.id, ""),
-    refetchInterval: 2_000,
+    refetchInterval: streamEntries === null ? 2_000 : false,
   })
+
+  const entriesData = streamEntries ?? fallback.data
   const members = useQuery({
     queryKey: ["queue-members-v2", queue.id],
     queryFn: () => listQueueMembersV2(queue.id),
     refetchInterval: 10_000,
   })
 
-  const stats = useMemo(() => summariseEntries(entries.data ?? []), [entries.data])
+  const stats = useMemo(() => summariseEntries(entriesData ?? []), [entriesData])
   const activeMembers = useMemo(
     () => (members.data ?? []).filter((m) => m.isActive).length,
     [members.data],
@@ -126,7 +153,7 @@ function QueueCard({ queue }: QueueCardProps) {
 
       {/* Waiting callers, oldest-first. */}
       <div className="space-y-1">
-        {(entries.data ?? [])
+        {(entriesData ?? [])
           .filter((e) => e.status === "waiting")
           .slice(0, 5)
           .map((e) => (

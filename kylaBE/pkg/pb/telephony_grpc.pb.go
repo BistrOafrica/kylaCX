@@ -22,6 +22,7 @@ const (
 	TelephonyService_OriginateCall_FullMethodName       = "/da.proto.TelephonyService/OriginateCall"
 	TelephonyService_HangupCall_FullMethodName          = "/da.proto.TelephonyService/HangupCall"
 	TelephonyService_TransferCall_FullMethodName        = "/da.proto.TelephonyService/TransferCall"
+	TelephonyService_CompleteTransfer_FullMethodName    = "/da.proto.TelephonyService/CompleteTransfer"
 	TelephonyService_HoldCall_FullMethodName            = "/da.proto.TelephonyService/HoldCall"
 	TelephonyService_ResumeCall_FullMethodName          = "/da.proto.TelephonyService/ResumeCall"
 	TelephonyService_GetCall_FullMethodName             = "/da.proto.TelephonyService/GetCall"
@@ -51,6 +52,7 @@ type TelephonyServiceClient interface {
 	OriginateCall(ctx context.Context, in *OriginateCallRequest, opts ...grpc.CallOption) (*OriginateCallResponse, error)
 	HangupCall(ctx context.Context, in *HangupRequest, opts ...grpc.CallOption) (*HangupResponse, error)
 	TransferCall(ctx context.Context, in *TransferRequest, opts ...grpc.CallOption) (*TransferResponse, error)
+	CompleteTransfer(ctx context.Context, in *CompleteTransferRequest, opts ...grpc.CallOption) (*CompleteTransferResponse, error)
 	HoldCall(ctx context.Context, in *HoldRequest, opts ...grpc.CallOption) (*HoldResponse, error)
 	ResumeCall(ctx context.Context, in *ResumeRequest, opts ...grpc.CallOption) (*ResumeResponse, error)
 	// Call history
@@ -107,6 +109,16 @@ func (c *telephonyServiceClient) TransferCall(ctx context.Context, in *TransferR
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(TransferResponse)
 	err := c.cc.Invoke(ctx, TelephonyService_TransferCall_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *telephonyServiceClient) CompleteTransfer(ctx context.Context, in *CompleteTransferRequest, opts ...grpc.CallOption) (*CompleteTransferResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(CompleteTransferResponse)
+	err := c.cc.Invoke(ctx, TelephonyService_CompleteTransfer_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -311,6 +323,7 @@ type TelephonyServiceServer interface {
 	OriginateCall(context.Context, *OriginateCallRequest) (*OriginateCallResponse, error)
 	HangupCall(context.Context, *HangupRequest) (*HangupResponse, error)
 	TransferCall(context.Context, *TransferRequest) (*TransferResponse, error)
+	CompleteTransfer(context.Context, *CompleteTransferRequest) (*CompleteTransferResponse, error)
 	HoldCall(context.Context, *HoldRequest) (*HoldResponse, error)
 	ResumeCall(context.Context, *ResumeRequest) (*ResumeResponse, error)
 	// Call history
@@ -351,6 +364,9 @@ func (UnimplementedTelephonyServiceServer) HangupCall(context.Context, *HangupRe
 }
 func (UnimplementedTelephonyServiceServer) TransferCall(context.Context, *TransferRequest) (*TransferResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method TransferCall not implemented")
+}
+func (UnimplementedTelephonyServiceServer) CompleteTransfer(context.Context, *CompleteTransferRequest) (*CompleteTransferResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CompleteTransfer not implemented")
 }
 func (UnimplementedTelephonyServiceServer) HoldCall(context.Context, *HoldRequest) (*HoldResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method HoldCall not implemented")
@@ -480,6 +496,24 @@ func _TelephonyService_TransferCall_Handler(srv interface{}, ctx context.Context
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(TelephonyServiceServer).TransferCall(ctx, req.(*TransferRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _TelephonyService_CompleteTransfer_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CompleteTransferRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TelephonyServiceServer).CompleteTransfer(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: TelephonyService_CompleteTransfer_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TelephonyServiceServer).CompleteTransfer(ctx, req.(*CompleteTransferRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -844,6 +878,10 @@ var TelephonyService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "TransferCall",
 			Handler:    _TelephonyService_TransferCall_Handler,
+		},
+		{
+			MethodName: "CompleteTransfer",
+			Handler:    _TelephonyService_CompleteTransfer_Handler,
 		},
 		{
 			MethodName: "HoldCall",

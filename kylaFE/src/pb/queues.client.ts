@@ -5,6 +5,9 @@
 import type { RpcTransport } from "@protobuf-ts/runtime-rpc";
 import type { ServiceInfo } from "@protobuf-ts/runtime-rpc";
 import { QueueService } from "./queues";
+import type { WatchQueueEntriesUpdate } from "./queues";
+import type { WatchQueueEntriesRequest } from "./queues";
+import type { ServerStreamingCall } from "@protobuf-ts/runtime-rpc";
 import type { ListQueueEntriesResponse } from "./queues";
 import type { ListQueueEntriesRequest } from "./queues";
 import type { SetQueueMemberActiveResponse } from "./queues";
@@ -78,6 +81,10 @@ export interface IQueueServiceClient {
      * @generated from protobuf rpc: ListQueueEntries
      */
     listQueueEntries(input: ListQueueEntriesRequest, options?: RpcOptions): UnaryCall<ListQueueEntriesRequest, ListQueueEntriesResponse>;
+    /**
+     * @generated from protobuf rpc: WatchQueueEntries
+     */
+    watchQueueEntries(input: WatchQueueEntriesRequest, options?: RpcOptions): ServerStreamingCall<WatchQueueEntriesRequest, WatchQueueEntriesUpdate>;
 }
 // ── Service ──────────────────────────────────────────────────────────────────
 
@@ -165,5 +172,12 @@ export class QueueServiceClient implements IQueueServiceClient, ServiceInfo {
     listQueueEntries(input: ListQueueEntriesRequest, options?: RpcOptions): UnaryCall<ListQueueEntriesRequest, ListQueueEntriesResponse> {
         const method = this.methods[9], opt = this._transport.mergeOptions(options);
         return stackIntercept<ListQueueEntriesRequest, ListQueueEntriesResponse>("unary", this._transport, method, opt, input);
+    }
+    /**
+     * @generated from protobuf rpc: WatchQueueEntries
+     */
+    watchQueueEntries(input: WatchQueueEntriesRequest, options?: RpcOptions): ServerStreamingCall<WatchQueueEntriesRequest, WatchQueueEntriesUpdate> {
+        const method = this.methods[10], opt = this._transport.mergeOptions(options);
+        return stackIntercept<WatchQueueEntriesRequest, WatchQueueEntriesUpdate>("serverStreaming", this._transport, method, opt, input);
     }
 }

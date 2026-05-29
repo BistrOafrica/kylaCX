@@ -414,19 +414,64 @@ func (c *FreeSWITCHController) Hangup(ctx context.Context, callUUID, reason stri
 	return nil
 }
 
-func (c *FreeSWITCHController) Transfer(ctx context.Context, callUUID, target string, blind bool) error {
-	if !blind {
-		// Attended transfer requires a B-leg consultation first. Out of scope
-		// for the skeleton — return an explicit error so the caller can fall
-		// back to blind for now.
-		return errors.New("attended transfer not yet wired; pass blind=true")
+func (c *FreeSWITCHController) Transfer(ctx context.Context, callUUID, target string, blind bool) (string, error) {
+	if blind {
+		res, err := c.runBgapi(ctx, fmt.Sprintf("uuid_transfer %s %s", callUUID, target))
+		if err != nil {
+			return "", fmt.Errorf("transfer: %w", err)
+		}
+		if !res.OK {
+			return "", fmt.Errorf("transfer rejected: %s", res.Body)
+		}
+		return "", nil
 	}
-	res, err := c.runBgapi(ctx, fmt.Sprintf("uuid_transfer %s %s", callUUID, target))
+
+	// Attended transfer.
+	//   1. Park A (place on hold). Music-on-hold from the leg's sofia profile
+	//      plays automatically while ESL holds the bridge open.
+	//   2. Originate a B → C consultation leg. We generate the UUID up-front
+	//      so the caller can correlate CompleteTransfer / Hangup back to the
+	//      right leg without parsing the originate response.
+	//
+	// If the consultation originate fails we resume the A leg so the caller
+	// isn't left on hold indefinitely.
+	if err := c.Hold(ctx, callUUID); err != nil {
+		return "", fmt.Errorf("attended transfer hold: %w", err)
+	}
+	consultUUID := uuid.NewString()
+	// `&park` parks the consultation leg server-side once it's answered so the
+	// agent can talk to C before the bridge is finalised. The kyla_attended_a
+	// variable carries the original A-leg UUID so CompleteTransfer can find
+	// both ends without a separate lookup.
+	cmd := fmt.Sprintf(
+		"originate {origination_uuid=%s,kyla_attended_a=%s}user/%s &park",
+		consultUUID, callUUID, target,
+	)
+	res, err := c.runBgapi(ctx, cmd)
 	if err != nil {
-		return fmt.Errorf("transfer: %w", err)
+		_ = c.Resume(ctx, callUUID) // best-effort un-hold
+		return "", fmt.Errorf("attended consultation: %w", err)
 	}
 	if !res.OK {
-		return fmt.Errorf("transfer rejected: %s", res.Body)
+		_ = c.Resume(ctx, callUUID)
+		return "", fmt.Errorf("attended consultation rejected: %s", res.Body)
+	}
+	return consultUUID, nil
+}
+
+// CompleteTransfer bridges the original A leg to the consultation leg and
+// kills the operator's consultation leg. The PBX guarantees the bridge
+// completes atomically — A and C end up on the same RTP session.
+func (c *FreeSWITCHController) CompleteTransfer(ctx context.Context, callerUUID, consultationUUID string) error {
+	if callerUUID == "" || consultationUUID == "" {
+		return errors.New("complete_transfer: callerUUID and consultationUUID required")
+	}
+	res, err := c.runBgapi(ctx, fmt.Sprintf("uuid_bridge %s %s", callerUUID, consultationUUID))
+	if err != nil {
+		return fmt.Errorf("complete_transfer bridge: %w", err)
+	}
+	if !res.OK {
+		return fmt.Errorf("complete_transfer rejected: %s", res.Body)
 	}
 	return nil
 }

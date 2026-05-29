@@ -195,13 +195,39 @@ func (h *Handler) handleDialplan(c *gin.Context, form url.Values) {
 
 // ── configuration: sofia gateway provisioning ──────────────────────────────
 
-// handleConfiguration answers module configuration lookups. The most common
-// use case is the "sofia.conf" key, where we'd return gateway profiles for
-// the configured sip_trunks. For now we always return notFound — outbound
-// trunks stay statically configured under deploy/freeswitch/sip_profiles/.
-// This handler is wired in so the protocol surface is complete; populating
-// it is a follow-up commit once trunk provisioning over XML is needed.
+// handleConfiguration answers module configuration lookups. We currently
+// serve only "sofia.conf" — when FreeSWITCH boots (or `sofia rescan` runs)
+// it asks for the full sofia configuration; we respond with a profile set
+// that includes the static internal + webrtc profiles by reference (FS still
+// reads those from disk first) AND an "external" profile populated with
+// every active sip_trunks row as a gateway entry.
+//
+// Caveat: enabling dynamic sofia config means the static external profile
+// XML (if any) is no longer authoritative — operators should remove
+// deploy/freeswitch/conf/sip_profiles/external.xml when going live with this
+// handler. See deploy/freeswitch/README.md for the migration steps.
 func (h *Handler) handleConfiguration(c *gin.Context, form url.Values) {
-	_ = strings.TrimSpace(form.Get("key_value"))
-	c.Data(http.StatusOK, "text/xml", []byte(notFoundXML))
+	key := strings.TrimSpace(form.Get("key_value"))
+	if key != "sofia.conf" {
+		c.Data(http.StatusOK, "text/xml", []byte(notFoundXML))
+		return
+	}
+	trunks, err := h.store.ListAllActiveTrunks()
+	if err != nil {
+		log.Printf("[xmlcurl] configuration: list trunks: %v", err)
+		c.Data(http.StatusOK, "text/xml", []byte(notFoundXML))
+		return
+	}
+	lite := make([]SipTrunkLite, 0, len(trunks))
+	for _, t := range trunks {
+		lite = append(lite, SipTrunkLite{
+			GatewayName: t.GatewayName,
+			Username:    t.Username,
+			Password:    t.Password,
+			SipServer:   t.SipServer,
+			FromURI:     t.FromURI,
+		})
+	}
+	xml := renderSofiaConfiguration(lite)
+	c.Data(http.StatusOK, "text/xml", []byte(xml))
 }

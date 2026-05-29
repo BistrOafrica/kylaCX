@@ -213,10 +213,12 @@ func (e *Executor) executeNode(ctx context.Context, a *activeRun, node *Node) er
 			blind = true // attended transfer isn't wired yet; force blind
 		}
 		// Transfer ends the IVR — the call continues but the executor's
-		// involvement stops.
-		if err := e.pbx.Transfer(ctx, a.callUUID, target, blind); err != nil {
+		// involvement stops. IVR flows only support blind transfer (a menu
+		// can't drive a human consultation step).
+		if _, err := e.pbx.Transfer(ctx, a.callUUID, target, true); err != nil {
 			return err
 		}
+		_ = blind // reserved for future "ask before transfer" pattern
 		e.endRun(a, RunStatusCompleted, "transferred")
 		return nil
 

@@ -36,6 +36,18 @@ export async function deleteIvrV2Flow(id: string): Promise<void> {
 }
 
 /**
+ * Dry-run validation of a flow definition. Sends the inline definition
+ * rather than the saved id so the builder can validate unsaved edits.
+ */
+export async function testRunIvrV2Flow(flow: IVRFlow) {
+  const res = await services.ivr.testRunIVRFlow({
+    id: "",
+    definition: flow.definition,
+  })
+  return res.response
+}
+
+/**
  * Builds a fresh IVRFlow message with sane defaults so consumers don't have
  * to fill in every required field of the protobuf-ts type. The pb-ts types
  * require every field (including timestamps); we set them to empty values

@@ -29,6 +29,7 @@ const (
 	IVRService_DeleteIVRDIDMapping_FullMethodName = "/da.proto.IVRService/DeleteIVRDIDMapping"
 	IVRService_GetIVRRun_FullMethodName           = "/da.proto.IVRService/GetIVRRun"
 	IVRService_ListIVRRuns_FullMethodName         = "/da.proto.IVRService/ListIVRRuns"
+	IVRService_TestRunIVRFlow_FullMethodName      = "/da.proto.IVRService/TestRunIVRFlow"
 )
 
 // IVRServiceClient is the client API for IVRService service.
@@ -48,6 +49,10 @@ type IVRServiceClient interface {
 	// Runs (read-only — runs are created by the executor, not via gRPC)
 	GetIVRRun(ctx context.Context, in *GetIVRRunRequest, opts ...grpc.CallOption) (*IVRRun, error)
 	ListIVRRuns(ctx context.Context, in *ListIVRRunsRequest, opts ...grpc.CallOption) (*ListIVRRunsResponse, error)
+	// Builder helpers — TestRunIVRFlow does a dry-run validation: walks the
+	// node graph and reports unreachable nodes, missing branch targets, and
+	// misconfigured node configs without contacting the PBX.
+	TestRunIVRFlow(ctx context.Context, in *TestRunIVRFlowRequest, opts ...grpc.CallOption) (*TestRunIVRFlowResponse, error)
 }
 
 type iVRServiceClient struct {
@@ -158,6 +163,16 @@ func (c *iVRServiceClient) ListIVRRuns(ctx context.Context, in *ListIVRRunsReque
 	return out, nil
 }
 
+func (c *iVRServiceClient) TestRunIVRFlow(ctx context.Context, in *TestRunIVRFlowRequest, opts ...grpc.CallOption) (*TestRunIVRFlowResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(TestRunIVRFlowResponse)
+	err := c.cc.Invoke(ctx, IVRService_TestRunIVRFlow_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // IVRServiceServer is the server API for IVRService service.
 // All implementations must embed UnimplementedIVRServiceServer
 // for forward compatibility.
@@ -175,6 +190,10 @@ type IVRServiceServer interface {
 	// Runs (read-only — runs are created by the executor, not via gRPC)
 	GetIVRRun(context.Context, *GetIVRRunRequest) (*IVRRun, error)
 	ListIVRRuns(context.Context, *ListIVRRunsRequest) (*ListIVRRunsResponse, error)
+	// Builder helpers — TestRunIVRFlow does a dry-run validation: walks the
+	// node graph and reports unreachable nodes, missing branch targets, and
+	// misconfigured node configs without contacting the PBX.
+	TestRunIVRFlow(context.Context, *TestRunIVRFlowRequest) (*TestRunIVRFlowResponse, error)
 	mustEmbedUnimplementedIVRServiceServer()
 }
 
@@ -214,6 +233,9 @@ func (UnimplementedIVRServiceServer) GetIVRRun(context.Context, *GetIVRRunReques
 }
 func (UnimplementedIVRServiceServer) ListIVRRuns(context.Context, *ListIVRRunsRequest) (*ListIVRRunsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListIVRRuns not implemented")
+}
+func (UnimplementedIVRServiceServer) TestRunIVRFlow(context.Context, *TestRunIVRFlowRequest) (*TestRunIVRFlowResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method TestRunIVRFlow not implemented")
 }
 func (UnimplementedIVRServiceServer) mustEmbedUnimplementedIVRServiceServer() {}
 func (UnimplementedIVRServiceServer) testEmbeddedByValue()                    {}
@@ -416,6 +438,24 @@ func _IVRService_ListIVRRuns_Handler(srv interface{}, ctx context.Context, dec f
 	return interceptor(ctx, in, info, handler)
 }
 
+func _IVRService_TestRunIVRFlow_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(TestRunIVRFlowRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(IVRServiceServer).TestRunIVRFlow(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: IVRService_TestRunIVRFlow_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(IVRServiceServer).TestRunIVRFlow(ctx, req.(*TestRunIVRFlowRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // IVRService_ServiceDesc is the grpc.ServiceDesc for IVRService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -462,6 +502,10 @@ var IVRService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ListIVRRuns",
 			Handler:    _IVRService_ListIVRRuns_Handler,
+		},
+		{
+			MethodName: "TestRunIVRFlow",
+			Handler:    _IVRService_TestRunIVRFlow_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

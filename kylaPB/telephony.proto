@@ -166,7 +166,24 @@ message TransferRequest {
   string target_number = 3;
   bool blind = 4;                      // true = blind transfer; false = attended
 }
-message TransferResponse { string id = 1; string status = 2; }
+message TransferResponse {
+  string id = 1;
+  string status = 2;
+  // For attended transfer: the PBX-assigned UUID for the consultation leg
+  // started between the agent and the target. The frontend calls
+  // CompleteTransfer with both id (original caller) and consultation_id to
+  // finalise the bridge, or HangupCall against consultation_id to abort and
+  // resume the caller. Empty for blind transfers.
+  string consultation_id = 3;
+}
+
+message CompleteTransferRequest {
+  // The original caller leg.
+  string id = 1;
+  // The consultation leg returned by TransferCall(blind=false).
+  string consultation_id = 2;
+}
+message CompleteTransferResponse { string id = 1; string status = 2; }
 
 message HoldRequest { string id = 1; }
 message HoldResponse { string id = 1; string status = 2; }
@@ -223,8 +240,9 @@ message IssueSoftphoneTokenResponse {
 service TelephonyService {
   // Call control
   rpc OriginateCall(OriginateCallRequest)   returns (OriginateCallResponse);
-  rpc HangupCall(HangupRequest)         returns (HangupResponse);
-  rpc TransferCall(TransferRequest)     returns (TransferResponse);
+  rpc HangupCall(HangupRequest)             returns (HangupResponse);
+  rpc TransferCall(TransferRequest)         returns (TransferResponse);
+  rpc CompleteTransfer(CompleteTransferRequest) returns (CompleteTransferResponse);
   rpc HoldCall(HoldRequest)             returns (HoldResponse);
   rpc ResumeCall(ResumeRequest)         returns (ResumeResponse);
 

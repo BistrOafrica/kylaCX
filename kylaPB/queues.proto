@@ -90,6 +90,21 @@ message ListQueueEntriesRequest {
 }
 message ListQueueEntriesResponse { repeated QueueEntry entries = 1; }
 
+// WatchQueueEntries streams entry snapshots as the queue changes. Server
+// pushes a fresh full snapshot whenever the entry set transitions; clients
+// replace local state on each message. interval_ms is a hint for the server's
+// polling cadence; the server clamps to a sane range.
+message WatchQueueEntriesRequest {
+  string queue_id = 1;
+  int32 interval_ms = 2;
+}
+message WatchQueueEntriesUpdate {
+  repeated QueueEntry entries = 1;
+  // True when at least one entry differs from the previous snapshot. Clients
+  // may use this to ignore no-op ticks (e.g. for animations).
+  bool changed = 2;
+}
+
 // ── Service ──────────────────────────────────────────────────────────────────
 
 service QueueService {
@@ -107,5 +122,6 @@ service QueueService {
   rpc SetQueueMemberActive(SetQueueMemberActiveRequest) returns (SetQueueMemberActiveResponse);
 
   // Wallboard
-  rpc ListQueueEntries(ListQueueEntriesRequest) returns (ListQueueEntriesResponse);
+  rpc ListQueueEntries(ListQueueEntriesRequest)   returns (ListQueueEntriesResponse);
+  rpc WatchQueueEntries(WatchQueueEntriesRequest) returns (stream WatchQueueEntriesUpdate);
 }

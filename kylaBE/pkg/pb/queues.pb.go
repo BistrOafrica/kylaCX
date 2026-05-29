@@ -1140,6 +1140,116 @@ func (x *ListQueueEntriesResponse) GetEntries() []*QueueEntry {
 	return nil
 }
 
+// WatchQueueEntries streams entry snapshots as the queue changes. Server
+// pushes a fresh full snapshot whenever the entry set transitions; clients
+// replace local state on each message. interval_ms is a hint for the server's
+// polling cadence; the server clamps to a sane range.
+type WatchQueueEntriesRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	QueueId       string                 `protobuf:"bytes,1,opt,name=queue_id,json=queueId,proto3" json:"queue_id,omitempty"`
+	IntervalMs    int32                  `protobuf:"varint,2,opt,name=interval_ms,json=intervalMs,proto3" json:"interval_ms,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *WatchQueueEntriesRequest) Reset() {
+	*x = WatchQueueEntriesRequest{}
+	mi := &file_queues_proto_msgTypes[19]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *WatchQueueEntriesRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*WatchQueueEntriesRequest) ProtoMessage() {}
+
+func (x *WatchQueueEntriesRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_queues_proto_msgTypes[19]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use WatchQueueEntriesRequest.ProtoReflect.Descriptor instead.
+func (*WatchQueueEntriesRequest) Descriptor() ([]byte, []int) {
+	return file_queues_proto_rawDescGZIP(), []int{19}
+}
+
+func (x *WatchQueueEntriesRequest) GetQueueId() string {
+	if x != nil {
+		return x.QueueId
+	}
+	return ""
+}
+
+func (x *WatchQueueEntriesRequest) GetIntervalMs() int32 {
+	if x != nil {
+		return x.IntervalMs
+	}
+	return 0
+}
+
+type WatchQueueEntriesUpdate struct {
+	state   protoimpl.MessageState `protogen:"open.v1"`
+	Entries []*QueueEntry          `protobuf:"bytes,1,rep,name=entries,proto3" json:"entries,omitempty"`
+	// True when at least one entry differs from the previous snapshot. Clients
+	// may use this to ignore no-op ticks (e.g. for animations).
+	Changed       bool `protobuf:"varint,2,opt,name=changed,proto3" json:"changed,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *WatchQueueEntriesUpdate) Reset() {
+	*x = WatchQueueEntriesUpdate{}
+	mi := &file_queues_proto_msgTypes[20]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *WatchQueueEntriesUpdate) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*WatchQueueEntriesUpdate) ProtoMessage() {}
+
+func (x *WatchQueueEntriesUpdate) ProtoReflect() protoreflect.Message {
+	mi := &file_queues_proto_msgTypes[20]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use WatchQueueEntriesUpdate.ProtoReflect.Descriptor instead.
+func (*WatchQueueEntriesUpdate) Descriptor() ([]byte, []int) {
+	return file_queues_proto_rawDescGZIP(), []int{20}
+}
+
+func (x *WatchQueueEntriesUpdate) GetEntries() []*QueueEntry {
+	if x != nil {
+		return x.Entries
+	}
+	return nil
+}
+
+func (x *WatchQueueEntriesUpdate) GetChanged() bool {
+	if x != nil {
+		return x.Changed
+	}
+	return false
+}
+
 var File_queues_proto protoreflect.FileDescriptor
 
 const file_queues_proto_rawDesc = "" +
@@ -1227,7 +1337,14 @@ const file_queues_proto_rawDesc = "" +
 	"\bqueue_id\x18\x01 \x01(\tR\aqueueId\x12\x16\n" +
 	"\x06status\x18\x02 \x01(\tR\x06status\"J\n" +
 	"\x18ListQueueEntriesResponse\x12.\n" +
-	"\aentries\x18\x01 \x03(\v2\x14.da.proto.QueueEntryR\aentries2\x9e\x06\n" +
+	"\aentries\x18\x01 \x03(\v2\x14.da.proto.QueueEntryR\aentries\"V\n" +
+	"\x18WatchQueueEntriesRequest\x12\x19\n" +
+	"\bqueue_id\x18\x01 \x01(\tR\aqueueId\x12\x1f\n" +
+	"\vinterval_ms\x18\x02 \x01(\x05R\n" +
+	"intervalMs\"c\n" +
+	"\x17WatchQueueEntriesUpdate\x12.\n" +
+	"\aentries\x18\x01 \x03(\v2\x14.da.proto.QueueEntryR\aentries\x12\x18\n" +
+	"\achanged\x18\x02 \x01(\bR\achanged2\xfc\x06\n" +
 	"\fQueueService\x12<\n" +
 	"\vCreateQueue\x12\x1c.da.proto.QueueCreateRequest\x1a\x0f.da.proto.Queue\x126\n" +
 	"\bGetQueue\x12\x19.da.proto.QueueGetRequest\x1a\x0f.da.proto.Queue\x12E\n" +
@@ -1239,7 +1356,8 @@ const file_queues_proto_rawDesc = "" +
 	"\x11RemoveQueueMember\x12\".da.proto.RemoveQueueMemberRequest\x1a#.da.proto.RemoveQueueMemberResponse\x12Y\n" +
 	"\x10ListQueueMembers\x12!.da.proto.ListQueueMembersRequest\x1a\".da.proto.ListQueueMembersResponse\x12e\n" +
 	"\x14SetQueueMemberActive\x12%.da.proto.SetQueueMemberActiveRequest\x1a&.da.proto.SetQueueMemberActiveResponse\x12Y\n" +
-	"\x10ListQueueEntries\x12!.da.proto.ListQueueEntriesRequest\x1a\".da.proto.ListQueueEntriesResponseB\x06Z\x04./pbb\x06proto3"
+	"\x10ListQueueEntries\x12!.da.proto.ListQueueEntriesRequest\x1a\".da.proto.ListQueueEntriesResponse\x12\\\n" +
+	"\x11WatchQueueEntries\x12\".da.proto.WatchQueueEntriesRequest\x1a!.da.proto.WatchQueueEntriesUpdate0\x01B\x06Z\x04./pbb\x06proto3"
 
 var (
 	file_queues_proto_rawDescOnce sync.Once
@@ -1253,7 +1371,7 @@ func file_queues_proto_rawDescGZIP() []byte {
 	return file_queues_proto_rawDescData
 }
 
-var file_queues_proto_msgTypes = make([]protoimpl.MessageInfo, 19)
+var file_queues_proto_msgTypes = make([]protoimpl.MessageInfo, 21)
 var file_queues_proto_goTypes = []any{
 	(*Queue)(nil),                        // 0: da.proto.Queue
 	(*QueueMembership)(nil),              // 1: da.proto.QueueMembership
@@ -1274,17 +1392,19 @@ var file_queues_proto_goTypes = []any{
 	(*SetQueueMemberActiveResponse)(nil), // 16: da.proto.SetQueueMemberActiveResponse
 	(*ListQueueEntriesRequest)(nil),      // 17: da.proto.ListQueueEntriesRequest
 	(*ListQueueEntriesResponse)(nil),     // 18: da.proto.ListQueueEntriesResponse
-	(*timestamppb.Timestamp)(nil),        // 19: google.protobuf.Timestamp
+	(*WatchQueueEntriesRequest)(nil),     // 19: da.proto.WatchQueueEntriesRequest
+	(*WatchQueueEntriesUpdate)(nil),      // 20: da.proto.WatchQueueEntriesUpdate
+	(*timestamppb.Timestamp)(nil),        // 21: google.protobuf.Timestamp
 }
 var file_queues_proto_depIdxs = []int32{
-	19, // 0: da.proto.Queue.created_at:type_name -> google.protobuf.Timestamp
-	19, // 1: da.proto.Queue.updated_at:type_name -> google.protobuf.Timestamp
-	19, // 2: da.proto.QueueMembership.last_call_ended_at:type_name -> google.protobuf.Timestamp
-	19, // 3: da.proto.QueueMembership.created_at:type_name -> google.protobuf.Timestamp
-	19, // 4: da.proto.QueueMembership.updated_at:type_name -> google.protobuf.Timestamp
-	19, // 5: da.proto.QueueEntry.assigned_at:type_name -> google.protobuf.Timestamp
-	19, // 6: da.proto.QueueEntry.entered_at:type_name -> google.protobuf.Timestamp
-	19, // 7: da.proto.QueueEntry.ended_at:type_name -> google.protobuf.Timestamp
+	21, // 0: da.proto.Queue.created_at:type_name -> google.protobuf.Timestamp
+	21, // 1: da.proto.Queue.updated_at:type_name -> google.protobuf.Timestamp
+	21, // 2: da.proto.QueueMembership.last_call_ended_at:type_name -> google.protobuf.Timestamp
+	21, // 3: da.proto.QueueMembership.created_at:type_name -> google.protobuf.Timestamp
+	21, // 4: da.proto.QueueMembership.updated_at:type_name -> google.protobuf.Timestamp
+	21, // 5: da.proto.QueueEntry.assigned_at:type_name -> google.protobuf.Timestamp
+	21, // 6: da.proto.QueueEntry.entered_at:type_name -> google.protobuf.Timestamp
+	21, // 7: da.proto.QueueEntry.ended_at:type_name -> google.protobuf.Timestamp
 	0,  // 8: da.proto.QueueCreateRequest.queue:type_name -> da.proto.Queue
 	0,  // 9: da.proto.QueueListResponse.queues:type_name -> da.proto.Queue
 	0,  // 10: da.proto.QueueUpdateRequest.queue:type_name -> da.proto.Queue
@@ -1292,31 +1412,34 @@ var file_queues_proto_depIdxs = []int32{
 	1,  // 12: da.proto.ListQueueMembersResponse.members:type_name -> da.proto.QueueMembership
 	1,  // 13: da.proto.SetQueueMemberActiveResponse.member:type_name -> da.proto.QueueMembership
 	2,  // 14: da.proto.ListQueueEntriesResponse.entries:type_name -> da.proto.QueueEntry
-	3,  // 15: da.proto.QueueService.CreateQueue:input_type -> da.proto.QueueCreateRequest
-	4,  // 16: da.proto.QueueService.GetQueue:input_type -> da.proto.QueueGetRequest
-	5,  // 17: da.proto.QueueService.ListQueues:input_type -> da.proto.QueueListRequest
-	7,  // 18: da.proto.QueueService.UpdateQueue:input_type -> da.proto.QueueUpdateRequest
-	8,  // 19: da.proto.QueueService.DeleteQueue:input_type -> da.proto.QueueDeleteRequest
-	10, // 20: da.proto.QueueService.AddQueueMember:input_type -> da.proto.AddQueueMemberRequest
-	11, // 21: da.proto.QueueService.RemoveQueueMember:input_type -> da.proto.RemoveQueueMemberRequest
-	13, // 22: da.proto.QueueService.ListQueueMembers:input_type -> da.proto.ListQueueMembersRequest
-	15, // 23: da.proto.QueueService.SetQueueMemberActive:input_type -> da.proto.SetQueueMemberActiveRequest
-	17, // 24: da.proto.QueueService.ListQueueEntries:input_type -> da.proto.ListQueueEntriesRequest
-	0,  // 25: da.proto.QueueService.CreateQueue:output_type -> da.proto.Queue
-	0,  // 26: da.proto.QueueService.GetQueue:output_type -> da.proto.Queue
-	6,  // 27: da.proto.QueueService.ListQueues:output_type -> da.proto.QueueListResponse
-	0,  // 28: da.proto.QueueService.UpdateQueue:output_type -> da.proto.Queue
-	9,  // 29: da.proto.QueueService.DeleteQueue:output_type -> da.proto.QueueDeleteResponse
-	1,  // 30: da.proto.QueueService.AddQueueMember:output_type -> da.proto.QueueMembership
-	12, // 31: da.proto.QueueService.RemoveQueueMember:output_type -> da.proto.RemoveQueueMemberResponse
-	14, // 32: da.proto.QueueService.ListQueueMembers:output_type -> da.proto.ListQueueMembersResponse
-	16, // 33: da.proto.QueueService.SetQueueMemberActive:output_type -> da.proto.SetQueueMemberActiveResponse
-	18, // 34: da.proto.QueueService.ListQueueEntries:output_type -> da.proto.ListQueueEntriesResponse
-	25, // [25:35] is the sub-list for method output_type
-	15, // [15:25] is the sub-list for method input_type
-	15, // [15:15] is the sub-list for extension type_name
-	15, // [15:15] is the sub-list for extension extendee
-	0,  // [0:15] is the sub-list for field type_name
+	2,  // 15: da.proto.WatchQueueEntriesUpdate.entries:type_name -> da.proto.QueueEntry
+	3,  // 16: da.proto.QueueService.CreateQueue:input_type -> da.proto.QueueCreateRequest
+	4,  // 17: da.proto.QueueService.GetQueue:input_type -> da.proto.QueueGetRequest
+	5,  // 18: da.proto.QueueService.ListQueues:input_type -> da.proto.QueueListRequest
+	7,  // 19: da.proto.QueueService.UpdateQueue:input_type -> da.proto.QueueUpdateRequest
+	8,  // 20: da.proto.QueueService.DeleteQueue:input_type -> da.proto.QueueDeleteRequest
+	10, // 21: da.proto.QueueService.AddQueueMember:input_type -> da.proto.AddQueueMemberRequest
+	11, // 22: da.proto.QueueService.RemoveQueueMember:input_type -> da.proto.RemoveQueueMemberRequest
+	13, // 23: da.proto.QueueService.ListQueueMembers:input_type -> da.proto.ListQueueMembersRequest
+	15, // 24: da.proto.QueueService.SetQueueMemberActive:input_type -> da.proto.SetQueueMemberActiveRequest
+	17, // 25: da.proto.QueueService.ListQueueEntries:input_type -> da.proto.ListQueueEntriesRequest
+	19, // 26: da.proto.QueueService.WatchQueueEntries:input_type -> da.proto.WatchQueueEntriesRequest
+	0,  // 27: da.proto.QueueService.CreateQueue:output_type -> da.proto.Queue
+	0,  // 28: da.proto.QueueService.GetQueue:output_type -> da.proto.Queue
+	6,  // 29: da.proto.QueueService.ListQueues:output_type -> da.proto.QueueListResponse
+	0,  // 30: da.proto.QueueService.UpdateQueue:output_type -> da.proto.Queue
+	9,  // 31: da.proto.QueueService.DeleteQueue:output_type -> da.proto.QueueDeleteResponse
+	1,  // 32: da.proto.QueueService.AddQueueMember:output_type -> da.proto.QueueMembership
+	12, // 33: da.proto.QueueService.RemoveQueueMember:output_type -> da.proto.RemoveQueueMemberResponse
+	14, // 34: da.proto.QueueService.ListQueueMembers:output_type -> da.proto.ListQueueMembersResponse
+	16, // 35: da.proto.QueueService.SetQueueMemberActive:output_type -> da.proto.SetQueueMemberActiveResponse
+	18, // 36: da.proto.QueueService.ListQueueEntries:output_type -> da.proto.ListQueueEntriesResponse
+	20, // 37: da.proto.QueueService.WatchQueueEntries:output_type -> da.proto.WatchQueueEntriesUpdate
+	27, // [27:38] is the sub-list for method output_type
+	16, // [16:27] is the sub-list for method input_type
+	16, // [16:16] is the sub-list for extension type_name
+	16, // [16:16] is the sub-list for extension extendee
+	0,  // [0:16] is the sub-list for field type_name
 }
 
 func init() { file_queues_proto_init() }
@@ -1330,7 +1453,7 @@ func file_queues_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_queues_proto_rawDesc), len(file_queues_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   19,
+			NumMessages:   21,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

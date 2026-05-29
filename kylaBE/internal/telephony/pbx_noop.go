@@ -19,10 +19,13 @@ var errPBXNotConfigured = errors.New("telephony: PBX controller not configured")
 func (NoopPBX) Originate(context.Context, OriginateRequest) (string, error) {
 	return "", errPBXNotConfigured
 }
-func (NoopPBX) Hangup(context.Context, string, string) error          { return errPBXNotConfigured }
-func (NoopPBX) Transfer(context.Context, string, string, bool) error  { return errPBXNotConfigured }
-func (NoopPBX) Hold(context.Context, string) error                    { return errPBXNotConfigured }
-func (NoopPBX) Resume(context.Context, string) error                  { return errPBXNotConfigured }
+func (NoopPBX) Hangup(context.Context, string, string) error { return errPBXNotConfigured }
+func (NoopPBX) Transfer(context.Context, string, string, bool) (string, error) {
+	return "", errPBXNotConfigured
+}
+func (NoopPBX) CompleteTransfer(context.Context, string, string) error { return errPBXNotConfigured }
+func (NoopPBX) Hold(context.Context, string) error                     { return errPBXNotConfigured }
+func (NoopPBX) Resume(context.Context, string) error                   { return errPBXNotConfigured }
 func (NoopPBX) ProvisionExtension(context.Context, SipExtension, string) error {
 	return errPBXNotConfigured
 }

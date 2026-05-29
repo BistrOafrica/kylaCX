@@ -1,8 +1,10 @@
 import { services } from "@/lib/rpc/services"
+import { stream, type Subscription } from "@/lib/rpc"
 import type {
   Queue,
   QueueEntry,
   QueueMembership,
+  WatchQueueEntriesUpdate,
 } from "@/pb/queues"
 
 /**
@@ -45,4 +47,32 @@ export async function setMemberActiveV2(
 ): Promise<QueueMembership> {
   const res = await services.queue.setQueueMemberActive({ queueId, userId, isActive })
   return res.response.member!
+}
+
+/**
+ * subscribeQueueEntriesV2 opens a server-side stream that pushes a snapshot
+ * whenever the queue's entries change. The server emits an initial snapshot
+ * and then only on transitions (plus a heartbeat every 15s).
+ *
+ * intervalMs hints the server's polling cadence; it's clamped to [500, 10000].
+ * Returns the same Subscription handle used elsewhere in the codebase so
+ * components can `cancel()` on unmount.
+ */
+export function subscribeQueueEntriesV2(
+  queueId: string,
+  onUpdate: (msg: WatchQueueEntriesUpdate) => void,
+  intervalMs = 1500,
+  onError?: (err: Error) => void,
+): Subscription {
+  return stream(
+    (opts) =>
+      services.queue.watchQueueEntries(
+        { queueId, intervalMs },
+        opts,
+      ),
+    {
+      onMessage: onUpdate,
+      onError,
+    },
+  )
 }

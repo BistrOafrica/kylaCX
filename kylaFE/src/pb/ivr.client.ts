@@ -5,6 +5,8 @@
 import type { RpcTransport } from "@protobuf-ts/runtime-rpc";
 import type { ServiceInfo } from "@protobuf-ts/runtime-rpc";
 import { IVRService } from "./ivr";
+import type { TestRunIVRFlowResponse } from "./ivr";
+import type { TestRunIVRFlowRequest } from "./ivr";
 import type { ListIVRRunsResponse } from "./ivr";
 import type { ListIVRRunsRequest } from "./ivr";
 import type { IVRRun } from "./ivr";
@@ -78,6 +80,14 @@ export interface IIVRServiceClient {
      * @generated from protobuf rpc: ListIVRRuns
      */
     listIVRRuns(input: ListIVRRunsRequest, options?: RpcOptions): UnaryCall<ListIVRRunsRequest, ListIVRRunsResponse>;
+    /**
+     * Builder helpers — TestRunIVRFlow does a dry-run validation: walks the
+     * node graph and reports unreachable nodes, missing branch targets, and
+     * misconfigured node configs without contacting the PBX.
+     *
+     * @generated from protobuf rpc: TestRunIVRFlow
+     */
+    testRunIVRFlow(input: TestRunIVRFlowRequest, options?: RpcOptions): UnaryCall<TestRunIVRFlowRequest, TestRunIVRFlowResponse>;
 }
 // ── Service ──────────────────────────────────────────────────────────────────
 
@@ -165,5 +175,16 @@ export class IVRServiceClient implements IIVRServiceClient, ServiceInfo {
     listIVRRuns(input: ListIVRRunsRequest, options?: RpcOptions): UnaryCall<ListIVRRunsRequest, ListIVRRunsResponse> {
         const method = this.methods[9], opt = this._transport.mergeOptions(options);
         return stackIntercept<ListIVRRunsRequest, ListIVRRunsResponse>("unary", this._transport, method, opt, input);
+    }
+    /**
+     * Builder helpers — TestRunIVRFlow does a dry-run validation: walks the
+     * node graph and reports unreachable nodes, missing branch targets, and
+     * misconfigured node configs without contacting the PBX.
+     *
+     * @generated from protobuf rpc: TestRunIVRFlow
+     */
+    testRunIVRFlow(input: TestRunIVRFlowRequest, options?: RpcOptions): UnaryCall<TestRunIVRFlowRequest, TestRunIVRFlowResponse> {
+        const method = this.methods[10], opt = this._transport.mergeOptions(options);
+        return stackIntercept<TestRunIVRFlowRequest, TestRunIVRFlowResponse>("unary", this._transport, method, opt, input);
     }
 }

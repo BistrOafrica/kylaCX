@@ -28,6 +28,10 @@ import {
   IconRecordMail,
   IconMusic,
   IconArrowRightCircle,
+  IconLayoutGridAdd,
+  IconCircleCheck,
+  IconAlertTriangle,
+  IconCircleX,
 } from "@tabler/icons-react"
 import { Link } from "react-router-dom"
 import { toast } from "sonner"
@@ -40,7 +44,10 @@ import {
   updateIvrV2Flow,
   nodeConfig,
   setNodeConfig,
+  testRunIvrV2Flow,
 } from "../api/ivrV2"
+import { autoLayoutGraph } from "../sip/layout"
+import type { TestRunIVRFlowResponse } from "@/pb/ivr"
 
 /**
  * IvrV2Builder — the visual flow editor targeting the Phase 5c IVRService.
@@ -203,6 +210,48 @@ export function IvrV2Builder({ id }: BuilderProps) {
     onError: (e: Error) => toast.error(e.message),
   })
 
+  // Dry-run validation. Walks the current canvas state and asks the backend
+  // to report unreachable nodes, missing branch targets, and bad configs.
+  const [testResult, setTestResult] = useState<TestRunIVRFlowResponse | null>(null)
+  const testRun = useMutation({
+    mutationFn: async () => {
+      if (!flowQuery.data) throw new Error("flow not loaded")
+      // Re-serialise the canvas (same logic as save) so we test what the
+      // operator sees, not the last-saved version.
+      const serialisedNodes = nodes.map((rn) => ({ ...(rn.data.node as IVRNode), nextNodeId: "", branches: {} }))
+      for (const e of edges) {
+        const src = serialisedNodes.find((n) => n.id === e.source)
+        if (!src) continue
+        if (e.sourceHandle) {
+          src.branches = { ...(src.branches ?? {}), [e.sourceHandle]: e.target }
+        } else {
+          src.nextNodeId = e.target
+        }
+      }
+      const draft: IVRFlow = {
+        ...flowQuery.data,
+        name,
+        definition: { startNodeId, nodes: serialisedNodes },
+      }
+      return testRunIvrV2Flow(draft)
+    },
+    onSuccess: (res) => {
+      setTestResult(res)
+      if (res.ok && res.issues.length === 0) {
+        toast.success("Flow looks good")
+      } else if (res.ok) {
+        toast.warning(`${res.issues.length} warning(s) — flow will still run`)
+      } else {
+        toast.error(`${res.issues.length} issue(s) — flow won't run`)
+      }
+    },
+    onError: (e: Error) => toast.error(e.message),
+  })
+
+  const runAutoLayout = useCallback(() => {
+    setNodes((ns) => autoLayoutGraph(ns, edges))
+  }, [edges])
+
   const customNodeTypes = useMemo(() => ({ ivr: IvrCanvasNode }), [])
 
   if (flowQuery.isPending) {
@@ -229,23 +278,57 @@ export function IvrV2Builder({ id }: BuilderProps) {
           placeholder="Flow name"
           className="max-w-sm"
         />
-        <button
-          onClick={() => save.mutate()}
-          disabled={save.isPending}
-          className={cn(
-            "ms-auto inline-flex items-center gap-1.5 h-8 px-3 rounded-sm",
-            "bg-accent text-accent-fg hover:opacity-90",
-            "disabled:opacity-50 disabled:pointer-events-none",
-          )}
-        >
-          {save.isPending ? (
-            <IconLoader2 className="size-4 animate-spin" />
-          ) : (
-            <IconDeviceFloppy className="size-4" />
-          )}
-          Save
-        </button>
+        <div className="ms-auto flex items-center gap-2">
+          <button
+            onClick={runAutoLayout}
+            className="inline-flex items-center gap-1.5 h-8 px-3 rounded-sm text-fg-muted hover:text-fg hover:bg-subtle"
+            title="Auto-layout via dagre"
+          >
+            <IconLayoutGridAdd className="size-4" />
+            Auto-layout
+          </button>
+          <button
+            onClick={() => testRun.mutate()}
+            disabled={testRun.isPending}
+            className={cn(
+              "inline-flex items-center gap-1.5 h-8 px-3 rounded-sm",
+              "bg-subtle hover:bg-muted disabled:opacity-50",
+            )}
+          >
+            {testRun.isPending ? (
+              <IconLoader2 className="size-4 animate-spin" />
+            ) : (
+              <IconPlayerPlay className="size-4" />
+            )}
+            Test run
+          </button>
+          <button
+            onClick={() => save.mutate()}
+            disabled={save.isPending}
+            className={cn(
+              "inline-flex items-center gap-1.5 h-8 px-3 rounded-sm",
+              "bg-accent text-accent-fg hover:opacity-90",
+              "disabled:opacity-50 disabled:pointer-events-none",
+            )}
+          >
+            {save.isPending ? (
+              <IconLoader2 className="size-4 animate-spin" />
+            ) : (
+              <IconDeviceFloppy className="size-4" />
+            )}
+            Save
+          </button>
+        </div>
       </header>
+
+      {/* Validation result drawer. Shown only after a test-run; click to dismiss. */}
+      {testResult && (
+        <TestResultDrawer
+          result={testResult}
+          onSelectNode={(nid) => setSelectedNodeId(nid)}
+          onDismiss={() => setTestResult(null)}
+        />
+      )}
 
       <div className="flex flex-1 min-h-0">
         {/* Left palette */}
@@ -560,10 +643,71 @@ function BranchEditor({
 }
 
 // positionForIndex spreads loaded nodes in a simple grid so the canvas isn't
-// stacked at (0, 0). Real layout (dagre, elk) is a follow-up.
+// stacked at (0, 0). Users click "Auto-layout" to switch to dagre's
+// hierarchical algorithm once the graph is non-trivial.
 function positionForIndex(i: number): { x: number; y: number } {
   const cols = 3
   const col = i % cols
   const row = Math.floor(i / cols)
   return { x: 100 + col * 240, y: 60 + row * 180 }
+}
+
+// ── Test-result drawer ─────────────────────────────────────────────────────
+
+interface TestResultDrawerProps {
+  result: TestRunIVRFlowResponse
+  onSelectNode: (nodeId: string) => void
+  onDismiss: () => void
+}
+
+function TestResultDrawer({ result, onSelectNode, onDismiss }: TestResultDrawerProps) {
+  const errors = result.issues.filter((i) => i.severity === "error")
+  const warnings = result.issues.filter((i) => i.severity === "warning")
+  return (
+    <div className="border-b border-default bg-canvas">
+      <div className="flex items-center gap-2 px-3 py-2 border-b border-default">
+        {result.ok ? (
+          <IconCircleCheck className="size-4 text-success" />
+        ) : (
+          <IconCircleX className="size-4 text-danger" />
+        )}
+        <div className="text-sm font-medium">
+          {result.ok ? "Flow validates" : "Flow has fatal issues"}
+        </div>
+        <div className="text-xs text-fg-muted">
+          {errors.length} error · {warnings.length} warning
+        </div>
+        <button
+          onClick={onDismiss}
+          className="ms-auto text-xs underline text-fg-muted hover:text-fg"
+        >
+          Dismiss
+        </button>
+      </div>
+      {result.issues.length > 0 && (
+        <ul className="px-3 py-2 space-y-1 max-h-40 overflow-y-auto">
+          {result.issues.map((i, idx) => (
+            <li
+              key={idx}
+              className="flex items-start gap-2 text-xs cursor-pointer hover:underline"
+              onClick={() => i.nodeId && onSelectNode(i.nodeId)}
+            >
+              {i.severity === "error" ? (
+                <IconCircleX className="size-3.5 text-danger mt-0.5" />
+              ) : (
+                <IconAlertTriangle className="size-3.5 text-warn mt-0.5" />
+              )}
+              <span>
+                <span className="font-mono text-fg-muted">{i.code}</span>
+                {i.nodeId && (
+                  <span className="text-fg-muted"> · {i.nodeId}</span>
+                )}
+                <span> — {i.message}</span>
+              </span>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  )
 }

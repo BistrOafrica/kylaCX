@@ -661,7 +661,7 @@ CREATE TABLE messages (
 
 ---
 
-### Phase 5 — Telephony Integration (Weeks 31–36)  ✅ FUNCTIONAL SCOPE COMPLETE (slices 5a-5e + foundation hardened + wallboard + SIP admin UI)
+### Phase 5 — Telephony Integration (Weeks 31–36)  ✅ COMPLETE (slices 5a-5e + foundation + polish: attended transfer, xml-curl sofia, IVR auto-layout + dry-run, wallboard streaming)
 *Self-hosted SIP via FreeSWITCH with WebRTC softphone support.*
 
 > **Status (2026-05-29):** Architecture choice locked in: self-hosted SIP from day one (FreeSWITCH + coturn). Backend foundation shipped:
@@ -696,7 +696,14 @@ CREATE TABLE messages (
 >
 > **SIP admin pages (2026-05-29)**: New `SipAdmin.tsx` route at `/calls/sip-admin` with three tabs: Extensions (provision per agent), Trunks (CRUD + active toggle, passwords write-only), Domains (CRUD + default flag). All RPCs come from the unified `TelephonyService`. The trunk password field stays write-only on the read path (server zeroes it before returning).
 >
-> **Open Phase 5 polish**: IVR builder layout (dagre/elk) + test-run via gRPC; attended transfer; mod_xml_curl `configuration` section for dynamic sofia gateway provisioning; live streaming RPC for wallboard sub-second updates; pnpm install of sip.js (added to package.json but not in lockfile yet).
+> **Phase 5 polish (2026-05-30)**: All four open polish items shipped.
+>
+> - **Attended transfer**: `PBXController.Transfer` now returns a consultation UUID when `blind=false`. The FreeSWITCH impl places the A leg on hold, originates a B→C consultation leg with `&park`, and returns the consult UUID. New `CompleteTransfer` PBX method + RPC bridges A↔C and kills B's leg via `uuid_bridge`. Frontend gets `consultation_id` on `TransferResponse` so the softphone UI can offer Complete/Cancel buttons.
+> - **mod_xml_curl `configuration` section**: `handleConfiguration` now serves a complete `sofia.conf` populated from `sip_trunks` (all active rows across all orgs become gateways on an "external" profile). Internal + WebRTC profiles stay static. Operators remove `sip_profiles/external.xml` to enable; trunk edits require `sofia profile external rescan` from `fs_cli` to take effect (auto-rescan-on-write is a deferred item).
+> - **IVR auto-layout + test-run**: `@dagrejs/dagre` added to `package.json`; "Auto-layout" button in `IvrV2Builder.tsx` runs hierarchical TB layout. "Test run" button calls the new `IVRService.TestRunIVRFlow` RPC, which walks the node graph reporting unreachable nodes, missing branch targets, bad configs, and menu-key warnings. Issues panel inline in the builder, clickable rows scroll to the offending node.
+> - **Wallboard streaming**: New `QueueService.WatchQueueEntries` server-streaming RPC ticks the DB at the requested interval (clamped to [500ms, 10s]), pushes a full snapshot only when the entry signature changes, with a 15s heartbeat for proxy keepalive. `QueueWallboard.tsx` subscribes on mount and falls back to 2s polling if the stream fails — keeps the wallboard alive across older backends and proxy misconfig.
+>
+> **Open**: per-tenant FreeSWITCH instances (multi-PBX deployment); `pnpm install` of sip.js + dagre still pending in the lockfile.
 >
 > **Open in slice 5f**: SIP admin pages (sip_trunks/sip_extensions/sip_domains gRPCs exist; UI not yet built).
 
@@ -1200,4 +1207,4 @@ A phase is complete when:
 
 ---
 
-*Last updated: 29 May 2026 — Phase 6 complete. Phase 5 functional scope complete (slices 5a-5e + ESL/xml-curl hardening + wallboard + SIP admin). Phase 7 (Analytics/Billing) is the next major track.*
+*Last updated: 30 May 2026 — Phase 5 complete (slices 5a-5e + foundation hardening + polish). Phase 6 complete. Phase 7 (Analytics/Billing) is the next major track.*
