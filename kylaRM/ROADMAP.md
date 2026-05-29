@@ -661,7 +661,7 @@ CREATE TABLE messages (
 
 ---
 
-### Phase 5 — Telephony Integration (Weeks 31–36)  🚧 SLICES 5A/5B/5C/5D SHIPPED + FOUNDATION HARDENED (slice 5e + Phase 5 frontend polish remain)
+### Phase 5 — Telephony Integration (Weeks 31–36)  ✅ FUNCTIONAL SCOPE COMPLETE (slices 5a-5e + foundation hardened + wallboard + SIP admin UI)
 *Self-hosted SIP via FreeSWITCH with WebRTC softphone support.*
 
 > **Status (2026-05-29):** Architecture choice locked in: self-hosted SIP from day one (FreeSWITCH + coturn). Backend foundation shipped:
@@ -690,9 +690,13 @@ CREATE TABLE messages (
 >
 > **IVR visual builder (slice 5c follow-up, 2026-05-29)**: New `IvrV2Builder.tsx` + `api/ivrV2.ts` targeting the Phase 5c `IVRService`. React Flow canvas with a left palette (7 node types), a custom node card per node (menu nodes render one source handle per branch digit), and a right-side inspector for type-specific config. Save serialises canvas state back into `IVRFlow.definition.{startNodeId, nodes}` via gRPC `UpdateIVRFlow`. Route: `/calls/ivr-v2/:id`. Legacy `IvrFlowBuilder.tsx` (targets the legacy `CallIvrFlowService`) stays in place at `/calls/ivr/:id` for backward compat.
 >
-> **Open in slice 5e**: recording S3 upload + transcription via the AI engine.
+> **Slice 5e — Recording + transcription (2026-05-29)**: `0014_telephony_transcripts.sql` adds `call_recordings` (one row per recording file with upload + transcribe state machines) plus transcript columns on `calls`. `internal/telephony/recording.go` runs the post-call pipeline: PBX `RECORD_STOP` arrives → row persisted (`pending`/`pending`) → S3 multipart upload via `aws-sdk-go-v2/feature/s3/manager` → transcription via the new `ai.AudioTranscriber` interface (OpenAI Whisper implementation in `openai.go`; Anthropic/Noop fall through to silent skip via `TranscriberAdapter`) → `calls.transcript` rebuilt by concatenating all per-recording transcripts in `recorded_at` order. Pipeline is fully nil-safe — empty `RECORDINGS_BUCKET` keeps the file on the FreeSWITCH volume only.
 >
-> **Open Phase 5 frontend polish**: Wallboard live-update wiring (queues data plane is ready); IVR builder layout (dagre/elk) + test-run; attended transfer; SIP admin pages (sip_trunks/sip_extensions/sip_domains gRPCs exist).
+> **Wallboard live UI (2026-05-29)**: New `QueueWallboard.tsx` route at `/calls/queues-live` polls `QueueService.ListQueues` (5s) and per-queue `ListQueueEntries`/`ListQueueMembers` (2s/10s). Card per queue shows waiting/ringing/connected counts, longest current wait, agent activity ratio, and the top-5 waiting callers oldest-first. Polling chosen over streaming for foundation simplicity — streaming gRPC is a follow-up.
+>
+> **SIP admin pages (2026-05-29)**: New `SipAdmin.tsx` route at `/calls/sip-admin` with three tabs: Extensions (provision per agent), Trunks (CRUD + active toggle, passwords write-only), Domains (CRUD + default flag). All RPCs come from the unified `TelephonyService`. The trunk password field stays write-only on the read path (server zeroes it before returning).
+>
+> **Open Phase 5 polish**: IVR builder layout (dagre/elk) + test-run via gRPC; attended transfer; mod_xml_curl `configuration` section for dynamic sofia gateway provisioning; live streaming RPC for wallboard sub-second updates; pnpm install of sip.js (added to package.json but not in lockfile yet).
 >
 > **Open in slice 5f**: SIP admin pages (sip_trunks/sip_extensions/sip_domains gRPCs exist; UI not yet built).
 
@@ -1196,4 +1200,4 @@ A phase is complete when:
 
 ---
 
-*Last updated: 29 May 2026 — Phase 6 complete (Automation + AI + Campaigns). Phase 5 slices 5a/5b/5c/5d shipped + foundation hardened (ESL auto-reconnect + bgapi job-correlation + mod_xml_curl directory/dialplan + queues runtime + IVR visual builder). Phase 7 (Analytics/Billing) still pending.*
+*Last updated: 29 May 2026 — Phase 6 complete. Phase 5 functional scope complete (slices 5a-5e + ESL/xml-curl hardening + wallboard + SIP admin). Phase 7 (Analytics/Billing) is the next major track.*

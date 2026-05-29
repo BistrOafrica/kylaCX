@@ -90,6 +90,14 @@ type EnvConfigs struct {
 	// Leaving empty disables the shared-secret check but keeps the RFC1918
 	// allowlist active.
 	FSXmlCurlToken string `mapstructure:"FS_XML_CURL_TOKEN"`
+
+	// ── Phase 5e: recording uploads + transcription ─────────────────────────
+	// S3 bucket for call recording uploads. Empty = pipeline disabled (the
+	// recording stays on the FreeSWITCH volume only, no upload, no transcript).
+	RecordingsBucket    string `mapstructure:"RECORDINGS_BUCKET"`
+	RecordingsKeyPrefix string `mapstructure:"RECORDINGS_KEY_PREFIX"`
+	// Optional S3-compatible endpoint (e.g. MinIO). Leave empty for AWS S3.
+	RecordingsS3Endpoint string `mapstructure:"RECORDINGS_S3_ENDPOINT"`
 }
 
 type RsConfig struct {
@@ -253,6 +261,10 @@ func LoadConfig() (*Config, error) {
 				TurnUsername:   os.Getenv("TURN_USERNAME"),
 				TurnPassword:   os.Getenv("TURN_PASSWORD"),
 				FSXmlCurlToken: os.Getenv("FS_XML_CURL_TOKEN"),
+
+				RecordingsBucket:     os.Getenv("RECORDINGS_BUCKET"),
+				RecordingsKeyPrefix:  os.Getenv("RECORDINGS_KEY_PREFIX"),
+				RecordingsS3Endpoint: os.Getenv("RECORDINGS_S3_ENDPOINT"),
 			},
 			RsConfig: RsConfig{
 				ResendApiKey:       resendapikey,

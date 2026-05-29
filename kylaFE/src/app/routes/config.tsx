@@ -59,6 +59,8 @@ import {
   IvrListRoute,
   IvrFlowRoute,
   IvrV2FlowRoute,
+  QueueWallboardRoute,
+  SipAdminRoute,
 } from "@/features/telephony/routes/CallsRoute"
 import {
   CampaignsListRoute,
@@ -162,6 +164,10 @@ export const routeConfig: RouteObject[] = [
       { path: "ivr/:id",     element: <IvrFlowRoute /> },
       // New canvas targeting the Phase 5c IVRService.
       { path: "ivr-v2/:id",  element: <IvrV2FlowRoute /> },
+      // Phase 5d live wallboard for the new QueueService.
+      { path: "queues-live", element: <QueueWallboardRoute /> },
+      // Phase 5 SIP infrastructure admin (extensions/trunks/domains).
+      { path: "sip-admin",   element: <SipAdminRoute /> },
       { path: "campaigns",                  element: <CampaignsListRoute /> },
       { path: "campaigns/templates",        element: <TemplatesRoute /> },
       { path: "campaigns/whatsapp/:id",     element: <WhatsappCampaignRoute /> },

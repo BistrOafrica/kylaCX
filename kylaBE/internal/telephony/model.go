@@ -68,6 +68,14 @@ type Call struct {
 	RecordingEnabled bool   `gorm:"not null;default:false" json:"recording_enabled"`
 	RecordingURL     string `json:"recording_url,omitempty"`
 
+	// Transcription summary at the call level — populated by the recording
+	// pipeline once the per-recording transcripts complete. Multi-recording
+	// calls concatenate transcripts in recorded_at order.
+	Transcript         string `gorm:"not null;default:''" json:"transcript,omitempty"`
+	TranscriptStatus   string `gorm:"not null;default:'none'" json:"transcript_status"` // none|pending|uploading|uploaded|transcribing|done|failed
+	TranscriptProvider string `gorm:"not null;default:''" json:"transcript_provider,omitempty"`
+	TranscriptError    string `gorm:"not null;default:''" json:"transcript_error,omitempty"`
+
 	StartedAt   time.Time  `gorm:"not null;default:now()" json:"started_at"`
 	AnsweredAt  *time.Time `json:"answered_at,omitempty"`
 	EndedAt     *time.Time `json:"ended_at,omitempty"`

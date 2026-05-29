@@ -227,6 +227,8 @@ func main() {
 		&queues.Queue{},
 		&queues.Membership{},
 		&queues.Entry{},
+		// Phase 5e: recording upload + transcription pipeline
+		&telephony.CallRecording{},
 	); migrateErr != nil {
 		log.Printf("migration warning: %v", migrateErr)
 	}
@@ -614,6 +616,30 @@ func main() {
 	queuesRouter := queues.NewRouter(queuesStore, telephonyPBX, telephonyStore, configs.EnvConfigs.FSDefaultTrunk)
 	telephonyBridge.AttachQueues(queuesRouter)
 	queuesServer := queues.NewServer(queuesStore, authAdaptor)
+
+	// Phase 5e: recording upload + transcription pipeline.
+	// Nil-safe: when RECORDINGS_BUCKET is empty NewRecordingPipeline returns
+	// (nil, nil) and AttachRecordings keeps the bridge in legacy mode (file
+	// path stamped on the call row, no S3, no transcript).
+	recordingsPipeline, recErr := telephony.NewRecordingPipeline(
+		context.Background(),
+		telephony.RecordingPipelineConfig{
+			AWSRegion:    configs.AwsCredentialsConfig.AwsRegion,
+			AWSAccessKey: configs.AwsCredentialsConfig.AwsAccessKey,
+			AWSSecretKey: configs.AwsCredentialsConfig.AwsSecretKey,
+			Bucket:       configs.EnvConfigs.RecordingsBucket,
+			KeyPrefix:    configs.EnvConfigs.RecordingsKeyPrefix,
+			S3Endpoint:   configs.EnvConfigs.RecordingsS3Endpoint,
+		},
+		telephonyStore,
+		&ai.TranscriberAdapter{Provider: aiProvider},
+	)
+	if recErr != nil {
+		log.Printf("recording pipeline init failed: %v", recErr)
+	}
+	if recordingsPipeline != nil {
+		telephonyBridge.AttachRecordings(recordingsPipeline)
+	}
 
 	// mod_xml_curl handler — FreeSWITCH POSTs directory/dialplan/configuration
 	// lookups to /freeswitch/xml; the handler serves XML from the Postgres

@@ -11,6 +11,8 @@ import { Wallboard } from "../components/Wallboard"
 import { IvrList } from "../components/IvrList"
 import { IvrFlowBuilder } from "../components/IvrFlowBuilder"
 import { IvrV2Builder } from "../components/IvrV2Builder"
+import { QueueWallboard } from "../components/QueueWallboard"
+import { SipAdmin } from "../components/SipAdmin"
 
 const TABS = [
   { to: "/calls/history",   icon: IconPhone,    label: "History" },
@@ -81,4 +83,14 @@ export function IvrV2FlowRoute() {
   const { id } = useParams()
   if (!id) return null
   return <IvrV2Builder id={id} />
+}
+
+// Phase 5d live wallboard — polls the new QueueService at /calls/queues-live.
+export function QueueWallboardRoute() {
+  return <QueueWallboard />
+}
+
+// Phase 5 SIP admin — extensions, trunks, domains at /calls/sip-admin.
+export function SipAdminRoute() {
+  return <SipAdmin />
 }

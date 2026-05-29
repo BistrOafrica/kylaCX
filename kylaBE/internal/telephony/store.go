@@ -112,6 +112,97 @@ func (s *Store) SetRecordingURL(id, url string) error {
 	}).Error
 }
 
+// SetTranscriptStatus updates the call-level transcript status flag. Used by
+// the pipeline to surface progress without waiting for completion.
+func (s *Store) SetTranscriptStatus(id, status, errMsg string) error {
+	return s.db.Model(&Call{}).Where("id = ?", id).Updates(map[string]interface{}{
+		"transcript_status": status,
+		"transcript_error":  errMsg,
+		"updated_at":        time.Now().UTC(),
+	}).Error
+}
+
+// SetTranscript stores the final transcript (concatenated across all
+// recordings) on the call row.
+func (s *Store) SetTranscript(id, transcript, provider string) error {
+	return s.db.Model(&Call{}).Where("id = ?", id).Updates(map[string]interface{}{
+		"transcript":          transcript,
+		"transcript_status":   string(TranscribeDone),
+		"transcript_provider": provider,
+		"transcript_error":    "",
+		"updated_at":          time.Now().UTC(),
+	}).Error
+}
+
+// ── Recordings ──────────────────────────────────────────────────────────────
+
+func (s *Store) CreateRecording(r *CallRecording) (*CallRecording, error) {
+	if err := s.db.Create(r).Error; err != nil {
+		return nil, err
+	}
+	return r, nil
+}
+
+func (s *Store) GetRecording(id string) (*CallRecording, error) {
+	var r CallRecording
+	err := s.db.Where("id = ?", id).First(&r).Error
+	return &r, err
+}
+
+// ListRecordingsForCall returns all recordings belonging to a call, ordered
+// by recorded_at so concatenated transcripts stay in temporal order.
+func (s *Store) ListRecordingsForCall(callID string) ([]*CallRecording, error) {
+	var out []*CallRecording
+	err := s.db.Where("call_id = ?", callID).Order("recorded_at ASC").Find(&out).Error
+	return out, err
+}
+
+// SetRecordingUploaded transitions the recording to uploaded with the
+// destination URI.
+func (s *Store) SetRecordingUploaded(id, bucket, key, url string, size int64) error {
+	now := time.Now().UTC()
+	return s.db.Model(&CallRecording{}).Where("id = ?", id).Updates(map[string]interface{}{
+		"upload_status": string(UploadUploaded),
+		"upload_error":  "",
+		"s3_bucket":     bucket,
+		"s3_key":        key,
+		"s3_url":        url,
+		"size_bytes":    size,
+		"uploaded_at":   &now,
+		"updated_at":    now,
+	}).Error
+}
+
+// SetRecordingUploadFailed records a non-retryable upload error.
+func (s *Store) SetRecordingUploadFailed(id, errMsg string) error {
+	return s.db.Model(&CallRecording{}).Where("id = ?", id).Updates(map[string]interface{}{
+		"upload_status": string(UploadFailed),
+		"upload_error":  errMsg,
+		"updated_at":    time.Now().UTC(),
+	}).Error
+}
+
+// SetRecordingTranscribed stores the per-recording transcript and provider.
+func (s *Store) SetRecordingTranscribed(id, transcript, provider string) error {
+	now := time.Now().UTC()
+	return s.db.Model(&CallRecording{}).Where("id = ?", id).Updates(map[string]interface{}{
+		"transcribe_status": string(TranscribeDone),
+		"transcribe_error":  "",
+		"transcript":        transcript,
+		"transcribed_by":    provider,
+		"transcribed_at":    &now,
+		"updated_at":        now,
+	}).Error
+}
+
+func (s *Store) SetRecordingTranscribeFailed(id, errMsg string) error {
+	return s.db.Model(&CallRecording{}).Where("id = ?", id).Updates(map[string]interface{}{
+		"transcribe_status": string(TranscribeFailed),
+		"transcribe_error":  errMsg,
+		"updated_at":        time.Now().UTC(),
+	}).Error
+}
+
 // LinkConversation stores the conversation_id created by the VoiceCallBridge
 // post-call. Idempotent — repeated calls overwrite.
 func (s *Store) LinkConversation(callID, conversationID string) error {

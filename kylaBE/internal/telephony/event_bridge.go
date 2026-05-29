@@ -49,6 +49,7 @@ type EventBridge struct {
 	stream    *CallEventStream
 	ivr       IVRHook   // optional — nil disables IVR routing
 	queues    QueueHook // optional — nil disables queue runtime callbacks
+	recordings *RecordingPipeline // optional — nil disables S3 upload + transcription
 }
 
 func NewEventBridge(store *Store, publisher events.Publisher, stream *CallEventStream) *EventBridge {
@@ -65,6 +66,13 @@ func (b *EventBridge) AttachIVR(hook IVRHook) {
 // AttachQueues wires the queues runtime into the bridge. Optional.
 func (b *EventBridge) AttachQueues(hook QueueHook) {
 	b.queues = hook
+}
+
+// AttachRecordings wires the post-call recording pipeline. Optional —
+// without it, RECORD_STOP events still update the call's recording_url but
+// no upload or transcription happens.
+func (b *EventBridge) AttachRecordings(pipeline *RecordingPipeline) {
+	b.recordings = pipeline
 }
 
 // Start drains the event stream until ctx is cancelled. Returns when the
@@ -281,12 +289,26 @@ func (b *EventBridge) onRecordingComplete(evt PBXEvent) {
 	if evt.CallUUID == "" {
 		return
 	}
-	url := mapString(evt.Data, "Record-File-Path")
-	if url == "" {
+	path := mapString(evt.Data, "Record-File-Path")
+	if path == "" {
 		return
 	}
-	if err := b.store.SetRecordingURL(evt.CallUUID, url); err != nil {
+	// Stamp the PBX-local path immediately so even without the pipeline the
+	// row carries a pointer to the audio. The pipeline overwrites with the
+	// S3 URL once the upload succeeds.
+	if err := b.store.SetRecordingURL(evt.CallUUID, path); err != nil {
 		log.Printf("[telephony bridge] set recording url %s: %v", evt.CallUUID, err)
+	}
+	// Resolve the org from the call row — the PBX event variables aren't
+	// guaranteed to carry kyla_org_id (depends on dialplan/xml_curl wiring).
+	orgID := mapString(evt.Data, "variable_kyla_org_id")
+	if orgID == "" {
+		if c, err := b.store.GetCallByIDOnly(evt.CallUUID); err == nil {
+			orgID = c.OrgID
+		}
+	}
+	if b.recordings != nil && b.recordings.Enabled() {
+		b.recordings.Handle(context.Background(), evt.CallUUID, orgID, path)
 	}
 }
 
