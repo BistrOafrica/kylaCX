@@ -36,6 +36,64 @@ test.describe("public shell", () => {
     }
   })
 
+  test("/automation and /ai-studio also bounce unauthenticated to /login", async ({ page }) => {
+    for (const path of ["/automation", "/ai-studio"]) {
+      await page.goto(path)
+      await expect(page).toHaveURL(/\/login$/)
+    }
+  })
+
+  test("/admin and admin sub-routes also bounce unauthenticated to /login", async ({ page }) => {
+    for (const path of [
+      "/admin",
+      "/admin/organisation",
+      "/admin/users",
+      "/admin/rbac",
+      "/admin/apps",
+      "/admin/profile",
+    ]) {
+      await page.goto(path)
+      await expect(page).toHaveURL(/\/login$/)
+    }
+  })
+
+  test("/analytics and analytics sub-routes also bounce unauthenticated to /login", async ({ page }) => {
+    for (const path of [
+      "/analytics",
+      "/analytics/overview",
+      "/analytics/calls",
+      "/analytics/billing",
+    ]) {
+      await page.goto(path)
+      await expect(page).toHaveURL(/\/login$/)
+    }
+  })
+
+  test("/calls and telephony sub-routes also bounce unauthenticated to /login", async ({ page }) => {
+    for (const path of [
+      "/calls",
+      "/calls/history",
+      "/calls/wallboard",
+      "/calls/ivr",
+      "/ivr",
+    ]) {
+      await page.goto(path)
+      await expect(page).toHaveURL(/\/login$/)
+    }
+  })
+
+  test("/campaigns and campaign sub-routes also bounce unauthenticated to /login", async ({ page }) => {
+    for (const path of [
+      "/campaigns",
+      "/campaigns/templates",
+      "/campaigns/whatsapp/abc-123",
+      "/campaigns/voice/xyz-456",
+    ]) {
+      await page.goto(path)
+      await expect(page).toHaveURL(/\/login$/)
+    }
+  })
+
   test("login form renders with email + password fields", async ({ page }) => {
     await page.goto("/login")
     await expect(page.getByLabel(/email/i)).toBeVisible()

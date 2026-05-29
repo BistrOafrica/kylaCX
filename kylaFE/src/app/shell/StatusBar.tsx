@@ -1,22 +1,19 @@
-import { useTranslation } from "react-i18next"
-import { StatusDot } from "@/design-system"
 import { cn } from "@/lib/utils"
+import { AgentStatusButton } from "@/features/admin/components/AgentStatusButton"
 
 /**
  * StatusBar — 28px strip at the bottom of the shell.
  *
  *   [● Available ▾]   SLA risk: 2   Active: 5   Queue: 14            v1.0.0
  *
- * Counts in F0 are placeholders sourced from the workspace store
- * (always zero until F1 wires real data). Agent status menu opens the
- * AgentOps presence picker — also F1.
+ * Counts are placeholders sourced from the workspace store (always
+ * zero until streaming-driven counters land in F5.x). Agent status
+ * comes from AgentStatusService via the AgentStatusButton.
  */
 
-const APP_VERSION = "0.1.0-f0"
+const APP_VERSION = "0.5.0-f5"
 
 export function StatusBar() {
-  const { t } = useTranslation()
-
   return (
     <footer
       role="contentinfo"
@@ -25,17 +22,7 @@ export function StatusBar() {
         "bg-canvas border-t border-border text-sm",
       )}
     >
-      <button
-        type="button"
-        className={cn(
-          "inline-flex items-center gap-1.5 h-5 px-1.5 rounded-xs",
-          "hover:bg-subtle text-fg-secondary transition-colors",
-        )}
-        aria-label={t("shell.agentStatus")}
-      >
-        <StatusDot tone="online" size={6} />
-        <span className="text-sm">{t("agentStatus.online")}</span>
-      </button>
+      <AgentStatusButton />
 
       <Stat label="SLA risk" value={0} tone="danger" />
       <Stat label="Active" value={0} />

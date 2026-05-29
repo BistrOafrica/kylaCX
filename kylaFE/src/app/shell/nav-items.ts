@@ -37,12 +37,12 @@ export const PRIMARY_NAV: NavItem[] = [
   { id: "tickets",    i18nKey: "nav.tickets",    icon: IconTicket,       href: "/tickets",    phase: "F3" },
   { id: "knowledge",  i18nKey: "nav.knowledge",  icon: IconBook,         href: "/knowledge",  phase: "F3" },
   { id: "forms",      i18nKey: "nav.forms",      icon: IconFileText,     href: "/forms",      phase: "F3" },
-  { id: "automation", i18nKey: "nav.automation", icon: IconBolt,         href: "/automation", phase: "F4", disabled: true },
-  { id: "campaigns",  i18nKey: "nav.campaigns",  icon: IconSpeakerphone, href: "/campaigns",  phase: "F8", disabled: true },
-  { id: "calls",      i18nKey: "nav.calls",      icon: IconPhone,        href: "/calls",      phase: "F7", disabled: true },
-  { id: "analytics",  i18nKey: "nav.analytics",  icon: IconChartBar,     href: "/analytics",  phase: "F6", disabled: true },
+  { id: "automation", i18nKey: "nav.automation", icon: IconBolt,         href: "/automation", phase: "F4" },
+  { id: "campaigns",  i18nKey: "nav.campaigns",  icon: IconSpeakerphone, href: "/campaigns",  phase: "F8" },
+  { id: "calls",      i18nKey: "nav.calls",      icon: IconPhone,        href: "/calls",      phase: "F7" },
+  { id: "analytics",  i18nKey: "nav.analytics",  icon: IconChartBar,     href: "/analytics",  phase: "F6" },
 ]
 
 export const SECONDARY_NAV: NavItem[] = [
-  { id: "admin", i18nKey: "nav.admin", icon: IconSettings, href: "/admin", phase: "F5", disabled: true },
+  { id: "admin", i18nKey: "nav.admin", icon: IconSettings, href: "/admin", phase: "F5" },
 ]

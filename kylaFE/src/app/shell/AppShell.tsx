@@ -9,6 +9,8 @@ import { TopBar } from "./TopBar"
 import { AIRail } from "./AIRail"
 import { StatusBar } from "./StatusBar"
 import { CommandPalette } from "./CommandPalette"
+import { Softphone } from "@/features/telephony/components/Softphone"
+import { SoftphoneButton } from "@/features/telephony/components/SoftphoneButton"
 
 /**
  * AppShell — the authenticated 4-pane workbench layout.
@@ -66,6 +68,8 @@ export function AppShell() {
       </div>
       <StatusBar />
       <CommandPalette />
+      <Softphone />
+      <SoftphoneButton />
     </div>
   )
 }
