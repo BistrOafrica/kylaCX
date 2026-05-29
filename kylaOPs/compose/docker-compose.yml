@@ -1,0 +1,231 @@
+# kylaCX full-stack compose.
+#
+# Every service uses env_file (per project convention). Build-time variables
+# (e.g. Vite VITE_*) are passed via build.args in this file.
+#
+# Networks:
+#   kyla     — internal service mesh (db, redis, nats, temporal, backend gRPC,
+#              envoy, freeswitch, coturn, frontend nginx). Frontend nginx is
+#              publicly exposed via host port only.
+#   webhook  — webhook ingress only. nginx-webhook + backend (dual-homed).
+#              Isolated from the internal mesh so a compromised webhook
+#              endpoint cannot reach the rest of the stack laterally.
+#
+# Public ports:
+#   80    → frontend nginx (serves SPA + reverse-proxies /grpc → envoy)
+#   8080  → webhook nginx  (reverse-proxies /webhooks/* → backend:8085)
+#   5060  → freeswitch SIP
+#   3478  → coturn STUN/TURN
+#
+# All other services are network-internal.
+
+name: kyla
+
+networks:
+  kyla:
+    name: kyla
+    driver: bridge
+  webhook:
+    name: kyla_webhook
+    driver: bridge
+
+volumes:
+  postgres_data:
+  temporal_pg_data:
+  redis_data:
+  nats_data:
+  freeswitch_recordings:
+
+services:
+  # ── Datastores ──────────────────────────────────────────────────────────────
+  postgres:
+    image: postgres:16-alpine
+    env_file:
+      - ../envs/postgres.env
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    restart: unless-stopped
+    networks: [kyla]
+
+  redis:
+    image: redis:7-alpine
+    env_file:
+      - ../envs/redis.env
+    command:
+      - sh
+      - -c
+      - exec redis-server /usr/local/etc/redis/redis.conf --requirepass "$$REDIS_PASSWORD"
+    volumes:
+      - redis_data:/data
+      - ../docker/redis/redis.conf:/usr/local/etc/redis/redis.conf:ro
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli -a $$REDIS_PASSWORD ping | grep PONG"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    restart: unless-stopped
+    networks: [kyla]
+
+  # ── Event bus ───────────────────────────────────────────────────────────────
+  nats:
+    image: nats:2.10-alpine
+    command: ["-js", "-sd", "/data", "-m", "8222"]
+    env_file:
+      - ../envs/nats.env
+    volumes:
+      - nats_data:/data
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8222/healthz"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks: [kyla]
+
+  # ── Temporal workflow engine ───────────────────────────────────────────────
+  temporal-postgres:
+    image: postgres:16-alpine
+    env_file:
+      - ../envs/temporal-postgres.env
+    volumes:
+      - temporal_pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    restart: unless-stopped
+    networks: [kyla]
+
+  temporal:
+    image: temporalio/auto-setup:1.24
+    depends_on:
+      temporal-postgres:
+        condition: service_healthy
+    env_file:
+      - ../envs/temporal.env
+    restart: unless-stopped
+    networks: [kyla]
+
+  temporal-ui:
+    image: temporalio/ui:2.26
+    depends_on:
+      - temporal
+    env_file:
+      - ../envs/temporal.env
+    ports:
+      - "8088:8080"
+    restart: unless-stopped
+    networks: [kyla]
+    profiles: [dev, full]
+
+  # ── Self-hosted SIP / WebRTC ───────────────────────────────────────────────
+  freeswitch:
+    image: signalwire/freeswitch:1.10
+    env_file:
+      - ../envs/freeswitch.env
+    ports:
+      - "5060:5060/udp"
+      - "5060:5060/tcp"
+      - "5080:5080/udp"
+      - "7443:7443/tcp"
+      - "16384-16484:16384-16484/udp"
+    volumes:
+      - ../docker/freeswitch/conf/vars.xml:/etc/freeswitch/vars.xml:ro
+      - ../docker/freeswitch/conf/autoload_configs:/etc/freeswitch/autoload_configs:ro
+      - ../docker/freeswitch/conf/sip_profiles:/etc/freeswitch/sip_profiles:ro
+      - ../docker/freeswitch/conf/dialplan:/etc/freeswitch/dialplan:ro
+      - freeswitch_recordings:/var/lib/freeswitch/recordings
+    healthcheck:
+      test: ["CMD", "fs_cli", "-x", "status"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks: [kyla]
+
+  coturn:
+    image: coturn/coturn:4.6
+    env_file:
+      - ../envs/coturn.env
+    ports:
+      - "3478:3478/udp"
+      - "3478:3478/tcp"
+      - "5349:5349/tcp"
+      - "49160-49200:49160-49200/udp"
+    command:
+      - sh
+      - -c
+      - >-
+        exec turnserver -n --no-cli --no-tls
+        --realm=$$TURN_REALM
+        --user=$$TURN_USER:$$TURN_PASSWORD
+        --listening-port=3478
+        --min-port=49160 --max-port=49200
+        --log-file=stdout
+    restart: unless-stopped
+    networks: [kyla]
+
+  # ── Backend (gRPC :50050 + webhook HTTP :8085) ─────────────────────────────
+  # Dual-homed: kyla (internal mesh) + webhook (external webhook ingress).
+  backend:
+    build:
+      context: ../..
+      dockerfile: kylaOPs/docker/backend/Dockerfile
+    env_file:
+      - ../envs/backend.env
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      nats:
+        condition: service_started
+      temporal:
+        condition: service_started
+    restart: unless-stopped
+    networks: [kyla, webhook]
+
+  # ── gRPC-web gateway ───────────────────────────────────────────────────────
+  envoy:
+    image: envoyproxy/envoy:v1.28-latest
+    volumes:
+      - ../docker/envoy/envoy.yaml:/etc/envoy/envoy.yaml:ro
+    depends_on:
+      - backend
+    command: ["envoy", "-c", "/etc/envoy/envoy.yaml"]
+    restart: unless-stopped
+    networks: [kyla]
+
+  # ── Public-facing nginx serving the SPA and proxying gRPC-web ──────────────
+  frontend:
+    build:
+      context: ../..
+      dockerfile: kylaOPs/docker/frontend/Dockerfile
+      args:
+        VITE_API_URL: ${VITE_API_URL:-/grpc}
+        VITE_SENTRY_DSN: ${VITE_SENTRY_DSN:-}
+        VITE_ENVIRONMENT: ${VITE_ENVIRONMENT:-local}
+    depends_on:
+      - envoy
+    ports:
+      - "${FRONTEND_HOST_PORT:-80}:80"
+    restart: unless-stopped
+    networks: [kyla]
+
+  # ── Webhook ingress (isolated from the internal mesh) ──────────────────────
+  nginx-webhook:
+    build:
+      context: ../docker/nginx-webhook
+      dockerfile: Dockerfile
+    depends_on:
+      - backend
+    ports:
+      - "${WEBHOOK_HOST_PORT:-8080}:80"
+    restart: unless-stopped
+    networks: [webhook]

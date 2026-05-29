@@ -1,0 +1,26 @@
+# Applies when compose builds with context = monorepo root.
+# Each Dockerfile narrows down further with explicit COPYs, but we still
+# trim noise from the upload to keep build context small.
+
+**/.git
+**/.github
+**/.vscode
+**/.idea
+**/node_modules
+**/dist
+**/build
+**/tmp
+**/.DS_Store
+**/.env
+**/.env.local
+**/.env.*.local
+**/coverage
+**/playwright-report
+**/test-results
+
+# Keep example envs so deploys can ship sane defaults.
+!**/*.env.example
+
+# Generated stubs need to stay in the build context.
+!kylaBE/pkg/pb
+!kylaFE/src/pb

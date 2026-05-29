@@ -1,0 +1,34 @@
+<profile name="internal">
+  <!-- Standard SIP/UDP + SIP/TCP profile for desktop softphones and on-net
+       SIP extensions. WebRTC clients use the webrtc profile (separate file). -->
+  <aliases/>
+  <gateways/>
+  <domains>
+    <domain name="all" alias="false" parse="true"/>
+  </domains>
+  <settings>
+    <param name="auth-calls" value="true"/>
+    <param name="apply-inbound-acl" value="domains"/>
+    <param name="local-network-acl" value="localnet.auto"/>
+
+    <param name="sip-port" value="$${internal_sip_port}"/>
+    <param name="sip-ip" value="$${local_ip_v4}"/>
+    <param name="rtp-ip" value="$${local_ip_v4}"/>
+    <param name="ext-sip-ip" value="auto-nat"/>
+    <param name="ext-rtp-ip" value="auto-nat"/>
+
+    <param name="user-agent-string" value="kyla-pbx"/>
+    <param name="context" value="default"/>
+    <param name="dialplan" value="XML"/>
+
+    <param name="inbound-codec-prefs" value="$${global_codec_prefs}"/>
+    <param name="outbound-codec-prefs" value="$${outbound_codec_prefs}"/>
+    <param name="dtmf-duration" value="2000"/>
+    <param name="dtmf-type" value="rfc2833"/>
+
+    <param name="nonce-ttl" value="60"/>
+    <param name="auth-all-packets" value="false"/>
+    <param name="record-path" value="$${recordings_dir}"/>
+    <param name="record-template" value="${strftime(%Y-%m-%d-%H-%M-%S)}_${uuid}.wav"/>
+  </settings>
+</profile>

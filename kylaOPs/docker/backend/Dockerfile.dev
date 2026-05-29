@@ -1,0 +1,13 @@
+# Dev image for kylaBE — hot reload via air.
+# Build context: monorepo root (kylaCX/). Mount kylaBE/ over /app for live edits.
+
+FROM golang:1.24-alpine
+RUN apk add --no-cache git curl ca-certificates && \
+    curl -sSfL https://raw.githubusercontent.com/cosmtrek/air/master/install.sh | sh -s -- -b /usr/local/bin
+WORKDIR /app
+COPY kylaBE/go.mod kylaBE/go.sum ./
+RUN go mod download
+COPY kylaBE/ ./
+RUN mkdir -p /app/tmp && chmod 777 /app/tmp
+EXPOSE 50050 8085
+CMD ["air", "--build.cmd", "go build -o /app/tmp/server ./cmd/server", "--build.bin", "/app/tmp/server"]

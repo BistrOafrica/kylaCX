@@ -1,0 +1,49 @@
+<profile name="webrtc">
+  <!-- SIP-over-WSS profile for browser softphones. Bound to 7443 (wss://).
+       Clients authenticate with the same SIP extension credentials as the
+       internal profile but transport audio over WebRTC (SRTP/DTLS).
+
+       OPUS is mandatory; the browser softphone code in kylaFE negotiates
+       OPUS with mediasoup-style abilities.
+
+       TLS certs must be mounted via a docker-compose volume override before
+       this profile can come up in production. The dev image ships with a
+       self-signed cert (not suitable beyond local dev). -->
+  <aliases/>
+  <gateways/>
+  <domains>
+    <domain name="all" alias="false" parse="true"/>
+  </domains>
+  <settings>
+    <param name="auth-calls" value="true"/>
+    <param name="apply-inbound-acl" value="domains"/>
+
+    <param name="sip-port" value="$${webrtc_wss_port}"/>
+    <param name="sip-ip" value="$${local_ip_v4}"/>
+    <param name="rtp-ip" value="$${local_ip_v4}"/>
+    <param name="ext-sip-ip" value="auto-nat"/>
+    <param name="ext-rtp-ip" value="auto-nat"/>
+
+    <param name="tls" value="true"/>
+    <param name="tls-bind-params" value="transport=wss"/>
+    <param name="tls-only" value="false"/>
+    <param name="wss-binding" value=":$${webrtc_wss_port}"/>
+
+    <!-- DTLS-SRTP is mandatory for browser WebRTC. -->
+    <param name="rtp-secure-media" value="mandatory"/>
+    <param name="media-option" value="resume-media-on-hold"/>
+    <param name="enable-3pcc" value="proxy"/>
+    <param name="liberal-dtmf" value="true"/>
+
+    <param name="user-agent-string" value="kyla-pbx-webrtc"/>
+    <param name="context" value="default"/>
+    <param name="dialplan" value="XML"/>
+
+    <param name="inbound-codec-prefs" value="OPUS,G722,PCMU,PCMA"/>
+    <param name="outbound-codec-prefs" value="OPUS,G722,PCMU,PCMA"/>
+    <param name="dtmf-type" value="rfc2833"/>
+
+    <param name="nonce-ttl" value="60"/>
+    <param name="record-path" value="$${recordings_dir}"/>
+  </settings>
+</profile>

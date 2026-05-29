@@ -1,0 +1,48 @@
+<include>
+  <!-- Default dialplan context.
+       The Go telephony service drives call routing via ESL — this dialplan
+       is intentionally minimal. Its job is to:
+         1. Stamp kyla channel variables so ESL events carry org/workspace
+            context (used by the EventBridge to scope inbound calls).
+         2. Park the call so ESL can take over (originate, bridge, IVR).
+
+       Real production deployments will extend this with mod_xml_curl so
+       the Go backend can serve per-DID routing dynamically. See the
+       deploy/freeswitch/README.md for the mod_xml_curl wiring plan. -->
+  <context name="default">
+
+    <!-- Outbound calls placed via uuid_broadcast / originate by the Go
+         service already carry kyla_* variables; this extension just makes
+         sure the leg is routed to the gateway/bridge specified by the
+         originate command. -->
+    <extension name="kyla_outbound_bridge">
+      <condition field="${kyla_org_id}" expression="^.+$">
+        <action application="set" data="hangup_after_bridge=true"/>
+        <action application="set" data="continue_on_fail=true"/>
+        <action application="set" data="ringback=${us-ring}"/>
+        <action application="park"/>
+      </condition>
+    </extension>
+
+    <!-- Inbound calls from the external profile (PSTN trunks) land here.
+         The IVR DID lookup happens in the Go service via the EventBridge;
+         we just park the call so ESL can take over. -->
+    <extension name="kyla_inbound_park">
+      <condition field="destination_number" expression="^(\d+)$">
+        <action application="set" data="kyla_did=$1"/>
+        <action application="park"/>
+      </condition>
+    </extension>
+
+    <!-- Echo test for connectivity verification. Dial 9999 from any softphone
+         to confirm media is flowing both ways. Useful during initial WebRTC
+         setup. -->
+    <extension name="echo_test">
+      <condition field="destination_number" expression="^9999$">
+        <action application="answer"/>
+        <action application="echo"/>
+      </condition>
+    </extension>
+
+  </context>
+</include>
