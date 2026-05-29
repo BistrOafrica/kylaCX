@@ -1,4 +1,4 @@
-import { Web } from "sip.js"
+import { Web, SIPExtension } from "sip.js"
 import type { SoftphoneToken } from "@/pb/telephony"
 
 /**
@@ -41,6 +41,8 @@ export class SipClient {
   private audioEl: HTMLAudioElement
   /** Tracks state externally so disconnect() and dial() know what's safe. */
   private state: SipCallState = "idle"
+  /** Cached on connect() so dial() can build a target AOR without poking SIP.js internals. */
+  private realm: string = "kyla"
 
   constructor(audioEl: HTMLAudioElement, callbacks: SipClientCallbacks = {}) {
     this.audioEl = audioEl
@@ -63,16 +65,16 @@ export class SipClient {
     }
     this.transition("registering")
 
+    this.realm = token.sipRealm
     const aor = `sip:${token.sipExtension}@${token.sipRealm}`
     const user = new Web.SimpleUser(token.wsUrl, {
       aor,
       userAgentOptions: {
         authorizationUsername: token.sipExtension,
         authorizationPassword: sipPassword,
-        // Forward the bootstrap token in a custom header so the PBX-side
-        // validator (mod_xml_curl handler) can authenticate without the SIP
-        // digest depending on the plaintext password.
-        sipExtension100rel: "supported",
+        // Advertise PRACK support so reliable provisional responses (180
+        // Ringing with SDP, early media) work end-to-end against FreeSWITCH.
+        sipExtension100rel: SIPExtension.Supported,
       },
       media: {
         constraints: { audio: true, video: false },
@@ -195,10 +197,8 @@ export class SipClient {
     })
   }
 
-  /** Pulls the SIP realm out of the AOR so dial() can use it. */
+  /** Returns the SIP realm captured at connect() time so dial() can build targets. */
   private extractRealm(): string {
-    const aor = this.user?.["userAgent"]?.["configuration"]?.["uri"]?.toString?.() ?? ""
-    const m = /@([^>;]+)/.exec(aor)
-    return m?.[1] ?? "kyla"
+    return this.realm
   }
 }

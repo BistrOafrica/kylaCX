@@ -48,6 +48,7 @@ import { AutoDialerServiceClient } from "@/pb/autodialer_campaign.client"
 // imports above for new development. Legacy clients stay in place for now.
 import { TelephonyServiceClient } from "@/pb/telephony.client"
 import { IVRServiceClient } from "@/pb/ivr.client"
+import { QueueServiceClient } from "@/pb/queues.client"
 
 export const services = {
   auth: new AuthServiceClient(transport),
@@ -89,6 +90,7 @@ export const services = {
   autodialerCampaigns: new AutoDialerServiceClient(transport),
   telephony: new TelephonyServiceClient(transport),
   ivr: new IVRServiceClient(transport),
+  queue: new QueueServiceClient(transport),
 } as const
 
 export type Services = typeof services

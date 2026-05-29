@@ -3,7 +3,6 @@ import { useQuery } from "@tanstack/react-query"
 import {
   IconUsers,
   IconClockHour4,
-  IconActivity,
   IconHeadphones,
 } from "@tabler/icons-react"
 import {
@@ -18,7 +17,7 @@ import {
   listQueueMembersV2,
   subscribeQueueEntriesV2,
 } from "../api/queuesV2"
-import type { Queue, QueueEntry, QueueMembership } from "@/pb/queues"
+import type { Queue, QueueEntry } from "@/pb/queues"
 import { useWorkspaceStore } from "@/lib/workspace"
 
 /**
@@ -46,7 +45,6 @@ export function QueueWallboard() {
       <PageHeader
         title="Wallboard"
         description="Live queue state across the workspace. Updates every 2 seconds."
-        icon={<IconActivity className="size-5" />}
       />
 
       {queuesQuery.isPending ? (
