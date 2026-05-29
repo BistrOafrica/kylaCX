@@ -661,7 +661,7 @@ CREATE TABLE messages (
 
 ---
 
-### Phase 5 — Telephony Integration (Weeks 31–36)  🚧 SLICES 5A/5B/5C SHIPPED (mod_xml_curl + production FS config + slices 5d/5e remain)
+### Phase 5 — Telephony Integration (Weeks 31–36)  🚧 SLICES 5A/5B/5C/5D SHIPPED + FOUNDATION HARDENED (slice 5e + Phase 5 frontend polish remain)
 *Self-hosted SIP via FreeSWITCH with WebRTC softphone support.*
 
 > **Status (2026-05-29):** Architecture choice locked in: self-hosted SIP from day one (FreeSWITCH + coturn). Backend foundation shipped:
@@ -682,11 +682,17 @@ CREATE TABLE messages (
 >
 > **Frontend softphone wiring (2026-05-29)**: `kylaFE/src/features/telephony/sip/` adds `SipClient` (SIP.js `SimpleUser` wrapper) and `useSipClient` hook (manages a module-level singleton with an off-screen `<audio>` element for remote audio). `useSipClient` fetches a softphone bootstrap via `services.telephony.issueSoftphoneToken()`, connects WSS to FreeSWITCH, REGISTERs, and mirrors SIP state into the existing softphone Zustand store. `Softphone.tsx` now dials/hangs up/mutes/sends DTMF through the SIP client instead of the legacy `useStartCallSession` mutation — the new TelephonyService creates `calls` rows from ESL events, so the frontend doesn't need to pre-create a session row. `sip.js@^0.21.2` added to `package.json` (run `pnpm install` to fetch).
 >
-> **Open in slice 5a/5b**: ESL bgapi job-correlation (originate currently fires command but doesn't await BACKGROUND_JOB — UUID generated locally and persisted optimistically); automatic ESL reconnect with backoff; mod_xml_curl integration for dynamic directory + dialplan + JWT validation served from the Go backend.
+> **Foundation hardening (2026-05-29)**: ESL auto-reconnect with exponential backoff (1s → 30s ceiling); `bgapi` job-correlation — `Originate`/`Hangup`/`Transfer`/`Hold`/`Resume` now await the `BACKGROUND_JOB` event and return the actual PBX outcome (PBX rejections surface as gRPC errors immediately instead of being discovered later via CHANNEL_HANGUP). `drainPendingJobs` unblocks waiters on ESL disconnect so transient reconnects never leak goroutines.
 >
-> **Open in slice 5c**: visual IVR flow builder (the `IvrFlowBuilder.tsx` scaffold exists; canvas + node palette + persistence not wired); inbound DID-to-org mapping outside of IVR (calls without a DID mapping still drop today); recording management via uuid_record.
+> **mod_xml_curl integration (2026-05-29)**: New `internal/telephony/xmlcurl/` package — Gin handler at `/freeswitch/xml` serves `directory` (extension auth via HA1 hash from `sip_extensions.a1_hash` — new column added in `0012_telephony_a1.sql`), `dialplan` (per-DID context that stamps `kyla_org_id`/`kyla_workspace_id`/`kyla_ivr_flow_id` channel variables and parks for ESL), and a stub `configuration` (reserved for future trunk provisioning). Auth: RFC1918 allowlist + optional `X-Kyla-XML-Token` shared secret (`FS_XML_CURL_TOKEN`). FreeSWITCH config grows `autoload_configs/xml_curl.conf.xml` and `mod_xml_curl` is loaded.
 >
-> **Open in slices 5d-5e**: queues + routing engine + wallboard; recording S3 upload + transcription via the AI engine.
+> **Queues (slice 5d, 2026-05-29)**: `0013_queues.sql` adds `call_queues`, `call_queue_members`, `call_queue_entries`. New `queues.proto` → `QueueService` gRPC (CRUD + member management + agent self-service pause/resume + wallboard `ListQueueEntries`). `internal/telephony/queues/router.go` runs in-process — `PushCall` enters a caller into a queue, picks an eligible member via `round_robin` or `longest_idle` strategy, originates an agent leg through the PBX, persists assignment, and bridges on the agent's `CHANNEL_ANSWER`. Bookkeeping for `last_call_ended_at` on `CHANNEL_HANGUP` keeps fairness honest; `OnAgentBecameAvailable` pulls waiting callers when an agent rejoins. `telephony.QueueHook` interface decouples the router from the bridge.
+>
+> **IVR visual builder (slice 5c follow-up, 2026-05-29)**: New `IvrV2Builder.tsx` + `api/ivrV2.ts` targeting the Phase 5c `IVRService`. React Flow canvas with a left palette (7 node types), a custom node card per node (menu nodes render one source handle per branch digit), and a right-side inspector for type-specific config. Save serialises canvas state back into `IVRFlow.definition.{startNodeId, nodes}` via gRPC `UpdateIVRFlow`. Route: `/calls/ivr-v2/:id`. Legacy `IvrFlowBuilder.tsx` (targets the legacy `CallIvrFlowService`) stays in place at `/calls/ivr/:id` for backward compat.
+>
+> **Open in slice 5e**: recording S3 upload + transcription via the AI engine.
+>
+> **Open Phase 5 frontend polish**: Wallboard live-update wiring (queues data plane is ready); IVR builder layout (dagre/elk) + test-run; attended transfer; SIP admin pages (sip_trunks/sip_extensions/sip_domains gRPCs exist).
 >
 > **Open in slice 5f**: SIP admin pages (sip_trunks/sip_extensions/sip_domains gRPCs exist; UI not yet built).
 
@@ -1190,4 +1196,4 @@ A phase is complete when:
 
 ---
 
-*Last updated: 29 May 2026 — Phase 6 complete (Automation + AI + Campaigns). Phase 5 slices 5a/5b/5c shipped (FreeSWITCH foundation + IVR engine + FS config skeleton + frontend SIP.js softphone). Phase 7 (Analytics/Billing) still pending.*
+*Last updated: 29 May 2026 — Phase 6 complete (Automation + AI + Campaigns). Phase 5 slices 5a/5b/5c/5d shipped + foundation hardened (ESL auto-reconnect + bgapi job-correlation + mod_xml_curl directory/dialplan + queues runtime + IVR visual builder). Phase 7 (Analytics/Billing) still pending.*

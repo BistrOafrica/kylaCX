@@ -1,0 +1,111 @@
+syntax = "proto3";
+
+package da.proto;
+option go_package = "./pb";
+
+import "google/protobuf/timestamp.proto";
+
+// QueueService manages call queue configuration, agent membership, and
+// surfaces wallboard data (live queue entries + per-agent state). Routing
+// itself is driven by the queues runtime listening on the PBX event stream.
+//
+// New for Phase 5d. Supersedes the legacy QueueService for new work.
+
+// ── Queue ────────────────────────────────────────────────────────────────────
+
+message Queue {
+  string id = 1;
+  string org_id = 2;
+  string workspace_id = 3;
+  string name = 4;
+  string description = 5;
+  string strategy = 6;             // "round_robin" | "longest_idle"
+  string moh_path = 7;             // music-on-hold file path
+  int32 max_wait_seconds = 8;
+  string overflow_action = 9;      // voicemail | hangup | transfer
+  string overflow_target = 10;
+  bool is_active = 11;
+  google.protobuf.Timestamp created_at = 12;
+  google.protobuf.Timestamp updated_at = 13;
+}
+
+message QueueMembership {
+  string id = 1;
+  string queue_id = 2;
+  string org_id = 3;
+  string user_id = 4;
+  int32 priority = 5;
+  bool is_active = 6;
+  google.protobuf.Timestamp last_call_ended_at = 7;
+  google.protobuf.Timestamp created_at = 8;
+  google.protobuf.Timestamp updated_at = 9;
+}
+
+message QueueEntry {
+  string id = 1;
+  string queue_id = 2;
+  string call_id = 3;
+  string org_id = 4;
+  string workspace_id = 5;
+  int32 priority = 6;
+  string status = 7;
+  string assigned_agent_id = 8;
+  google.protobuf.Timestamp assigned_at = 9;
+  google.protobuf.Timestamp entered_at = 10;
+  google.protobuf.Timestamp ended_at = 11;
+  string ended_reason = 12;
+}
+
+// ── Requests / Responses ─────────────────────────────────────────────────────
+
+message QueueCreateRequest  { Queue queue = 1; }
+message QueueGetRequest     { string id = 1; }
+message QueueListRequest {
+  string workspace_id = 1;
+  bool active_only = 2;
+}
+message QueueListResponse  { repeated Queue queues = 1; }
+message QueueUpdateRequest  { Queue queue = 1; }
+message QueueDeleteRequest  { string id = 1; }
+message QueueDeleteResponse { bool ok = 1; }
+
+message AddQueueMemberRequest    { QueueMembership member = 1; }
+message RemoveQueueMemberRequest { string id = 1; }
+message RemoveQueueMemberResponse { bool ok = 1; }
+message ListQueueMembersRequest  { string queue_id = 1; }
+message ListQueueMembersResponse { repeated QueueMembership members = 1; }
+
+// Agent self-service.
+message SetQueueMemberActiveRequest {
+  string queue_id = 1;
+  string user_id = 2;
+  bool is_active = 3;
+}
+message SetQueueMemberActiveResponse { QueueMembership member = 1; }
+
+// Wallboard.
+message ListQueueEntriesRequest {
+  string queue_id = 1;
+  string status = 2;             // empty = all live (not ended)
+}
+message ListQueueEntriesResponse { repeated QueueEntry entries = 1; }
+
+// ── Service ──────────────────────────────────────────────────────────────────
+
+service QueueService {
+  // Queue CRUD
+  rpc CreateQueue(QueueCreateRequest) returns (Queue);
+  rpc GetQueue(QueueGetRequest)       returns (Queue);
+  rpc ListQueues(QueueListRequest)    returns (QueueListResponse);
+  rpc UpdateQueue(QueueUpdateRequest) returns (Queue);
+  rpc DeleteQueue(QueueDeleteRequest) returns (QueueDeleteResponse);
+
+  // Members
+  rpc AddQueueMember(AddQueueMemberRequest)             returns (QueueMembership);
+  rpc RemoveQueueMember(RemoveQueueMemberRequest)       returns (RemoveQueueMemberResponse);
+  rpc ListQueueMembers(ListQueueMembersRequest)         returns (ListQueueMembersResponse);
+  rpc SetQueueMemberActive(SetQueueMemberActiveRequest) returns (SetQueueMemberActiveResponse);
+
+  // Wallboard
+  rpc ListQueueEntries(ListQueueEntriesRequest) returns (ListQueueEntriesResponse);
+}

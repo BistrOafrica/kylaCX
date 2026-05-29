@@ -10,6 +10,10 @@
     <!-- Event delivery -->
     <load module="mod_event_socket"/>
 
+    <!-- Dynamic XML over HTTP from the Go backend (directory + dialplan).
+         Configured in autoload_configs/xml_curl.conf.xml. -->
+    <load module="mod_xml_curl"/>
+
     <!-- SIP signalling — mod_sofia covers UDP/TCP/TLS/WSS profiles. -->
     <load module="mod_sofia"/>
 

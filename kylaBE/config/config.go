@@ -84,6 +84,12 @@ type EnvConfigs struct {
 	TurnURL      string `mapstructure:"TURN_URL"`      // e.g. "turn:turn.kyla.example:3478"
 	TurnUsername string `mapstructure:"TURN_USERNAME"`
 	TurnPassword string `mapstructure:"TURN_PASSWORD"`
+
+	// mod_xml_curl shared secret. FreeSWITCH carries it in X-Kyla-XML-Token
+	// when it POSTs directory/dialplan/configuration lookups to /freeswitch/xml.
+	// Leaving empty disables the shared-secret check but keeps the RFC1918
+	// allowlist active.
+	FSXmlCurlToken string `mapstructure:"FS_XML_CURL_TOKEN"`
 }
 
 type RsConfig struct {
@@ -246,6 +252,7 @@ func LoadConfig() (*Config, error) {
 				TurnURL:        os.Getenv("TURN_URL"),
 				TurnUsername:   os.Getenv("TURN_USERNAME"),
 				TurnPassword:   os.Getenv("TURN_PASSWORD"),
+				FSXmlCurlToken: os.Getenv("FS_XML_CURL_TOKEN"),
 			},
 			RsConfig: RsConfig{
 				ResendApiKey:       resendapikey,

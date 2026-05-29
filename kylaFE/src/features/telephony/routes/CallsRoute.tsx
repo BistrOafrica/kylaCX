@@ -10,6 +10,7 @@ import { CallDetail } from "../components/CallDetail"
 import { Wallboard } from "../components/Wallboard"
 import { IvrList } from "../components/IvrList"
 import { IvrFlowBuilder } from "../components/IvrFlowBuilder"
+import { IvrV2Builder } from "../components/IvrV2Builder"
 
 const TABS = [
   { to: "/calls/history",   icon: IconPhone,    label: "History" },
@@ -72,4 +73,12 @@ export function IvrFlowRoute() {
   const { id } = useParams()
   if (!id) return null
   return <IvrFlowBuilder id={id} />
+}
+
+// Phase 5c canvas — targets the new IVRService instead of the legacy
+// CallIvrFlowService. Add the route under /calls/ivr-v2/:id.
+export function IvrV2FlowRoute() {
+  const { id } = useParams()
+  if (!id) return null
+  return <IvrV2Builder id={id} />
 }

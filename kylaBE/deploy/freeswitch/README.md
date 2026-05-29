@@ -25,15 +25,25 @@ deploy/freeswitch/conf/
     default.xml
 ```
 
+## mod_xml_curl integration (live as of 2026-05-29)
+
+FreeSWITCH consults the Go backend over HTTP for **directory** and **dialplan** XML:
+
+- `directory`: at SIP REGISTER, FS posts the extension number → backend returns the user XML with the A1 digest hash + kyla_* channel variables.
+- `dialplan`: at CHANNEL_CREATE, FS posts the destination → backend looks up the DID in `ivr_did_mappings` and returns a context that stamps `kyla_org_id` / `kyla_workspace_id` / `kyla_ivr_flow_id` and parks for ESL.
+- `configuration`: currently always returns `not found`; reserved for future trunk provisioning over XML.
+
+Wiring lives in `autoload_configs/xml_curl.conf.xml`. **Replace the placeholder `CHANGE_ME_TOKEN`** with the value of the backend's `FS_XML_CURL_TOKEN` env var before exposing the stack beyond local dev. Without a token match the handler returns `not found`, forcing FS to fall through to its static XML.
+
+The handler enforces an RFC1918 source-IP allowlist as defence in depth, so a leaked token from a public IP is still rejected.
+
 ## What's deliberately deferred
 
-1. **mod_xml_curl integration** — the Go backend doesn't yet serve a directory or dialplan over HTTP. Today, SIP extensions must be provisioned statically in `directory/default/*.xml`. The roadmap follow-up: implement a Gin handler at `/freeswitch/xml-curl` that returns directory / dialplan / config XML on demand from the Postgres `sip_extensions`, `sip_trunks`, and `ivr_did_mappings` tables.
+1. **TLS certs for WSS** — the dev image uses a self-signed certificate. For production replace `/etc/freeswitch/tls/wss.pem` with a real cert (Let's Encrypt fullchain + privkey concatenated).
 
-2. **TLS certs for WSS** — the dev image uses a self-signed certificate. For production replace `/etc/freeswitch/tls/wss.pem` with a real cert (Let's Encrypt fullchain + privkey concatenated).
+2. **Sofia gateway provisioning via xml_curl** — `sip_trunks` rows hold credentials but the configuration handler returns `not found` today. Until that lands, gateways must be added under `sip_profiles/external/<trunk_name>.xml` manually.
 
-3. **Sofia gateway profiles (PSTN trunks)** — `sip_trunks` rows hold credentials but the Go service's `ProvisionTrunk` is a no-op today. Until mod_xml_curl is wired, gateways must be added under `sip_profiles/external/<trunk_name>.xml` manually.
-
-4. **Inbound DID-to-org mapping at the dialplan layer** — for now the EventBridge looks up the DID in the `ivr_did_mappings` table at CHANNEL_CREATE time. mod_xml_curl will eventually let the dialplan stamp `kyla_org_id` directly so inbound non-IVR calls also carry org context.
+3. **Legacy static directory** — the `directory/default/*.xml` path is still searched by FS before consulting mod_xml_curl. Empty by default; remove unused entries to avoid surprise authorisations.
 
 ## Verifying the stack
 

@@ -24,6 +24,19 @@ type IVRHook interface {
 	Advance(ctx context.Context, callUUID string, eventType PBXEventType, input string)
 }
 
+// QueueHook is the minimal interface for queue runtime callbacks. Same
+// circular-import-avoidance pattern as IVRHook — defined here so
+// internal/telephony/queues can satisfy it.
+//
+// OnAgentAnswered fires when an originated agent leg is answered (Router
+// bridges to the caller leg).
+// OnCallEnded fires for both caller and agent leg hangups (Router cleans
+// up the entry and pulls the next waiting caller).
+type QueueHook interface {
+	OnAgentAnswered(ctx context.Context, agentCallUUID string)
+	OnCallEnded(ctx context.Context, callUUID string)
+}
+
 // EventBridge consumes PBXEvents from the controller's event stream, updates
 // the DB projection (Call rows and CallEvents), and emits domain events on
 // NATS so downstream systems (communication.VoiceCallBridge, automation
@@ -34,7 +47,8 @@ type EventBridge struct {
 	store     *Store
 	publisher events.Publisher
 	stream    *CallEventStream
-	ivr       IVRHook // optional — nil disables IVR routing
+	ivr       IVRHook   // optional — nil disables IVR routing
+	queues    QueueHook // optional — nil disables queue runtime callbacks
 }
 
 func NewEventBridge(store *Store, publisher events.Publisher, stream *CallEventStream) *EventBridge {
@@ -46,6 +60,11 @@ func NewEventBridge(store *Store, publisher events.Publisher, stream *CallEventS
 // normally without it; IVR routing simply doesn't happen.
 func (b *EventBridge) AttachIVR(hook IVRHook) {
 	b.ivr = hook
+}
+
+// AttachQueues wires the queues runtime into the bridge. Optional.
+func (b *EventBridge) AttachQueues(hook QueueHook) {
+	b.queues = hook
 }
 
 // Start drains the event stream until ctx is cancelled. Returns when the
@@ -78,11 +97,22 @@ func (b *EventBridge) handle(evt PBXEvent) {
 		b.onCreate(evt)
 	case EventChannelAnswer:
 		b.onAnswer(evt)
+		// Agent legs originated by the queue runtime announce themselves via
+		// CHANNEL_ANSWER. The router decides whether the UUID belongs to one
+		// of its in-flight dispatches.
+		if b.queues != nil && evt.CallUUID != "" {
+			b.queues.OnAgentAnswered(context.Background(), evt.CallUUID)
+		}
 	case EventChannelHangup:
 		b.onHangup(evt)
 		// Notify the IVR executor so any active run is finalised.
 		if b.ivr != nil && evt.CallUUID != "" {
 			b.ivr.Advance(context.Background(), evt.CallUUID, EventChannelHangup, "")
+		}
+		// Same for queues — caller or agent leg ending triggers entry
+		// finalisation + pull-next.
+		if b.queues != nil && evt.CallUUID != "" {
+			b.queues.OnCallEnded(context.Background(), evt.CallUUID)
 		}
 	case EventSofiaRegister:
 		b.onRegister(evt)

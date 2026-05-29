@@ -58,6 +58,7 @@ import {
   WallboardRoute,
   IvrListRoute,
   IvrFlowRoute,
+  IvrV2FlowRoute,
 } from "@/features/telephony/routes/CallsRoute"
 import {
   CampaignsListRoute,
@@ -159,6 +160,8 @@ export const routeConfig: RouteObject[] = [
       { path: "calls/:id",   element: <CallDetailRoute /> },
       { path: "ivr",         element: <IvrListRoute /> },
       { path: "ivr/:id",     element: <IvrFlowRoute /> },
+      // New canvas targeting the Phase 5c IVRService.
+      { path: "ivr-v2/:id",  element: <IvrV2FlowRoute /> },
       { path: "campaigns",                  element: <CampaignsListRoute /> },
       { path: "campaigns/templates",        element: <TemplatesRoute /> },
       { path: "campaigns/whatsapp/:id",     element: <WhatsappCampaignRoute /> },

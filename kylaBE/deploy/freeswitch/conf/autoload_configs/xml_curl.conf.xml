@@ -1,0 +1,31 @@
+<configuration name="xml_curl.conf" description="cURL XML Gateway">
+  <!-- mod_xml_curl bindings. Each binding tells FreeSWITCH which XML sections
+       to fetch over HTTP from the kyla backend. The Go handler at
+       /freeswitch/xml inspects the `section` form field and dispatches to
+       directory / dialplan / configuration logic.
+
+       The shared secret in custom-headers is validated by the Go handler.
+       Override these values in production by mounting a replacement config
+       (e.g. swap CHANGE_ME_TOKEN for the real secret via a sed at deploy
+       time, or template the file with envsubst). -->
+  <bindings>
+    <binding name="kyla-directory">
+      <param name="gateway-url" value="http://grpc-server:8085/freeswitch/xml" bindings="directory"/>
+      <param name="auth-scheme" value="basic"/>
+      <param name="timeout" value="10"/>
+      <param name="custom-headers" value="X-Kyla-XML-Token: CHANGE_ME_TOKEN"/>
+    </binding>
+    <binding name="kyla-dialplan">
+      <param name="gateway-url" value="http://grpc-server:8085/freeswitch/xml" bindings="dialplan"/>
+      <param name="auth-scheme" value="basic"/>
+      <param name="timeout" value="10"/>
+      <param name="custom-headers" value="X-Kyla-XML-Token: CHANGE_ME_TOKEN"/>
+    </binding>
+    <binding name="kyla-configuration">
+      <param name="gateway-url" value="http://grpc-server:8085/freeswitch/xml" bindings="configuration"/>
+      <param name="auth-scheme" value="basic"/>
+      <param name="timeout" value="10"/>
+      <param name="custom-headers" value="X-Kyla-XML-Token: CHANGE_ME_TOKEN"/>
+    </binding>
+  </bindings>
+</configuration>

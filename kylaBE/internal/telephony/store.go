@@ -184,6 +184,15 @@ func (s *Store) GetExtensionByUserID(userID string) (*SipExtension, error) {
 	return &e, err
 }
 
+// GetExtensionByNumber resolves a registration request by extension number.
+// Used by mod_xml_curl's directory handler — FreeSWITCH supplies the dialled
+// user as `key_value`; we serve back the A1 hash + variables.
+func (s *Store) GetExtensionByNumber(extension string) (*SipExtension, error) {
+	var e SipExtension
+	err := s.db.Where("extension = ?", extension).First(&e).Error
+	return &e, err
+}
+
 func (s *Store) ListExtensions(workspaceID string) ([]*SipExtension, error) {
 	var out []*SipExtension
 	err := s.db.Where("workspace_id = ?", workspaceID).Order("extension ASC").Find(&out).Error

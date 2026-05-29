@@ -150,6 +150,10 @@ type SipExtension struct {
 	Extension        string     `gorm:"not null" json:"extension"`
 	DisplayName      string     `gorm:"not null;default:''" json:"display_name,omitempty"`
 	PasswordHash     string     `gorm:"not null;default:''" json:"-"`
+	// A1Hash is md5("<extension>:<sip_realm>:<plaintext>") — the SIP digest
+	// secret mod_xml_curl returns to FreeSWITCH at registration time.
+	// Persisted alongside PasswordHash; the bcrypt hash is historical bookkeeping.
+	A1Hash string `gorm:"not null;default:''" json:"-"`
 	Status           string     `gorm:"not null;default:'unregistered'" json:"status"`
 	LastRegistration *time.Time `json:"last_registration,omitempty"`
 	CreatedAt        time.Time  `json:"created_at"`

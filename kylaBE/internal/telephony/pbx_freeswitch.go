@@ -45,6 +45,22 @@ type FreeSWITCHController struct {
 	stopCh      chan struct{}
 	connectedAt time.Time
 	enabled     bool
+
+	// Job correlation: bgapi commands return synchronously with a Job-UUID,
+	// and the actual result arrives later as a BACKGROUND_JOB event keyed by
+	// that UUID. pendingJobs maps Job-UUID → result channel so Originate can
+	// await the +OK / -ERR response synchronously without blocking other
+	// commands. Buffered channel (size 1) so the event reader never blocks
+	// even if the caller has given up.
+	jobsMu      sync.Mutex
+	pendingJobs map[string]chan bgapiResult
+}
+
+// bgapiResult is the structured outcome of a bgapi command. Body is the raw
+// FreeSWITCH response (e.g. "+OK <uuid>\n" or "-ERR <reason>\n").
+type bgapiResult struct {
+	OK   bool
+	Body string
 }
 
 // FreeSWITCHConfig groups the ESL connection parameters.
@@ -65,40 +81,86 @@ func NewFreeSWITCHController(cfg FreeSWITCHConfig, stream *CallEventStream) *Fre
 		stream = NewCallEventStream(0)
 	}
 	return &FreeSWITCHController{
-		host:     cfg.Host,
-		port:     cfg.Port,
-		password: cfg.Password,
-		stream:   stream,
-		stopCh:   make(chan struct{}),
+		host:        cfg.Host,
+		port:        cfg.Port,
+		password:    cfg.Password,
+		stream:      stream,
+		stopCh:      make(chan struct{}),
+		pendingJobs: map[string]chan bgapiResult{},
 	}
 }
 
 func (c *FreeSWITCHController) Name() string  { return "freeswitch" }
 func (c *FreeSWITCHController) Enabled() bool { return c != nil && c.enabled }
 
-// Start dials ESL, authenticates, subscribes to the events we care about, and
-// kicks off a background reader that parses the ESL framing into PBXEvent
-// values written to the stream. Returns once the auth handshake is done so
-// callers know the connection is usable.
+// Start launches the ESL supervisor goroutine. The supervisor dials ESL,
+// authenticates, subscribes to events, runs the read loop, and reconnects on
+// disconnect with exponential backoff (1s → 30s ceiling). Returns nil
+// immediately — the caller doesn't block waiting for the first connection.
 //
-// On dial failure the controller logs and returns nil — same graceful
-// degradation pattern as NATS and Temporal. Subsequent calls to Originate /
-// Hangup will return PBX-not-configured errors until a successful Start.
+// Graceful degradation matches the rest of the stack: empty host → no-op.
+// Persistent reconnect failures keep the controller disabled but never crash
+// the binary; gRPC call-control RPCs return FailedPrecondition until a
+// successful reconnect.
 func (c *FreeSWITCHController) Start(ctx context.Context) error {
 	if c.host == "" {
 		log.Println("freeswitch: FS_ESL_HOST empty; controller disabled")
 		return nil
 	}
+	go c.supervise(ctx)
+	return nil
+}
+
+// supervise is the reconnect loop. Runs until ctx is cancelled or Stop is
+// called. Each iteration attempts a connection; on failure it sleeps with
+// exponential backoff before retrying. On clean disconnect it reconnects
+// immediately (small jitter).
+func (c *FreeSWITCHController) supervise(ctx context.Context) {
+	const (
+		minBackoff = 1 * time.Second
+		maxBackoff = 30 * time.Second
+	)
+	backoff := minBackoff
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-c.stopCh:
+			return
+		default:
+		}
+		if err := c.connectOnce(ctx); err != nil {
+			log.Printf("freeswitch: connection attempt failed: %v (retry in %s)", err, backoff)
+			select {
+			case <-time.After(backoff):
+			case <-ctx.Done():
+				return
+			case <-c.stopCh:
+				return
+			}
+			backoff *= 2
+			if backoff > maxBackoff {
+				backoff = maxBackoff
+			}
+			continue
+		}
+		// connectOnce returned cleanly — the read loop terminated. Reset
+		// backoff and reconnect immediately so a transient ESL bounce is
+		// invisible to the operator.
+		backoff = minBackoff
+		log.Println("freeswitch: ESL connection ended; reconnecting")
+	}
+}
+
+// connectOnce performs a single dial+handshake+readLoop cycle. Returns when
+// the read loop exits (clean EOF or read error). The caller (supervise) is
+// responsible for backoff + retry.
+func (c *FreeSWITCHController) connectOnce(ctx context.Context) error {
 	addr := net.JoinHostPort(c.host, c.port)
 	conn, err := (&net.Dialer{Timeout: 5 * time.Second}).DialContext(ctx, "tcp", addr)
 	if err != nil {
-		log.Printf("freeswitch: dial %s failed: %v (controller disabled)", addr, err)
-		return nil
+		return fmt.Errorf("dial %s: %w", addr, err)
 	}
-	c.connMu.Lock()
-	c.conn = conn
-	c.connMu.Unlock()
-
 	reader := bufio.NewReader(conn)
 
 	// 1. Read "auth/request" content-type frame.
@@ -119,14 +181,13 @@ func (c *FreeSWITCHController) Start(ctx context.Context) error {
 	}
 	if !strings.Contains(frame, "Reply-Text: +OK") {
 		_ = conn.Close()
-		return fmt.Errorf("freeswitch: auth rejected: %s", frame)
+		return fmt.Errorf("auth rejected: %s", frame)
 	}
 
-	// 3. Subscribe to the event classes we care about. PLAIN keeps parsing
-	//    simple; if we need richer payloads later we'd switch to JSON.
-	//    PLAYBACK_STOP and CHANNEL_EXECUTE_COMPLETE are needed for IVR
-	//    (the latter is how play_and_get_digits returns the captured DTMF).
-	if _, err := conn.Write([]byte("event plain CHANNEL_CREATE CHANNEL_ANSWER CHANNEL_HANGUP_COMPLETE SOFIA_REGISTER RECORD_STOP PLAYBACK_STOP CHANNEL_EXECUTE_COMPLETE\n\n")); err != nil {
+	// 3. Subscribe to the event classes we care about. BACKGROUND_JOB is
+	//    needed for bgapi command-result correlation; everything else is
+	//    the call lifecycle + IVR-relevant events.
+	if _, err := conn.Write([]byte("event plain CHANNEL_CREATE CHANNEL_ANSWER CHANNEL_HANGUP_COMPLETE SOFIA_REGISTER RECORD_STOP PLAYBACK_STOP CHANNEL_EXECUTE_COMPLETE BACKGROUND_JOB\n\n")); err != nil {
 		_ = conn.Close()
 		return fmt.Errorf("subscribe events: %w", err)
 	}
@@ -135,11 +196,22 @@ func (c *FreeSWITCHController) Start(ctx context.Context) error {
 		log.Printf("freeswitch: event subscribe ack: %v", err)
 	}
 
+	c.connMu.Lock()
+	c.conn = conn
+	c.connMu.Unlock()
 	c.enabled = true
 	c.connectedAt = time.Now().UTC()
 	log.Printf("freeswitch: connected to ESL %s at %s", addr, c.connectedAt.Format(time.RFC3339))
 
-	go c.readLoop(reader)
+	c.readLoop(reader)
+
+	// Read loop exited. Mark disabled + drop any pending job waiters so they
+	// see a clean failure rather than blocking forever.
+	c.connMu.Lock()
+	c.conn = nil
+	c.enabled = false
+	c.connMu.Unlock()
+	c.drainPendingJobs("esl_disconnected")
 	return nil
 }
 
@@ -155,19 +227,11 @@ func (c *FreeSWITCHController) Stop() {
 	c.enabled = false
 }
 
-// readLoop continuously reads ESL frames and converts the ones we care about
-// into PBXEvent values on the stream. Unknown event types are silently
-// dropped.
-//
-// On connection error the loop exits, the controller is marked disabled, and
-// the binary keeps running — calls return PBX-not-configured until restart.
-// Automatic reconnect with backoff is a follow-up improvement.
+// readLoop continuously reads ESL frames. BACKGROUND_JOB frames are routed
+// to any waiting pendingJobs channel for bgapi result correlation; other
+// frames are converted to PBXEvent values and pushed to the event stream.
+// Unknown frames are silently dropped.
 func (c *FreeSWITCHController) readLoop(reader *bufio.Reader) {
-	defer func() {
-		c.enabled = false
-		log.Println("freeswitch: ESL read loop exited; controller disabled")
-	}()
-
 	for {
 		select {
 		case <-c.stopCh:
@@ -182,6 +246,14 @@ func (c *FreeSWITCHController) readLoop(reader *bufio.Reader) {
 			}
 			return
 		}
+
+		// BACKGROUND_JOB intercept: the frame carries Job-UUID + Body, and we
+		// route it to the waiting channel rather than the public event stream.
+		if strings.Contains(frame, "Event-Name: BACKGROUND_JOB") {
+			c.handleBackgroundJob(frame)
+			continue
+		}
+
 		evt, ok := parseESLEvent(frame)
 		if !ok {
 			continue
@@ -194,14 +266,107 @@ func (c *FreeSWITCHController) readLoop(reader *bufio.Reader) {
 	}
 }
 
+// handleBackgroundJob extracts the Job-UUID from a BACKGROUND_JOB frame and
+// delivers the body to the corresponding pending bgapi caller (if any).
+func (c *FreeSWITCHController) handleBackgroundJob(frame string) {
+	fields := parseHeaders(frame)
+	jobUUID := fields["Job-UUID"]
+	if jobUUID == "" {
+		return
+	}
+	// The body sits after the headers' blank-line separator. ESL frames us
+	// the full text in `frame` — extract everything after the first \n\n.
+	body := ""
+	if idx := strings.Index(frame, "\n\n"); idx >= 0 {
+		body = strings.TrimSpace(frame[idx+2:])
+	}
+	c.jobsMu.Lock()
+	ch, ok := c.pendingJobs[jobUUID]
+	delete(c.pendingJobs, jobUUID)
+	c.jobsMu.Unlock()
+	if !ok {
+		return
+	}
+	res := bgapiResult{Body: body, OK: strings.HasPrefix(body, "+OK")}
+	select {
+	case ch <- res:
+	default:
+		// Buffered channel; this should never block.
+	}
+}
+
+// drainPendingJobs is called when the ESL connection drops. Surfaces a
+// consistent failure to every caller currently blocked waiting for a bgapi
+// result, rather than leaving them hanging until timeout.
+func (c *FreeSWITCHController) drainPendingJobs(reason string) {
+	c.jobsMu.Lock()
+	pending := c.pendingJobs
+	c.pendingJobs = map[string]chan bgapiResult{}
+	c.jobsMu.Unlock()
+	for _, ch := range pending {
+		select {
+		case ch <- bgapiResult{OK: false, Body: "-ERR " + reason}:
+		default:
+		}
+	}
+}
+
+// runBgapi issues a bgapi command and waits for the BACKGROUND_JOB result.
+// Returns the result body (e.g. "+OK <call-uuid>" or "-ERR USER_BUSY") so
+// callers can extract whatever they need.
+//
+// The caller's context controls cancellation — a cancelled ctx unsubscribes
+// the waiter and returns ctx.Err(); the eventual BACKGROUND_JOB is then
+// dropped silently. Default safety timeout: 30s if the caller didn't set one.
+func (c *FreeSWITCHController) runBgapi(ctx context.Context, command string) (bgapiResult, error) {
+	if !c.Enabled() {
+		return bgapiResult{}, errPBXNotConfigured
+	}
+	jobUUID := uuid.NewString()
+	ch := make(chan bgapiResult, 1)
+
+	c.jobsMu.Lock()
+	c.pendingJobs[jobUUID] = ch
+	c.jobsMu.Unlock()
+
+	// "bgapi" + space + command + Job-UUID header + double newline.
+	wire := fmt.Sprintf("bgapi %s\nJob-UUID: %s\n\n", command, jobUUID)
+	if err := c.writeCommand(wire); err != nil {
+		c.jobsMu.Lock()
+		delete(c.pendingJobs, jobUUID)
+		c.jobsMu.Unlock()
+		return bgapiResult{}, fmt.Errorf("bgapi write: %w", err)
+	}
+
+	// Apply a 30s safety deadline when the caller didn't.
+	if _, hasDeadline := ctx.Deadline(); !hasDeadline {
+		var cancel context.CancelFunc
+		ctx, cancel = context.WithTimeout(ctx, 30*time.Second)
+		defer cancel()
+	}
+
+	select {
+	case res := <-ch:
+		return res, nil
+	case <-ctx.Done():
+		c.jobsMu.Lock()
+		delete(c.pendingJobs, jobUUID)
+		c.jobsMu.Unlock()
+		return bgapiResult{}, ctx.Err()
+	}
+}
+
 // ── PBXController surface ────────────────────────────────────────────────────
 
-// Originate is the only command path that's partially wired here: it generates
-// a UUID up-front (so the gRPC server can persist the Call row with the right
-// ID) and issues a bgapi originate command via ESL. Reading the success
-// response with proper background-job correlation is a follow-up — for now
-// we treat "command accepted" as success and rely on CHANNEL_HANGUP events to
-// surface failures.
+// Originate dials the supplied number via the agent's extension and the
+// configured trunk. Generates the call UUID up-front so the gRPC server can
+// persist the Call row keyed by the same UUID the PBX uses.
+//
+// Awaits the BACKGROUND_JOB result via runBgapi — returning the call UUID
+// only when the PBX confirms the originate was accepted. Permanent failures
+// (USER_BUSY, NO_ROUTE_DESTINATION, etc.) propagate as errors so the caller
+// learns about them immediately rather than discovering them via the
+// subsequent CHANNEL_HANGUP event.
 func (c *FreeSWITCHController) Originate(ctx context.Context, req OriginateRequest) (string, error) {
 	if !c.Enabled() {
 		return "", errPBXNotConfigured
@@ -210,10 +375,10 @@ func (c *FreeSWITCHController) Originate(ctx context.Context, req OriginateReque
 		return "", errors.New("originate: agent_extension and to_number required")
 	}
 	callUUID := uuid.NewString()
-	// Build a bgapi originate command. Note: per-call variables go in {} before
-	// the leg URI so they're inherited by both legs of the bridge.
-	cmd := fmt.Sprintf(
-		"bgapi originate {origination_uuid=%s,kyla_org_id=%s,kyla_workspace_id=%s,kyla_agent_id=%s,kyla_contact_id=%s,kyla_recording=%v}user/%s &bridge(sofia/gateway/%s/%s)\n\n",
+	// Per-call variables go in {} before the leg URI so they're inherited by
+	// both legs of the bridge.
+	command := fmt.Sprintf(
+		"originate {origination_uuid=%s,kyla_org_id=%s,kyla_workspace_id=%s,kyla_agent_id=%s,kyla_contact_id=%s,kyla_recording=%v}user/%s &bridge(sofia/gateway/%s/%s)",
 		callUUID,
 		req.OrgID,
 		req.WorkspaceID,
@@ -224,48 +389,68 @@ func (c *FreeSWITCHController) Originate(ctx context.Context, req OriginateReque
 		req.TrunkGateway,
 		req.ToNumber,
 	)
-	if err := c.writeCommand(cmd); err != nil {
-		return "", fmt.Errorf("originate: write command: %w", err)
+
+	res, err := c.runBgapi(ctx, command)
+	if err != nil {
+		return "", fmt.Errorf("originate: %w", err)
+	}
+	if !res.OK {
+		return "", fmt.Errorf("originate rejected by PBX: %s", res.Body)
 	}
 	return callUUID, nil
 }
 
 func (c *FreeSWITCHController) Hangup(ctx context.Context, callUUID, reason string) error {
-	if !c.Enabled() {
-		return errPBXNotConfigured
-	}
 	if reason == "" {
 		reason = "NORMAL_CLEARING"
 	}
-	return c.writeCommand(fmt.Sprintf("bgapi uuid_kill %s %s\n\n", callUUID, reason))
+	res, err := c.runBgapi(ctx, fmt.Sprintf("uuid_kill %s %s", callUUID, reason))
+	if err != nil {
+		return fmt.Errorf("hangup: %w", err)
+	}
+	if !res.OK {
+		return fmt.Errorf("hangup rejected: %s", res.Body)
+	}
+	return nil
 }
 
 func (c *FreeSWITCHController) Transfer(ctx context.Context, callUUID, target string, blind bool) error {
-	if !c.Enabled() {
-		return errPBXNotConfigured
-	}
-	verb := "uuid_transfer"
 	if !blind {
 		// Attended transfer requires a B-leg consultation first. Out of scope
 		// for the skeleton — return an explicit error so the caller can fall
 		// back to blind for now.
 		return errors.New("attended transfer not yet wired; pass blind=true")
 	}
-	return c.writeCommand(fmt.Sprintf("bgapi %s %s %s\n\n", verb, callUUID, target))
+	res, err := c.runBgapi(ctx, fmt.Sprintf("uuid_transfer %s %s", callUUID, target))
+	if err != nil {
+		return fmt.Errorf("transfer: %w", err)
+	}
+	if !res.OK {
+		return fmt.Errorf("transfer rejected: %s", res.Body)
+	}
+	return nil
 }
 
 func (c *FreeSWITCHController) Hold(ctx context.Context, callUUID string) error {
-	if !c.Enabled() {
-		return errPBXNotConfigured
+	res, err := c.runBgapi(ctx, fmt.Sprintf("uuid_hold %s", callUUID))
+	if err != nil {
+		return fmt.Errorf("hold: %w", err)
 	}
-	return c.writeCommand(fmt.Sprintf("bgapi uuid_hold %s\n\n", callUUID))
+	if !res.OK {
+		return fmt.Errorf("hold rejected: %s", res.Body)
+	}
+	return nil
 }
 
 func (c *FreeSWITCHController) Resume(ctx context.Context, callUUID string) error {
-	if !c.Enabled() {
-		return errPBXNotConfigured
+	res, err := c.runBgapi(ctx, fmt.Sprintf("uuid_hold off %s", callUUID))
+	if err != nil {
+		return fmt.Errorf("resume: %w", err)
 	}
-	return c.writeCommand(fmt.Sprintf("bgapi uuid_hold off %s\n\n", callUUID))
+	if !res.OK {
+		return fmt.Errorf("resume rejected: %s", res.Body)
+	}
+	return nil
 }
 
 // ProvisionExtension would push an extension's user definition into the PBX

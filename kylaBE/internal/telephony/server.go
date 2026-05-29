@@ -2,6 +2,8 @@ package telephony
 
 import (
 	"context"
+	"crypto/md5"
+	"encoding/hex"
 	"encoding/json"
 	"log"
 	"time"
@@ -303,15 +305,17 @@ func (s *Server) CreateSipExtension(ctx context.Context, req *pb.CreateSipExtens
 	}
 	in.OrgID = md.OrganisationID.String()
 
-	// Generate a SIP password and persist its bcrypt hash. The plaintext is
-	// pushed to the PBX via ProvisionExtension and never returned over gRPC
-	// — operators retrieve it out-of-band from the PBX config the first time.
+	// Generate a SIP password and persist its bcrypt hash + HA1 digest. The
+	// plaintext is pushed to the PBX via ProvisionExtension and never returned
+	// over gRPC. mod_xml_curl serves the A1 hash to FreeSWITCH at registration
+	// time — bcrypt is bookkeeping that proves the plaintext was once known.
 	plaintext := newSipPassword()
 	hash, err := bcrypt.GenerateFromPassword([]byte(plaintext), bcrypt.DefaultCost)
 	if err != nil {
 		return nil, status.Error(codes.Internal, "hash password")
 	}
 	in.PasswordHash = string(hash)
+	in.A1Hash = computeA1Hash(in.Extension, s.sipRealm, plaintext)
 
 	created, err := s.store.CreateExtension(in)
 	if err != nil {
@@ -586,6 +590,17 @@ func (s *Server) turnHost() string {
 		return s.turnURL[len(prefix):]
 	}
 	return s.turnURL
+}
+
+// computeA1Hash returns md5("<user>:<realm>:<password>") — the HA1 digest the
+// SIP REGISTER auth challenge expects. mod_xml_curl returns this to FreeSWITCH
+// via the user XML's `a1-hash` param.
+func computeA1Hash(user, realm, password string) string {
+	if realm == "" {
+		realm = "kyla"
+	}
+	sum := md5.Sum([]byte(user + ":" + realm + ":" + password))
+	return hex.EncodeToString(sum[:])
 }
 
 // newSipPassword generates a 32-char URL-safe SIP password.

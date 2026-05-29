@@ -15,6 +15,8 @@ import (
 	"kyla-be/internal/campaigns"
 	"kyla-be/internal/telephony"
 	"kyla-be/internal/telephony/ivr"
+	"kyla-be/internal/telephony/queues"
+	"kyla-be/internal/telephony/xmlcurl"
 	"kyla-be/internal/branch"
 	casbinsvc "kyla-be/internal/casbin"
 	"kyla-be/internal/communication"
@@ -82,6 +84,7 @@ func GinServer(
 	waHandler *communication.WhatsAppHandler,
 	smsWebhookHandler *communication.SMSWebhookHandler,
 	webChatAdapter *communication.WebChatAdapter,
+	xmlCurlHandler *xmlcurl.Handler,
 ) error {
 	r := gin.Default()
 	r.UseH2C = true // Enable H2C support for HTTP/2
@@ -123,6 +126,13 @@ func GinServer(
 
 	// WebChat WebSocket endpoint
 	r.GET("/ws/chat/:workspace_id", webChatAdapter.HandleWebSocket)
+
+	// FreeSWITCH mod_xml_curl endpoint. Handler enforces RFC1918 source +
+	// optional X-Kyla-XML-Token shared secret — no gRPC auth interceptor
+	// here because FS is the caller, not a logged-in user.
+	if xmlCurlHandler != nil {
+		r.POST("/freeswitch/xml", xmlCurlHandler.Serve)
+	}
 
 	return r.Run(":8085")
 }
@@ -213,6 +223,10 @@ func main() {
 		&ivr.Flow{},
 		&ivr.DIDMapping{},
 		&ivr.Run{},
+		// Phase 5d: call queues + agent membership + live entries
+		&queues.Queue{},
+		&queues.Membership{},
+		&queues.Entry{},
 	); migrateErr != nil {
 		log.Printf("migration warning: %v", migrateErr)
 	}
@@ -592,6 +606,26 @@ func main() {
 	telephonyBridge.AttachIVR(&ivrBridgeAdapter{store: ivrStore, exec: ivrExecutor})
 	ivrServer := ivr.NewServer(ivrStore, authAdaptor)
 
+	// Phase 5d: call queues — agent routing engine + wallboard data plane.
+	// The router subscribes to bridge events (CHANNEL_ANSWER on agent legs,
+	// CHANNEL_HANGUP on either leg) and originates per-agent legs via the
+	// shared PBX controller.
+	queuesStore := queues.NewStore(db.DB)
+	queuesRouter := queues.NewRouter(queuesStore, telephonyPBX, telephonyStore, configs.EnvConfigs.FSDefaultTrunk)
+	telephonyBridge.AttachQueues(queuesRouter)
+	queuesServer := queues.NewServer(queuesStore, authAdaptor)
+
+	// mod_xml_curl handler — FreeSWITCH POSTs directory/dialplan/configuration
+	// lookups to /freeswitch/xml; the handler serves XML from the Postgres
+	// control plane (sip_extensions + ivr_did_mappings + sip_trunks).
+	xmlCurlHandler := xmlcurl.NewHandler(
+		telephonyStore,
+		ivrStore,
+		configs.EnvConfigs.FSSipRealm,
+		configs.EnvConfigs.FSWssURL,
+		configs.EnvConfigs.FSXmlCurlToken,
+	)
+
 	go telephonyBridge.Start(context.Background())
 
 	telephonyIssuer := telephony.NewJWTTokenIssuer(configs.EnvConfigs.JwtSecret, "kyla-be")
@@ -675,6 +709,7 @@ func main() {
 	pb.RegisterCampaignServiceServer(grpcServer, campaignsServer)
 	pb.RegisterTelephonyServiceServer(grpcServer, telephonyServer)
 	pb.RegisterIVRServiceServer(grpcServer, ivrServer)
+	pb.RegisterQueueServiceServer(grpcServer, queuesServer)
 
 	// ── Run gRPC + HTTP servers + Background Services ────────────────────────
 	// Create cancellation context for graceful shutdown of background services
@@ -698,7 +733,7 @@ func main() {
 	go func() {
 		defer wg.Done()
 		log.Println("Starting health check and REST API server on port 8085")
-		if err := GinServer(obHandler, webhookHandler, waHandler, smsWebhookHandler, webChatAdapter); err != nil {
+		if err := GinServer(obHandler, webhookHandler, waHandler, smsWebhookHandler, webChatAdapter, xmlCurlHandler); err != nil {
 			log.Fatalf("failed to start health check server: %v", err)
 		}
 	}()
