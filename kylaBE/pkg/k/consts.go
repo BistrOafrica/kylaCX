@@ -118,7 +118,8 @@ func OPEN_ROUTES() map[string]string {
 }
 
 var STREAM_AUTHENTICATED_ROUTES = map[string]string{
-	"contacts.export": "/da.proto.ContactService/BulkContactsExport",
+	"contacts.export":      "/da.proto.ContactService/BulkContactsExport",
+	"conversations.stream": "/da.proto.ConversationService/StreamConversationUpdates",
 }
 
 func IsStreamRouteAuthenticated(route string) bool {
