@@ -13,6 +13,7 @@ import (
 	"kyla-be/internal/automation"
 	"kyla-be/internal/automation/activities"
 	"kyla-be/internal/campaigns"
+	"kyla-be/internal/telephony"
 	"kyla-be/internal/branch"
 	casbinsvc "kyla-be/internal/casbin"
 	"kyla-be/internal/communication"
@@ -201,6 +202,12 @@ func main() {
 		&campaigns.Campaign{},
 		&campaigns.CampaignRecipient{},
 		&campaigns.WhatsAppTemplate{},
+		// Phase 5: Telephony — self-hosted SIP via FreeSWITCH
+		&telephony.Call{},
+		&telephony.CallEvent{},
+		&telephony.SipDomain{},
+		&telephony.SipExtension{},
+		&telephony.SipTrunk{},
 	); migrateErr != nil {
 		log.Printf("migration warning: %v", migrateErr)
 	}
@@ -551,6 +558,40 @@ func main() {
 		defer campaignsWorker.Stop()
 	}
 
+	// Phase 5: Telephony — self-hosted SIP via FreeSWITCH.
+	// The PBX controller dials ESL on startup; if FS isn't reachable the
+	// controller logs and stays disabled, the binary still boots, and gRPC
+	// calls return FailedPrecondition (NoopPBX behaviour).
+	telephonyStore := telephony.NewStore(db.DB)
+	telephonyEventStream := telephony.NewCallEventStream(0)
+	var telephonyPBX telephony.PBXController = telephony.NoopPBX{}
+	if configs.EnvConfigs.FSEslHost != "" {
+		fs := telephony.NewFreeSWITCHController(telephony.FreeSWITCHConfig{
+			Host:     configs.EnvConfigs.FSEslHost,
+			Port:     configs.EnvConfigs.FSEslPort,
+			Password: configs.EnvConfigs.FSEslPassword,
+		}, telephonyEventStream)
+		if startErr := fs.Start(context.Background()); startErr != nil {
+			log.Printf("freeswitch controller start failed: %v", startErr)
+		}
+		telephonyPBX = fs
+		defer fs.Stop()
+	}
+	telephonyBridge := telephony.NewEventBridge(telephonyStore, eventBus, telephonyEventStream)
+	go telephonyBridge.Start(context.Background())
+
+	telephonyIssuer := telephony.NewJWTTokenIssuer(configs.EnvConfigs.JwtSecret, "kyla-be")
+	telephonyServer := telephony.NewServer(
+		telephonyStore, authAdaptor, telephonyPBX, eventBus, telephonyIssuer,
+		telephony.ServerConfig{
+			WssURL:       configs.EnvConfigs.FSWssURL,
+			SipRealm:     configs.EnvConfigs.FSSipRealm,
+			TurnURL:      configs.EnvConfigs.TurnURL,
+			TurnUsername: configs.EnvConfigs.TurnUsername,
+			TurnPassword: configs.EnvConfigs.TurnPassword,
+		},
+	)
+
 	// ── Interceptors ─────────────────────────────────────────────────────────
 	interceptor := middleware.NewAuthInterceptor(jwtManager, authAdaptor, casbinEnforcer)
 	devicesInterceptor := middleware.NewSessionDevicesInterceptors(dbAuthStore)
@@ -618,6 +659,7 @@ func main() {
 	pb.RegisterWorkflowServiceServer(grpcServer, automationServer)
 	pb.RegisterAIServiceServer(grpcServer, aiServer)
 	pb.RegisterCampaignServiceServer(grpcServer, campaignsServer)
+	pb.RegisterTelephonyServiceServer(grpcServer, telephonyServer)
 
 	// ── Run gRPC + HTTP servers + Background Services ────────────────────────
 	// Create cancellation context for graceful shutdown of background services

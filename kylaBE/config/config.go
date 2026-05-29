@@ -65,6 +65,25 @@ type EnvConfigs struct {
 	OpenAIBaseURL   string `mapstructure:"OPENAI_BASE_URL"`
 	AnthropicAPIKey string `mapstructure:"ANTHROPIC_API_KEY"`
 	AnthropicModel  string `mapstructure:"ANTHROPIC_MODEL"`
+
+	// ── Phase 5: Self-hosted SIP / WebRTC ────────────────────────────────────
+	// FreeSWITCH ESL connection. The Go telephony service uses ESL to control
+	// the PBX (originate calls, hangup, register events).
+	FSEslHost     string `mapstructure:"FS_ESL_HOST"`     // e.g. "freeswitch"
+	FSEslPort     string `mapstructure:"FS_ESL_PORT"`     // default "8021"
+	FSEslPassword string `mapstructure:"FS_ESL_PASSWORD"` // ESL auth
+	// Public SIP-over-WSS URL the browser softphone connects to.
+	FSWssURL string `mapstructure:"FS_WSS_URL"` // e.g. "wss://sip.kyla.example:7443"
+	// SIP realm the browser softphone authenticates against.
+	FSSipRealm string `mapstructure:"FS_SIP_REALM"` // e.g. "kyla"
+	// Default outbound trunk gateway name in FreeSWITCH config — outbound
+	// dials go through this gateway unless overridden per-call.
+	FSDefaultTrunk string `mapstructure:"FS_DEFAULT_TRUNK"`
+
+	// coturn — STUN/TURN config the frontend uses for WebRTC NAT traversal.
+	TurnURL      string `mapstructure:"TURN_URL"`      // e.g. "turn:turn.kyla.example:3478"
+	TurnUsername string `mapstructure:"TURN_USERNAME"`
+	TurnPassword string `mapstructure:"TURN_PASSWORD"`
 }
 
 type RsConfig struct {
@@ -217,6 +236,16 @@ func LoadConfig() (*Config, error) {
 				OpenAIBaseURL:   os.Getenv("OPENAI_BASE_URL"),
 				AnthropicAPIKey: os.Getenv("ANTHROPIC_API_KEY"),
 				AnthropicModel:  os.Getenv("ANTHROPIC_MODEL"),
+
+				FSEslHost:      os.Getenv("FS_ESL_HOST"),
+				FSEslPort:      os.Getenv("FS_ESL_PORT"),
+				FSEslPassword:  os.Getenv("FS_ESL_PASSWORD"),
+				FSWssURL:       os.Getenv("FS_WSS_URL"),
+				FSSipRealm:     os.Getenv("FS_SIP_REALM"),
+				FSDefaultTrunk: os.Getenv("FS_DEFAULT_TRUNK"),
+				TurnURL:        os.Getenv("TURN_URL"),
+				TurnUsername:   os.Getenv("TURN_USERNAME"),
+				TurnPassword:   os.Getenv("TURN_PASSWORD"),
 			},
 			RsConfig: RsConfig{
 				ResendApiKey:       resendapikey,

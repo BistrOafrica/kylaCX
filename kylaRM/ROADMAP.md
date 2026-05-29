@@ -661,10 +661,26 @@ CREATE TABLE messages (
 
 ---
 
-### Phase 5 — Telephony Integration (Weeks 31–36)  ⏳ NOT STARTED
-*Wire the existing extensive telephony proto layer into the platform.*
+### Phase 5 — Telephony Integration (Weeks 31–36)  🚧 FOUNDATION SHIPPED (slice 5a/5b backend done; ESL command path + frontend wiring remain)
+*Self-hosted SIP via FreeSWITCH with WebRTC softphone support.*
 
-> **Status:** `internal/telephony/{events,model,server,store}` directories exist but are empty. Extensive `call_*.proto` and `sip_*.proto` definitions are compiled into `pkg/pb/` but no server implements them yet. WebRTC softphone, IVR builder, call recording — all pending.
+> **Status (2026-05-29):** Architecture choice locked in: self-hosted SIP from day one (FreeSWITCH + coturn). Backend foundation shipped:
+>
+> **Infrastructure** (`deploy/docker-compose.yaml`): `freeswitch` (signalwire/freeswitch:1.10) exposes SIP/UDP 5060, SIP-over-WSS 7443 for browser softphones, ESL 8021 for Go control, RTP 16384-16484; `coturn` (4.6) exposes STUN/TURN 3478 + TURN/TLS 5349 + relay range 49160-49200.
+>
+> **Service layer** (`internal/telephony/`): `0010_telephony.sql` migration adds `calls` (id = FreeSWITCH UUID), `call_events` (per-call timeline), `sip_domains` (one default per org via partial unique index), `sip_extensions` (one per user, bcrypt-hashed SIP password), `sip_trunks` (write-only password field on the gRPC read path); new `telephony.proto` → `TelephonyService` gRPC (Originate/Hangup/Transfer/Hold/Resume + GetCall/ListCalls + AppendCallEvent/ListCallEvents + SIP admin + IssueSoftphoneToken).
+>
+> **PBX abstraction**: `PBXController` interface with `NoopPBX` fallback (binary boots without FS) and `FreeSWITCHController` skeleton that connects + authenticates ESL, subscribes to CHANNEL_CREATE/ANSWER/HANGUP_COMPLETE/SOFIA_REGISTER/RECORD_STOP, lifts events onto a buffered `CallEventStream`, and issues bgapi originate/uuid_kill/uuid_transfer/uuid_hold commands.
+>
+> **Event pipeline**: `EventBridge` consumes the ESL event stream → updates `calls` projection (ringing → answered → ended) + appends `call_events` rows + publishes `call.started`/`call.answered`/`call.ended` NATS events. The existing `communication.VoiceCallBridge` already subscribes to `call.ended` and auto-creates conversations — telephony plugs straight into the inbox.
+>
+> **WebRTC softphone bootstrap**: `IssueSoftphoneToken` returns an HS256 JWT signed with `JWT_SECRET_KEY` (bound to org/user/extension), the SIP-over-WSS URL, the SIP realm, and ICE servers (STUN + TURN credentials).
+>
+> **Open in slice 5a/5b**: ESL bgapi job-correlation (originate currently fires command but doesn't await the BACKGROUND_JOB response — UUID is generated locally and persisted optimistically); FreeSWITCH config (`deploy/freeswitch/` — extension XML, sofia gateway profiles, mod_xml_curl handler for dynamic extension lookup + JWT validation); frontend `Softphone.tsx` SIP.js / JsSIP wiring; mod_xml_curl integration so the PBX consults the Go backend for directory + dialplan lookups.
+>
+> **Open in slices 5c-5e**: IVR engine + IvrFlowBuilder wiring; queues + routing + wallboard; recording S3 upload + transcription via the AI engine.
+>
+> **Open in slice 5f**: SIP admin pages (sip_trunks/sip_extensions/sip_domains gRPCs exist; UI not yet built).
 
 **Goal:** Make VoIP a first-class communication channel in the platform.
 
@@ -1166,4 +1182,4 @@ A phase is complete when:
 
 ---
 
-*Last updated: 29 May 2026 — Phase 6 complete (Automation engine + minimal AI + Campaigns shipped). Phase 5 (Telephony) and Phase 7 (Analytics/Billing) still pending.*
+*Last updated: 29 May 2026 — Phase 6 complete (Automation + AI + Campaigns). Phase 5 telephony foundation shipped (self-hosted SIP via FreeSWITCH + WebRTC token + ESL event bridge). Phase 7 (Analytics/Billing) still pending.*
