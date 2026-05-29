@@ -661,7 +661,7 @@ CREATE TABLE messages (
 
 ---
 
-### Phase 5 — Telephony Integration (Weeks 31–36)  🚧 FOUNDATION SHIPPED (slice 5a/5b backend done; ESL command path + frontend wiring remain)
+### Phase 5 — Telephony Integration (Weeks 31–36)  🚧 SLICES 5A/5B/5C SHIPPED (mod_xml_curl + production FS config + slices 5d/5e remain)
 *Self-hosted SIP via FreeSWITCH with WebRTC softphone support.*
 
 > **Status (2026-05-29):** Architecture choice locked in: self-hosted SIP from day one (FreeSWITCH + coturn). Backend foundation shipped:
@@ -676,9 +676,17 @@ CREATE TABLE messages (
 >
 > **WebRTC softphone bootstrap**: `IssueSoftphoneToken` returns an HS256 JWT signed with `JWT_SECRET_KEY` (bound to org/user/extension), the SIP-over-WSS URL, the SIP realm, and ICE servers (STUN + TURN credentials).
 >
-> **Open in slice 5a/5b**: ESL bgapi job-correlation (originate currently fires command but doesn't await the BACKGROUND_JOB response — UUID is generated locally and persisted optimistically); FreeSWITCH config (`deploy/freeswitch/` — extension XML, sofia gateway profiles, mod_xml_curl handler for dynamic extension lookup + JWT validation); frontend `Softphone.tsx` SIP.js / JsSIP wiring; mod_xml_curl integration so the PBX consults the Go backend for directory + dialplan lookups.
+> **IVR engine (slice 5c, 2026-05-29)**: `0011_ivr.sql` adds `ivr_flows` (definition stored as JSONB so the visual builder can persist arbitrary node shapes), `ivr_did_mappings` (DID→flow routing), `ivr_runs` (per-call breadcrumb trail). `ivr.proto` → `IVRService` gRPC. `internal/telephony/ivr/executor.go` is the node walker: handles `play_audio`, `say`, `menu` (DTMF capture via play_and_get_digits), `transfer`, `record`, `hangup`, `goto`. The executor is driven by ESL events — `PlaybackStop` advances after `play_audio`/`say`; `DTMFCaptured` advances after `menu` with the captured digit fed to `node.branches[digit]`. The `telephony.IVRHook` interface decouples the EventBridge from the IVR package; `cmd/server/main.go` wires an `ivrBridgeAdapter` to satisfy it without an import cycle.
 >
-> **Open in slices 5c-5e**: IVR engine + IvrFlowBuilder wiring; queues + routing + wallboard; recording S3 upload + transcription via the AI engine.
+> **FreeSWITCH config skeleton (2026-05-29)**: `deploy/freeswitch/conf/` ships `vars.xml`, `autoload_configs/{event_socket,modules}.conf.xml`, `sip_profiles/{internal,webrtc}.xml`, `dialplan/default.xml`. docker-compose mounts these read-only over the image defaults. The internal profile listens on 5060 (UDP/TCP); the webrtc profile listens on 7443 for SIP-over-WSS with mandatory DTLS-SRTP and OPUS. The default dialplan parks calls so ESL takes over routing; echo test on extension `9999`. See `deploy/freeswitch/README.md` for the mount layout and verification steps.
+>
+> **Frontend softphone wiring (2026-05-29)**: `kylaFE/src/features/telephony/sip/` adds `SipClient` (SIP.js `SimpleUser` wrapper) and `useSipClient` hook (manages a module-level singleton with an off-screen `<audio>` element for remote audio). `useSipClient` fetches a softphone bootstrap via `services.telephony.issueSoftphoneToken()`, connects WSS to FreeSWITCH, REGISTERs, and mirrors SIP state into the existing softphone Zustand store. `Softphone.tsx` now dials/hangs up/mutes/sends DTMF through the SIP client instead of the legacy `useStartCallSession` mutation — the new TelephonyService creates `calls` rows from ESL events, so the frontend doesn't need to pre-create a session row. `sip.js@^0.21.2` added to `package.json` (run `pnpm install` to fetch).
+>
+> **Open in slice 5a/5b**: ESL bgapi job-correlation (originate currently fires command but doesn't await BACKGROUND_JOB — UUID generated locally and persisted optimistically); automatic ESL reconnect with backoff; mod_xml_curl integration for dynamic directory + dialplan + JWT validation served from the Go backend.
+>
+> **Open in slice 5c**: visual IVR flow builder (the `IvrFlowBuilder.tsx` scaffold exists; canvas + node palette + persistence not wired); inbound DID-to-org mapping outside of IVR (calls without a DID mapping still drop today); recording management via uuid_record.
+>
+> **Open in slices 5d-5e**: queues + routing engine + wallboard; recording S3 upload + transcription via the AI engine.
 >
 > **Open in slice 5f**: SIP admin pages (sip_trunks/sip_extensions/sip_domains gRPCs exist; UI not yet built).
 
@@ -1182,4 +1190,4 @@ A phase is complete when:
 
 ---
 
-*Last updated: 29 May 2026 — Phase 6 complete (Automation + AI + Campaigns). Phase 5 telephony foundation shipped (self-hosted SIP via FreeSWITCH + WebRTC token + ESL event bridge). Phase 7 (Analytics/Billing) still pending.*
+*Last updated: 29 May 2026 — Phase 6 complete (Automation + AI + Campaigns). Phase 5 slices 5a/5b/5c shipped (FreeSWITCH foundation + IVR engine + FS config skeleton + frontend SIP.js softphone). Phase 7 (Analytics/Billing) still pending.*

@@ -44,6 +44,10 @@ import { CallNoteServiceClient } from "@/pb/call_note.client"
 import { CallNumberServiceClient } from "@/pb/call_number.client"
 import { WhatsappServiceClient } from "@/pb/whatsapp_campaigns.client"
 import { AutoDialerServiceClient } from "@/pb/autodialer_campaign.client"
+// Phase 5 unified telephony + IVR — supersedes the scattered call_*.client.ts
+// imports above for new development. Legacy clients stay in place for now.
+import { TelephonyServiceClient } from "@/pb/telephony.client"
+import { IVRServiceClient } from "@/pb/ivr.client"
 
 export const services = {
   auth: new AuthServiceClient(transport),
@@ -83,6 +87,8 @@ export const services = {
   callNumber: new CallNumberServiceClient(transport),
   whatsappCampaigns: new WhatsappServiceClient(transport),
   autodialerCampaigns: new AutoDialerServiceClient(transport),
+  telephony: new TelephonyServiceClient(transport),
+  ivr: new IVRServiceClient(transport),
 } as const
 
 export type Services = typeof services

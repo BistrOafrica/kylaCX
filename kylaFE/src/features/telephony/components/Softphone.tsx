@@ -17,12 +17,12 @@ import { Input } from "@/components/ui/input"
 import { cn } from "@/lib/utils"
 import { useSoftphoneStore, type CallState } from "../store/softphone"
 import {
-  useStartCallSession,
   useEndCallSession,
   usePlaceOnHold,
   useRemoveFromHold,
   useAddCallNote,
 } from "../hooks/queries"
+import { useSipClient } from "../sip/useSipClient"
 
 const DIGITS = [
   ["1", "2", "3"],
@@ -52,11 +52,14 @@ export function Softphone() {
   const reset = useSoftphoneStore((s) => s.reset)
   const tick = useSoftphoneStore((s) => s.tick)
 
-  const start = useStartCallSession()
   const end = useEndCallSession()
   const hold = usePlaceOnHold()
   const unhold = useRemoveFromHold()
   const addNote = useAddCallNote()
+  // Phase 5: real SIP/WebRTC media path. The hook owns SIP.js lifecycle —
+  // dial/hangup go straight to the PBX; the legacy mutations stay for hold
+  // and note operations until those are ported off CallSessionService.
+  const sip = useSipClient()
 
   const [muted, setMuted] = useState(false)
   const [noteMode, setNoteMode] = useState(false)
@@ -80,7 +83,8 @@ export function Softphone() {
 
   const onDigit = (d: string) => {
     if (callState === "active" || callState === "ringing") {
-      // F7.x: send DTMF here once the proto exposes a digit channel.
+      // Send DTMF via the active SIP session (RFC 2833 INFO).
+      void sip.sendDTMF(d).catch(() => {/* benign — call may have ended */})
       return
     }
     setDialNumber(dial + d)
@@ -91,24 +95,26 @@ export function Softphone() {
   const onCall = async () => {
     if (!dial.trim()) return
     try {
-      const res = await start.mutateAsync({
-        destinationNumber: dial.trim(),
-      })
-      if (!res.sessionId) {
-        toast.error("Couldn't start call session")
-        return
-      }
-      setSession(res.sessionId)
-      // The backend transitions through dialing → ringing → active
-      // via the monitoring stream. For now we optimistically jump to
-      // active so the UI shows real call controls.
-      setTimeout(() => setState("active"), 1_000)
+      // Real SIP dial via the registered UserAgent. State transitions arrive
+      // through the SipClient callbacks (mirrored into the store), so we
+      // don't optimistically advance here — the UI reflects the actual
+      // INVITE/ringing/answered sequence.
+      await sip.dial(dial.trim())
+      // The backend creates a Call row when the CHANNEL_CREATE event fires;
+      // the session_id for hold/notes is fetched out of the call history
+      // list — for now we leave it empty and skip those ops mid-call.
+      setSession(`pending-${Date.now()}`)
     } catch (err) {
       toast.error((err as Error).message)
     }
   }
 
   const onHangup = async () => {
+    try {
+      await sip.hangup()
+    } catch {
+      /* benign — race with remote BYE */
+    }
     if (sessionId) {
       try {
         await end.mutateAsync(sessionId)
@@ -236,7 +242,11 @@ export function Softphone() {
                 <>
                   <button
                     type="button"
-                    onClick={() => setMuted((m) => !m)}
+                    onClick={() => {
+                      const next = !muted
+                      setMuted(next)
+                      void sip.setMuted(next)
+                    }}
                     aria-label={muted ? "Unmute" : "Mute"}
                     className={cn(
                       "inline-flex items-center justify-center size-8 rounded-sm",
@@ -291,7 +301,7 @@ export function Softphone() {
                 <button
                   type="button"
                   onClick={() => void onCall()}
-                  disabled={start.isPending || !dial.trim()}
+                  disabled={sip.state === "dialing" || sip.state === "registering" || !dial.trim()}
                   aria-label="Call"
                   className={cn(
                     "ms-auto inline-flex items-center gap-1.5 h-8 px-3 rounded-sm",
@@ -299,7 +309,7 @@ export function Softphone() {
                     "disabled:opacity-50 disabled:pointer-events-none",
                   )}
                 >
-                  {start.isPending ? (
+                  {sip.state === "dialing" || sip.state === "registering" ? (
                     <IconLoader2 className="size-4 animate-spin" />
                   ) : (
                     <IconPhone className="size-4" />

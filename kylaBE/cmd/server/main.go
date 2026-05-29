@@ -14,6 +14,7 @@ import (
 	"kyla-be/internal/automation/activities"
 	"kyla-be/internal/campaigns"
 	"kyla-be/internal/telephony"
+	"kyla-be/internal/telephony/ivr"
 	"kyla-be/internal/branch"
 	casbinsvc "kyla-be/internal/casbin"
 	"kyla-be/internal/communication"
@@ -208,6 +209,10 @@ func main() {
 		&telephony.SipDomain{},
 		&telephony.SipExtension{},
 		&telephony.SipTrunk{},
+		// Phase 5c: IVR flows + DID mappings + run history
+		&ivr.Flow{},
+		&ivr.DIDMapping{},
+		&ivr.Run{},
 	); migrateErr != nil {
 		log.Printf("migration warning: %v", migrateErr)
 	}
@@ -578,6 +583,15 @@ func main() {
 		defer fs.Stop()
 	}
 	telephonyBridge := telephony.NewEventBridge(telephonyStore, eventBus, telephonyEventStream)
+
+	// Phase 5c: IVR engine — node-based flow executor driven by PBX events.
+	// The executor satisfies telephony.IVRHook; attaching it to the bridge
+	// routes inbound DIDs into IVR flows and forwards playback/DTMF events.
+	ivrStore := ivr.NewStore(db.DB)
+	ivrExecutor := ivr.NewExecutor(ivrStore, telephonyPBX)
+	telephonyBridge.AttachIVR(&ivrBridgeAdapter{store: ivrStore, exec: ivrExecutor})
+	ivrServer := ivr.NewServer(ivrStore, authAdaptor)
+
 	go telephonyBridge.Start(context.Background())
 
 	telephonyIssuer := telephony.NewJWTTokenIssuer(configs.EnvConfigs.JwtSecret, "kyla-be")
@@ -660,6 +674,7 @@ func main() {
 	pb.RegisterAIServiceServer(grpcServer, aiServer)
 	pb.RegisterCampaignServiceServer(grpcServer, campaignsServer)
 	pb.RegisterTelephonyServiceServer(grpcServer, telephonyServer)
+	pb.RegisterIVRServiceServer(grpcServer, ivrServer)
 
 	// ── Run gRPC + HTTP servers + Background Services ────────────────────────
 	// Create cancellation context for graceful shutdown of background services
@@ -712,4 +727,26 @@ func main() {
 	}()
 
 	wg.Wait()
+}
+
+// ivrBridgeAdapter satisfies telephony.IVRHook by composing the IVR store's
+// DID lookup with the executor's StartForCall/Advance methods. Defined here
+// (rather than inside the ivr package) so the executor stays free of any
+// dependency on the telephony package, avoiding a circular import: telephony
+// defines IVRHook; ivr provides the Executor; main.go glues them together.
+type ivrBridgeAdapter struct {
+	store *ivr.Store
+	exec  *ivr.Executor
+}
+
+func (a *ivrBridgeAdapter) LookupFlowForDID(did string) (string, string, string, error) {
+	return a.store.FindFlowIDForDID(did)
+}
+
+func (a *ivrBridgeAdapter) StartForCall(ctx context.Context, callUUID, flowID, orgID, workspaceID string) (string, error) {
+	return a.exec.StartForCall(ctx, callUUID, flowID, orgID, workspaceID)
+}
+
+func (a *ivrBridgeAdapter) Advance(ctx context.Context, callUUID string, eventType telephony.PBXEventType, input string) {
+	a.exec.Advance(ctx, callUUID, eventType, input)
 }

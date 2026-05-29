@@ -27,3 +27,10 @@ func (NoopPBX) ProvisionExtension(context.Context, SipExtension, string) error {
 	return errPBXNotConfigured
 }
 func (NoopPBX) ProvisionTrunk(context.Context, SipTrunk) error { return errPBXNotConfigured }
+
+func (NoopPBX) PlayAudio(context.Context, string, string) error              { return errPBXNotConfigured }
+func (NoopPBX) SayText(context.Context, string, string, string) error        { return errPBXNotConfigured }
+func (NoopPBX) PlayAndGetDigits(context.Context, string, PlayAndGetDigitsOpts) error {
+	return errPBXNotConfigured
+}
+func (NoopPBX) StartRecording(context.Context, string, string, int) error { return errPBXNotConfigured }

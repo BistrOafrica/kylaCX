@@ -1,0 +1,40 @@
+<configuration name="modules.conf" description="Modules">
+  <!-- The set of FreeSWITCH modules kyla relies on. Loaded at startup.
+       Modules absent from this list are not loaded — keep the surface tight
+       to reduce attack surface and memory footprint. -->
+  <modules>
+    <!-- Logging -->
+    <load module="mod_console"/>
+    <load module="mod_logfile"/>
+
+    <!-- Event delivery -->
+    <load module="mod_event_socket"/>
+
+    <!-- SIP signalling — mod_sofia covers UDP/TCP/TLS/WSS profiles. -->
+    <load module="mod_sofia"/>
+
+    <!-- Codecs we offer. OPUS is mandatory for browser softphones; the PCM
+         pair is mandatory for PSTN trunks. -->
+    <load module="mod_opus"/>
+    <load module="mod_g722"/>
+    <load module="mod_g711"/>
+
+    <!-- Media playback / DTMF -->
+    <load module="mod_sndfile"/>
+    <load module="mod_dptools"/>
+    <load module="mod_tone_stream"/>
+    <load module="mod_local_stream"/>
+
+    <!-- TTS engines used by IVR `say` nodes. mod_say_en covers the english
+         say engine; add additional locale modules as needed. -->
+    <load module="mod_say_en"/>
+
+    <!-- Applications used by the dialplan -->
+    <load module="mod_commands"/>
+    <load module="mod_dialplan_xml"/>
+    <load module="mod_loopback"/>
+
+    <!-- Recording -->
+    <load module="mod_sndfile"/>
+  </modules>
+</configuration>

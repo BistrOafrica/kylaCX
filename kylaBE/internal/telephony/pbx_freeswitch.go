@@ -124,7 +124,9 @@ func (c *FreeSWITCHController) Start(ctx context.Context) error {
 
 	// 3. Subscribe to the event classes we care about. PLAIN keeps parsing
 	//    simple; if we need richer payloads later we'd switch to JSON.
-	if _, err := conn.Write([]byte("event plain CHANNEL_CREATE CHANNEL_ANSWER CHANNEL_HANGUP_COMPLETE SOFIA_REGISTER RECORD_STOP\n\n")); err != nil {
+	//    PLAYBACK_STOP and CHANNEL_EXECUTE_COMPLETE are needed for IVR
+	//    (the latter is how play_and_get_digits returns the captured DTMF).
+	if _, err := conn.Write([]byte("event plain CHANNEL_CREATE CHANNEL_ANSWER CHANNEL_HANGUP_COMPLETE SOFIA_REGISTER RECORD_STOP PLAYBACK_STOP CHANNEL_EXECUTE_COMPLETE\n\n")); err != nil {
 		_ = conn.Close()
 		return fmt.Errorf("subscribe events: %w", err)
 	}
@@ -282,6 +284,98 @@ func (c *FreeSWITCHController) ProvisionTrunk(_ context.Context, _ SipTrunk) err
 	return nil
 }
 
+// ── IVR command surface ────────────────────────────────────────────────────
+
+// PlayAudio queues a static file for playback on the leg. We use bgapi so the
+// command returns immediately; PLAYBACK_STOP arrives on the event stream when
+// playback completes (or is interrupted).
+func (c *FreeSWITCHController) PlayAudio(ctx context.Context, callUUID, audioPath string) error {
+	if !c.Enabled() {
+		return errPBXNotConfigured
+	}
+	if callUUID == "" || audioPath == "" {
+		return errors.New("PlayAudio: call_uuid and audio_path required")
+	}
+	return c.writeCommand(fmt.Sprintf("bgapi uuid_broadcast %s playback::%s aleg\n\n", callUUID, audioPath))
+}
+
+// SayText synthesises speech via mod_say. Voice is forwarded as the engine
+// hint (e.g. "en" for the English say engine).
+func (c *FreeSWITCHController) SayText(ctx context.Context, callUUID, voice, text string) error {
+	if !c.Enabled() {
+		return errPBXNotConfigured
+	}
+	if voice == "" {
+		voice = "en"
+	}
+	// say::<engine>!<voice>!<text> tells uuid_broadcast to invoke mod_say.
+	// Escape colons and exclamations in text to keep the framing intact.
+	safeText := strings.ReplaceAll(text, "'", "")
+	return c.writeCommand(fmt.Sprintf("bgapi uuid_broadcast %s 'say::%s SHORT pronounced %s' aleg\n\n", callUUID, voice, safeText))
+}
+
+// PlayAndGetDigits issues the play_and_get_digits app via uuid_setvar +
+// uuid_broadcast. The captured digits arrive as a CHANNEL_EXECUTE_COMPLETE
+// event with Application-Response set to the digit string.
+//
+// FreeSWITCH's app signature is:
+//   play_and_get_digits <min> <max> <tries> <timeout> <terminators> <file> <invalid_file> <var_name> <regexp>
+func (c *FreeSWITCHController) PlayAndGetDigits(ctx context.Context, callUUID string, opts PlayAndGetDigitsOpts) error {
+	if !c.Enabled() {
+		return errPBXNotConfigured
+	}
+	if opts.MinDigits == 0 {
+		opts.MinDigits = 1
+	}
+	if opts.MaxDigits == 0 {
+		opts.MaxDigits = 1
+	}
+	if opts.Tries == 0 {
+		opts.Tries = 1
+	}
+	timeoutMs := int(opts.Timeout / time.Millisecond)
+	if timeoutMs == 0 {
+		timeoutMs = 5000
+	}
+	terminator := opts.TerminatorKey
+	if terminator == "" {
+		terminator = "#"
+	}
+	invalid := opts.InvalidFile
+	if invalid == "" {
+		invalid = "silence_stream://250"
+	}
+	regex := opts.Regex
+	if regex == "" {
+		regex = "\\d+"
+	}
+	app := fmt.Sprintf(
+		"play_and_get_digits %d %d %d %d %s %s %s kyla_ivr_digits %s",
+		opts.MinDigits, opts.MaxDigits, opts.Tries, timeoutMs,
+		terminator,
+		opts.PromptFile,
+		invalid,
+		regex,
+	)
+	return c.writeCommand(fmt.Sprintf("bgapi uuid_broadcast %s '%s' aleg\n\n", callUUID, app))
+}
+
+// StartRecording captures audio of the leg to the supplied file path.
+// maxSeconds=0 means record until hangup.
+func (c *FreeSWITCHController) StartRecording(ctx context.Context, callUUID, recordingPath string, maxSeconds int) error {
+	if !c.Enabled() {
+		return errPBXNotConfigured
+	}
+	if callUUID == "" || recordingPath == "" {
+		return errors.New("StartRecording: call_uuid and recording_path required")
+	}
+	cmd := fmt.Sprintf("bgapi uuid_record %s start %s", callUUID, recordingPath)
+	if maxSeconds > 0 {
+		cmd += fmt.Sprintf(" %d", maxSeconds)
+	}
+	return c.writeCommand(cmd + "\n\n")
+}
+
 // ── ESL framing helpers ─────────────────────────────────────────────────────
 
 // writeCommand sends a single command to ESL. Safe for concurrent callers via
@@ -376,6 +470,25 @@ func parseESLEvent(frame string) (PBXEvent, bool) {
 	case "RECORD_STOP":
 		evt.Type = EventRecordingComplete
 		evt.CallUUID = firstNonEmpty(fields["Unique-ID"], fields["Channel-Call-UUID"])
+	case "PLAYBACK_STOP":
+		evt.Type = EventPlaybackStop
+		evt.CallUUID = firstNonEmpty(fields["Unique-ID"], fields["Channel-Call-UUID"])
+	case "CHANNEL_EXECUTE_COMPLETE":
+		// Only forward the IVR-relevant completions. play_and_get_digits
+		// stores the captured input in the channel variable named in its
+		// var_name argument — we use "kyla_ivr_digits" so we can recognise it.
+		app := fields["Application"]
+		if app != "play_and_get_digits" {
+			return PBXEvent{}, false
+		}
+		evt.Type = EventDTMFCaptured
+		evt.CallUUID = firstNonEmpty(fields["Unique-ID"], fields["Channel-Call-UUID"])
+		// The captured digits live in variable_kyla_ivr_digits.
+		if digits, ok := dataIface["variable_kyla_ivr_digits"]; ok {
+			if s, ok := digits.(string); ok {
+				evt.Data["captured_digits"] = s
+			}
+		}
 	default:
 		return PBXEvent{}, false
 	}

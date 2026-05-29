@@ -10,6 +10,20 @@ import (
 	"kyla-be/shared/events"
 )
 
+// IVRHook is the minimal interface the EventBridge uses to drive the IVR
+// executor. Defined here so internal/telephony/ivr can satisfy it without
+// the bridge importing the ivr package (avoiding a circular import).
+//
+// LookupFlowForDID returns the flow + scope to run for an inbound DID, or
+// ("", "", "", err) when no mapping exists. Errors are treated as "no IVR".
+//
+// StartForCall and Advance mirror the IVR executor's signatures.
+type IVRHook interface {
+	LookupFlowForDID(did string) (flowID, orgID, workspaceID string, err error)
+	StartForCall(ctx context.Context, callUUID, flowID, orgID, workspaceID string) (string, error)
+	Advance(ctx context.Context, callUUID string, eventType PBXEventType, input string)
+}
+
 // EventBridge consumes PBXEvents from the controller's event stream, updates
 // the DB projection (Call rows and CallEvents), and emits domain events on
 // NATS so downstream systems (communication.VoiceCallBridge, automation
@@ -20,10 +34,18 @@ type EventBridge struct {
 	store     *Store
 	publisher events.Publisher
 	stream    *CallEventStream
+	ivr       IVRHook // optional — nil disables IVR routing
 }
 
 func NewEventBridge(store *Store, publisher events.Publisher, stream *CallEventStream) *EventBridge {
 	return &EventBridge{store: store, publisher: publisher, stream: stream}
+}
+
+// AttachIVR wires an IVR hook into the bridge. Must be called before Start
+// for the routing to apply to inbound calls. Optional — the bridge functions
+// normally without it; IVR routing simply doesn't happen.
+func (b *EventBridge) AttachIVR(hook IVRHook) {
+	b.ivr = hook
 }
 
 // Start drains the event stream until ctx is cancelled. Returns when the
@@ -58,10 +80,25 @@ func (b *EventBridge) handle(evt PBXEvent) {
 		b.onAnswer(evt)
 	case EventChannelHangup:
 		b.onHangup(evt)
+		// Notify the IVR executor so any active run is finalised.
+		if b.ivr != nil && evt.CallUUID != "" {
+			b.ivr.Advance(context.Background(), evt.CallUUID, EventChannelHangup, "")
+		}
 	case EventSofiaRegister:
 		b.onRegister(evt)
 	case EventRecordingComplete:
 		b.onRecordingComplete(evt)
+	case EventPlaybackStop:
+		// A play_audio / say node completed. Advance the IVR.
+		if b.ivr != nil && evt.CallUUID != "" {
+			b.ivr.Advance(context.Background(), evt.CallUUID, EventPlaybackStop, "")
+		}
+	case EventDTMFCaptured:
+		// A menu node returned the captured digit(s).
+		if b.ivr != nil && evt.CallUUID != "" {
+			digits, _ := evt.Data["captured_digits"].(string)
+			b.ivr.Advance(context.Background(), evt.CallUUID, EventDTMFCaptured, digits)
+		}
 	default:
 		// Drop. The PBX emits many event types we don't care about.
 	}
@@ -84,13 +121,30 @@ func (b *EventBridge) onCreate(evt PBXEvent) {
 	}
 	// Inbound — synthesize a Call row. The PBX provides the from/to numbers
 	// in Caller-Caller-ID-Number / Caller-Destination-Number; org/workspace
-	// resolution depends on which DID was dialled and is wired separately.
+	// resolution can come from one of two paths:
+	//   1. The dialplan injected kyla_org_id / kyla_workspace_id via
+	//      mod_xml_curl (set channel variables before reaching ESL).
+	//   2. The IVR DID mapping table — we look up by Caller-Destination-Number
+	//      and use the org/workspace from there.
 	orgID := mapString(evt.Data, "variable_kyla_org_id")
 	workspaceID := mapString(evt.Data, "variable_kyla_workspace_id")
+	toNumber := mapString(evt.Data, "Caller-Destination-Number")
+
+	// Path 2: try the IVR DID mapping when the dialplan didn't supply context.
+	var ivrFlowID string
+	if b.ivr != nil && toNumber != "" {
+		if flowID, flowOrg, flowWs, err := b.ivr.LookupFlowForDID(toNumber); err == nil {
+			ivrFlowID = flowID
+			if orgID == "" {
+				orgID = flowOrg
+			}
+			if workspaceID == "" {
+				workspaceID = flowWs
+			}
+		}
+	}
+
 	if orgID == "" {
-		// No org context available yet — log and skip. Inbound DID-to-org
-		// mapping is a follow-up; for now inbound calls without explicit
-		// kyla_org_id (e.g. via mod_xml_curl dialplan injection) are dropped.
 		log.Printf("[telephony bridge] CHANNEL_CREATE without org context (call=%s); skipping persistence", evt.CallUUID)
 		return
 	}
@@ -101,7 +155,8 @@ func (b *EventBridge) onCreate(evt PBXEvent) {
 		Direction:   string(DirectionInbound),
 		Status:      string(StatusRinging),
 		FromNumber:  mapString(evt.Data, "Caller-Caller-ID-Number"),
-		ToNumber:    mapString(evt.Data, "Caller-Destination-Number"),
+		ToNumber:    toNumber,
+		IvrFlowID:   ivrFlowID,
 		StartedAt:   evt.OccurredAt,
 	}
 	if _, err := b.store.CreateCall(call); err != nil {
@@ -110,6 +165,17 @@ func (b *EventBridge) onCreate(evt PBXEvent) {
 	}
 	b.appendEvent(evt.CallUUID, "started", evt)
 	b.publish(call, "call.started")
+
+	// IVR hand-off: if the DID mapped to an active flow, start the run.
+	// The executor handles its own failures gracefully (logs and ends the
+	// run); we don't want bridge to block on PBX command latency.
+	if b.ivr != nil && ivrFlowID != "" {
+		go func() {
+			if _, err := b.ivr.StartForCall(context.Background(), evt.CallUUID, ivrFlowID, orgID, workspaceID); err != nil {
+				log.Printf("[telephony bridge] IVR start failed for call=%s flow=%s: %v", evt.CallUUID, ivrFlowID, err)
+			}
+		}()
+	}
 }
 
 func (b *EventBridge) onAnswer(evt PBXEvent) {

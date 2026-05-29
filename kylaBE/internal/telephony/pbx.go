@@ -43,6 +43,41 @@ type PBXController interface {
 	// ProvisionTrunk registers an outbound gateway in the PBX from the trunk
 	// row. Idempotent — repeated calls update an existing gateway profile.
 	ProvisionTrunk(ctx context.Context, trunk SipTrunk) error
+
+	// ── IVR command surface ──────────────────────────────────────────────────
+	// These commands are issued by the IVR executor while a call is active.
+	// All return an error if the PBX command socket isn't connected (NoopPBX
+	// returns errPBXNotConfigured uniformly).
+
+	// PlayAudio plays a static audio file on the leg. Returns once the
+	// playback completes (FreeSWITCH's `uuid_broadcast` model is async; this
+	// just queues the command — completion arrives as a PLAYBACK_STOP event).
+	PlayAudio(ctx context.Context, callUUID, audioPath string) error
+
+	// SayText synthesises text via the configured TTS engine.
+	SayText(ctx context.Context, callUUID, voice, text string) error
+
+	// PlayAndGetDigits is the workhorse of menu navigation. Plays a prompt
+	// (file path), then collects up to maxDigits DTMF presses with a timeout.
+	// The captured digits arrive as a DTMF_GET event correlated by callUUID.
+	PlayAndGetDigits(ctx context.Context, callUUID string, opts PlayAndGetDigitsOpts) error
+
+	// StartRecording begins recording the audio of the call to the supplied
+	// path. Stop arrives via RECORD_STOP or call hangup.
+	StartRecording(ctx context.Context, callUUID, recordingPath string, maxSeconds int) error
+}
+
+// PlayAndGetDigitsOpts groups the parameters for the menu primitive.
+// Mirrors FreeSWITCH's play_and_get_digits application closely.
+type PlayAndGetDigitsOpts struct {
+	PromptFile   string        // file path to play; empty means no prompt
+	MinDigits    int
+	MaxDigits    int
+	Tries        int           // how many times to re-prompt on no input
+	Timeout      time.Duration // per-prompt timeout
+	TerminatorKey string       // typically "#"
+	InvalidFile   string       // played when input doesn't match regex (optional)
+	Regex         string       // validates the captured digit string (e.g. "^[0-9]$")
 }
 
 // OriginateRequest is the controller-level request shape for outbound dials.
@@ -80,6 +115,8 @@ const (
 	EventChannelHangup     PBXEventType = "channel_hangup"
 	EventSofiaRegister     PBXEventType = "sofia_register"
 	EventRecordingComplete PBXEventType = "recording_complete"
+	EventPlaybackStop      PBXEventType = "playback_stop"   // a play_audio / say finished
+	EventDTMFCaptured      PBXEventType = "dtmf_captured"    // play_and_get_digits returned input
 )
 
 // PBXEvent is one event lifted from the PBX event stream. CallUUID is the

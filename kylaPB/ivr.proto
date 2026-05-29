@@ -1,0 +1,132 @@
+syntax = "proto3";
+
+package da.proto;
+option go_package = "./pb";
+
+import "google/protobuf/struct.proto";
+import "google/protobuf/timestamp.proto";
+
+// IVRService manages IVR flow definitions and surfaces in-progress and past
+// run history. Execution itself is driven by the telephony EventBridge — the
+// service is the control-plane CRUD layer, not the runtime.
+//
+// The node model mirrors Phase 6 workflows so the React Flow visual builder
+// can reuse the same canvas with a different node palette.
+
+// ── IVR flow ────────────────────────────────────────────────────────────────
+
+message IVRFlow {
+  string id = 1;
+  string org_id = 2;
+  string workspace_id = 3;
+  string name = 4;
+  string description = 5;
+  IVRDefinition definition = 6;
+  bool is_active = 7;
+  int32 version = 8;
+  string created_by = 9;
+  google.protobuf.Timestamp created_at = 10;
+  google.protobuf.Timestamp updated_at = 11;
+}
+
+// IVRDefinition holds the node graph. The start_node_id is the entry point
+// the executor jumps to when a call enters the flow.
+message IVRDefinition {
+  string start_node_id = 1;
+  repeated IVRNode nodes = 2;
+}
+
+// IVRNode is one step in the flow. Each node has a type (which determines
+// what the executor does) and a config (which parameterises it).
+// Branches: a map from semantic event names (e.g. "press_1", "press_2",
+// "timeout", "match") to next-node IDs.
+message IVRNode {
+  string id = 1;
+  string type = 2;                       // play_audio | menu | say | transfer | hangup | goto | record
+  google.protobuf.Struct config = 3;
+  // Default next node — taken when no specific branch fires.
+  string next_node_id = 4;
+  // Conditional next-node routing keyed by the semantic outcome.
+  map<string, string> branches = 5;
+}
+
+message IVRDIDMapping {
+  string id = 1;
+  string org_id = 2;
+  string workspace_id = 3;
+  string did = 4;                        // E.164
+  string flow_id = 5;
+  google.protobuf.Timestamp created_at = 6;
+}
+
+message IVRRun {
+  string id = 1;
+  string flow_id = 2;
+  string call_id = 3;
+  string org_id = 4;
+  string workspace_id = 5;
+  string status = 6;                     // running | completed | failed | abandoned
+  string current_node_id = 7;
+  repeated IVRRunStep visited_nodes = 8;
+  google.protobuf.Timestamp started_at = 9;
+  google.protobuf.Timestamp ended_at = 10;
+  string end_reason = 11;
+}
+
+message IVRRunStep {
+  string node_id = 1;
+  google.protobuf.Timestamp entered_at = 2;
+  string input = 3;                      // for menu nodes: the DTMF digit captured
+}
+
+// ── Requests / Responses ─────────────────────────────────────────────────────
+
+message CreateIVRFlowRequest  { IVRFlow flow = 1; }
+message GetIVRFlowRequest     { string id = 1; }
+message ListIVRFlowsRequest {
+  string workspace_id = 1;
+  bool active_only = 2;
+}
+message ListIVRFlowsResponse  { repeated IVRFlow flows = 1; }
+message UpdateIVRFlowRequest  { IVRFlow flow = 1; }
+message DeleteIVRFlowRequest  { string id = 1; }
+message DeleteIVRFlowResponse { bool ok = 1; }
+
+message CreateIVRDIDMappingRequest  { IVRDIDMapping mapping = 1; }
+message ListIVRDIDMappingsRequest   { string workspace_id = 1; }
+message ListIVRDIDMappingsResponse  { repeated IVRDIDMapping mappings = 1; }
+message DeleteIVRDIDMappingRequest  { string id = 1; }
+message DeleteIVRDIDMappingResponse { bool ok = 1; }
+
+message GetIVRRunRequest   { string id = 1; }
+message ListIVRRunsRequest {
+  string flow_id = 1;
+  string call_id = 2;
+  int32 page_size = 3;
+  string page_token = 4;
+}
+message ListIVRRunsResponse {
+  repeated IVRRun runs = 1;
+  string next_page_token = 2;
+  int64 total = 3;
+}
+
+// ── Service ──────────────────────────────────────────────────────────────────
+
+service IVRService {
+  // Flow CRUD
+  rpc CreateIVRFlow(CreateIVRFlowRequest) returns (IVRFlow);
+  rpc GetIVRFlow(GetIVRFlowRequest)       returns (IVRFlow);
+  rpc ListIVRFlows(ListIVRFlowsRequest)   returns (ListIVRFlowsResponse);
+  rpc UpdateIVRFlow(UpdateIVRFlowRequest) returns (IVRFlow);
+  rpc DeleteIVRFlow(DeleteIVRFlowRequest) returns (DeleteIVRFlowResponse);
+
+  // DID mappings (inbound routing)
+  rpc CreateIVRDIDMapping(CreateIVRDIDMappingRequest) returns (IVRDIDMapping);
+  rpc ListIVRDIDMappings(ListIVRDIDMappingsRequest)   returns (ListIVRDIDMappingsResponse);
+  rpc DeleteIVRDIDMapping(DeleteIVRDIDMappingRequest) returns (DeleteIVRDIDMappingResponse);
+
+  // Runs (read-only — runs are created by the executor, not via gRPC)
+  rpc GetIVRRun(GetIVRRunRequest)     returns (IVRRun);
+  rpc ListIVRRuns(ListIVRRunsRequest) returns (ListIVRRunsResponse);
+}

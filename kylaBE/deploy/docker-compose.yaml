@@ -116,7 +116,12 @@ services:
       - "8021:8021/tcp"     # ESL (Event Socket Library — Go control plane)
       - "16384-16484:16384-16484/udp"  # RTP media (bounded subrange for dev)
     volumes:
-      - freeswitch_conf:/etc/freeswitch
+      # Mount kyla's config skeleton on top of the image's defaults.
+      # See deploy/freeswitch/README.md for what each subdir provides.
+      - ./freeswitch/conf/vars.xml:/etc/freeswitch/vars.xml:ro
+      - ./freeswitch/conf/autoload_configs:/etc/freeswitch/autoload_configs:ro
+      - ./freeswitch/conf/sip_profiles:/etc/freeswitch/sip_profiles:ro
+      - ./freeswitch/conf/dialplan:/etc/freeswitch/dialplan:ro
       - freeswitch_recordings:/var/lib/freeswitch/recordings
     environment:
       # ESL password the Go telephony service uses to authenticate.
@@ -167,5 +172,4 @@ volumes:
   data:
   nats_data:
   temporal_pg_data:
-  freeswitch_conf:
   freeswitch_recordings:
