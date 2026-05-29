@@ -1,0 +1,180 @@
+syntax = "proto3";
+
+package da.proto;
+option go_package = "./pb";
+
+import "google/protobuf/struct.proto";
+import "google/protobuf/timestamp.proto";
+
+// CampaignService is the Phase 6 channel-agnostic campaign surface. It
+// supersedes the legacy WhatsappService/SMS protos for new development; the
+// legacy protos are left in place for backward compat.
+
+// ── Campaign ─────────────────────────────────────────────────────────────────
+
+// Campaign drives a broadcast send across one channel to an audience.
+// Channel-specific payload lives in `payload` JSONB so the same model serves
+// WhatsApp template sends, SMS blasts, and (later) email blasts.
+message Campaign {
+  string id = 1;
+  string org_id = 2;
+  string workspace_id = 3;
+  string name = 4;
+  string description = 5;
+  string channel = 6;              // "whatsapp" | "sms" | "email"
+  string status = 7;               // "draft" | "scheduled" | "running" | "paused" | "completed" | "cancelled"
+  CampaignAudience audience = 8;
+  CampaignSchedule schedule = 9;
+  google.protobuf.Struct payload = 10;  // channel-specific (e.g. WA template ref + parameters)
+  CampaignStats stats = 11;
+  string created_by = 12;
+  google.protobuf.Timestamp created_at = 13;
+  google.protobuf.Timestamp updated_at = 14;
+}
+
+// CampaignAudience resolves to a concrete recipient list at send time.
+// v1 supports two shapes:
+//   - object_query: filter against Object Core records of a given type_slug.
+//   - explicit:     a fixed list of object_ids (e.g. uploaded CSV).
+message CampaignAudience {
+  string kind = 1;                                 // "object_query" | "explicit"
+  string type_slug = 2;                            // for object_query, e.g. "contact"
+  google.protobuf.Struct filter = 3;               // for object_query, JSONB-shaped filter
+  repeated string object_ids = 4;                  // for explicit
+}
+
+// CampaignSchedule controls when sends happen.
+// One-shot sends use Temporal workflow.Sleep until start_at; recurring sends
+// use Temporal Schedules (cron-style) on the same task queue.
+message CampaignSchedule {
+  string mode = 1;                                 // "immediate" | "scheduled_once" | "recurring"
+  google.protobuf.Timestamp start_at = 2;          // for scheduled_once
+  string cron = 3;                                 // for recurring, e.g. "0 9 * * MON"
+  string timezone = 4;                             // IANA tz (e.g. "Africa/Nairobi") for cron interpretation
+}
+
+message CampaignStats {
+  int64 audience_size = 1;
+  int64 queued = 2;
+  int64 sent = 3;
+  int64 delivered = 4;
+  int64 read = 5;
+  int64 failed = 6;
+}
+
+// CampaignRecipient is one row of a campaign's audience post-resolution.
+message CampaignRecipient {
+  string id = 1;
+  string campaign_id = 2;
+  string org_id = 3;
+  string object_id = 4;             // the Object Core record this row targets
+  string contact_ref = 5;            // resolved phone/email used to send (snapshot)
+  string status = 6;                 // "queued" | "sent" | "delivered" | "read" | "failed"
+  string external_id = 7;            // provider message ID (for delivery webhooks)
+  string error = 8;
+  google.protobuf.Timestamp sent_at = 9;
+  google.protobuf.Timestamp delivered_at = 10;
+  google.protobuf.Timestamp read_at = 11;
+}
+
+// ── WhatsApp template (local mirror) ─────────────────────────────────────────
+
+// WhatsAppTemplate is a local copy of a Meta-approved template.
+// Synced from Meta either manually (admin paste) or via a periodic job; we
+// don't trust ourselves to know template state without Meta's stamp.
+message WhatsAppTemplate {
+  string id = 1;
+  string org_id = 2;
+  string name = 3;                // Meta template name
+  string language = 4;            // e.g. "en_US"
+  string category = 5;            // MARKETING | UTILITY | AUTHENTICATION
+  string status = 6;              // APPROVED | PENDING | REJECTED
+  string header = 7;
+  string body = 8;
+  string footer = 9;
+  string phone_number_id = 10;
+  string waba_id = 11;
+  string meta_template_id = 12;
+  google.protobuf.Timestamp created_at = 13;
+  google.protobuf.Timestamp updated_at = 14;
+}
+
+// ── Requests / Responses ─────────────────────────────────────────────────────
+
+message CreateCampaignRequest { Campaign campaign = 1; }
+message GetCampaignRequest    { string id = 1; }
+message ListCampaignsRequest {
+  string workspace_id = 1;
+  string status = 2;
+  string channel = 3;
+  int32 page_size = 4;
+  string page_token = 5;
+}
+message ListCampaignsResponse {
+  repeated Campaign campaigns = 1;
+  string next_page_token = 2;
+  int64 total = 3;
+}
+message UpdateCampaignRequest { Campaign campaign = 1; }
+message DeleteCampaignRequest { string id = 1; }
+message DeleteCampaignResponse { bool ok = 1; }
+
+message LaunchCampaignRequest { string id = 1; }
+message LaunchCampaignResponse {
+  string id = 1;
+  string status = 2;
+  string temporal_workflow_id = 3;
+}
+
+message PauseCampaignRequest { string id = 1; }
+message PauseCampaignResponse { string id = 1; string status = 2; }
+
+message CancelCampaignRequest { string id = 1; }
+message CancelCampaignResponse { string id = 1; string status = 2; }
+
+message ListRecipientsRequest {
+  string campaign_id = 1;
+  string status = 2;
+  int32 page_size = 3;
+  string page_token = 4;
+}
+message ListRecipientsResponse {
+  repeated CampaignRecipient recipients = 1;
+  string next_page_token = 2;
+  int64 total = 3;
+}
+
+message UpsertWhatsAppTemplateRequest { WhatsAppTemplate template = 1; }
+message GetWhatsAppTemplateRequest    { string id = 1; }
+message ListWhatsAppTemplatesRequest {
+  string status = 1;
+  string phone_number_id = 2;
+}
+message ListWhatsAppTemplatesResponse { repeated WhatsAppTemplate templates = 1; }
+message DeleteWhatsAppTemplateRequest { string id = 1; }
+message DeleteWhatsAppTemplateResponse { bool ok = 1; }
+
+// ── Service ──────────────────────────────────────────────────────────────────
+
+service CampaignService {
+  // Campaign CRUD
+  rpc CreateCampaign(CreateCampaignRequest) returns (Campaign);
+  rpc GetCampaign(GetCampaignRequest)       returns (Campaign);
+  rpc ListCampaigns(ListCampaignsRequest)   returns (ListCampaignsResponse);
+  rpc UpdateCampaign(UpdateCampaignRequest) returns (Campaign);
+  rpc DeleteCampaign(DeleteCampaignRequest) returns (DeleteCampaignResponse);
+
+  // Lifecycle
+  rpc LaunchCampaign(LaunchCampaignRequest) returns (LaunchCampaignResponse);
+  rpc PauseCampaign(PauseCampaignRequest)   returns (PauseCampaignResponse);
+  rpc CancelCampaign(CancelCampaignRequest) returns (CancelCampaignResponse);
+
+  // Recipients
+  rpc ListRecipients(ListRecipientsRequest) returns (ListRecipientsResponse);
+
+  // WhatsApp template registry (local mirror)
+  rpc UpsertWhatsAppTemplate(UpsertWhatsAppTemplateRequest) returns (WhatsAppTemplate);
+  rpc GetWhatsAppTemplate(GetWhatsAppTemplateRequest)       returns (WhatsAppTemplate);
+  rpc ListWhatsAppTemplates(ListWhatsAppTemplatesRequest)   returns (ListWhatsAppTemplatesResponse);
+  rpc DeleteWhatsAppTemplate(DeleteWhatsAppTemplateRequest) returns (DeleteWhatsAppTemplateResponse);
+}

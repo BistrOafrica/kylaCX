@@ -1,0 +1,255 @@
+syntax = "proto3";
+
+package da.proto;
+option go_package = "./pb";
+
+import "google/protobuf/timestamp.proto";
+
+// TelephonyService is the Phase 5 unified telephony surface. It supersedes
+// the legacy scattered call_*.proto definitions for new development; legacy
+// protos are left in place for backward compat.
+//
+// All call signalling and media handling is performed by FreeSWITCH; this
+// gRPC layer is the control plane (originate, hangup, transfer, queue) plus
+// the persistence/projection layer for call history and analytics.
+
+// ── Call domain ──────────────────────────────────────────────────────────────
+
+message Call {
+  string id = 1;                       // PBX-assigned UUID (FreeSWITCH UUID for the leg)
+  string org_id = 2;
+  string workspace_id = 3;
+  string direction = 4;                // "inbound" | "outbound"
+  string status = 5;                   // "ringing" | "answered" | "ended" | "failed"
+
+  string from_number = 6;              // E.164
+  string to_number = 7;                // E.164
+
+  string agent_id = 8;                 // user.id of the agent (or empty for fully-automated calls)
+  string contact_id = 9;               // Object Core contact ID (resolved at start time)
+  string queue_id = 10;                // if routed through a queue
+
+  string trunk_id = 11;                // outbound: SIP trunk used
+  string ivr_flow_id = 12;             // inbound: IVR flow that handled the call
+
+  // Linked entities (set by automation rules / activity hooks).
+  string conversation_id = 13;         // communication.Conversation created post-call
+  string deal_id = 14;
+  string ticket_id = 15;
+
+  // Audio / recording
+  bool recording_enabled = 16;
+  string recording_url = 17;           // populated post-call
+
+  // Timing
+  google.protobuf.Timestamp started_at = 20;
+  google.protobuf.Timestamp answered_at = 21;
+  google.protobuf.Timestamp ended_at = 22;
+  int32 ring_seconds = 23;
+  int32 talk_seconds = 24;
+
+  // Hangup details (E.164-style codes + human reason).
+  string hangup_cause = 25;            // e.g. "NORMAL_CLEARING", "NO_ANSWER", "USER_BUSY"
+  string disposition = 26;             // "completed" | "no_answer" | "busy" | "failed" | "voicemail"
+
+  google.protobuf.Timestamp created_at = 30;
+  google.protobuf.Timestamp updated_at = 31;
+}
+
+message CallEvent {
+  string id = 1;
+  string call_session_id = 2;
+  string org_id = 3;
+  string event_type = 4;               // "started" | "answered" | "transferred" | "held" | "resumed" | "ended"
+  string detail = 5;                   // free-form detail (JSON-encoded for structured)
+  google.protobuf.Timestamp at = 6;
+}
+
+// SIP infrastructure (admin surface for self-hosted PBX).
+
+message SipExtension {
+  string id = 1;
+  string org_id = 2;
+  string workspace_id = 3;
+  string user_id = 4;                  // owning agent (1:1 in v1)
+  string extension = 5;                // e.g. "1001"
+  string display_name = 6;
+  string status = 7;                   // "registered" | "unregistered"
+  google.protobuf.Timestamp last_registration = 8;
+  google.protobuf.Timestamp created_at = 9;
+  google.protobuf.Timestamp updated_at = 10;
+}
+
+message SipTrunk {
+  string id = 1;
+  string org_id = 2;
+  string name = 3;
+  string gateway_name = 4;             // FreeSWITCH gateway profile name
+  string provider = 5;                 // "twilio_elastic" | "bandwidth" | "telnyx" | "custom"
+  string sip_server = 6;
+  string username = 7;
+  // Secrets are write-only — Get returns the empty string.
+  string password = 8;
+  string from_uri = 9;
+  bool is_active = 10;
+  google.protobuf.Timestamp created_at = 11;
+  google.protobuf.Timestamp updated_at = 12;
+}
+
+message SipDomain {
+  string id = 1;
+  string org_id = 2;
+  string domain = 3;                   // e.g. "kyla.example.com" — SIP realm
+  bool is_default = 4;
+  google.protobuf.Timestamp created_at = 5;
+}
+
+// ── WebRTC token (browser softphone bootstrap) ───────────────────────────────
+
+message SoftphoneToken {
+  string token = 1;                    // short-lived JWT — used for SIP-over-WSS auth
+  string ws_url = 2;                   // e.g. "wss://sip.kyla.example:7443"
+  string sip_realm = 3;
+  string sip_extension = 4;            // the extension this token is bound to
+  repeated IceServer ice_servers = 5;  // STUN/TURN for the WebRTC peer connection
+  int32 expires_in = 6;                // seconds until token expiry
+}
+
+message IceServer {
+  string urls = 1;
+  string username = 2;
+  string credential = 3;
+}
+
+// ── Requests / Responses ─────────────────────────────────────────────────────
+
+// Outbound call: caller (an agent or a workflow) requests the PBX to bridge
+// an agent's extension to an external number.
+message OriginateCallRequest {
+  string workspace_id = 1;
+  string agent_id = 2;                 // who's making the call — also resolves the extension
+  string to_number = 3;                // E.164
+  string contact_id = 4;               // optional linkage
+  string trunk_id = 5;                 // optional override of default trunk
+  bool recording_enabled = 6;
+}
+
+message OriginateCallResponse {
+  Call session = 1;
+}
+
+message GetCallRequest { string id = 1; }
+
+message ListCallsRequest {
+  string workspace_id = 1;
+  string direction = 2;
+  string status = 3;
+  string agent_id = 4;
+  int32 page_size = 5;
+  string page_token = 6;
+}
+message ListCallsResponse {
+  repeated Call sessions = 1;
+  string next_page_token = 2;
+  int64 total = 3;
+}
+
+message HangupRequest {
+  string id = 1;
+  string reason = 2;
+}
+message HangupResponse { string id = 1; string status = 2; }
+
+message TransferRequest {
+  string id = 1;
+  string target_extension = 2;
+  string target_number = 3;
+  bool blind = 4;                      // true = blind transfer; false = attended
+}
+message TransferResponse { string id = 1; string status = 2; }
+
+message HoldRequest { string id = 1; }
+message HoldResponse { string id = 1; string status = 2; }
+
+message ResumeRequest { string id = 1; }
+message ResumeResponse { string id = 1; string status = 2; }
+
+message AppendCallEventRequest {
+  string call_session_id = 1;
+  string event_type = 2;
+  string detail = 3;
+}
+message AppendCallEventResponse { CallEvent log = 1; }
+
+message ListCallEventsRequest {
+  string call_session_id = 1;
+}
+message ListCallEventsResponse {
+  repeated CallEvent logs = 1;
+}
+
+// SIP admin
+message CreateSipExtensionRequest { SipExtension extension = 1; }
+message GetSipExtensionRequest    { string id = 1; }
+message ListSipExtensionsRequest  { string workspace_id = 1; }
+message ListSipExtensionsResponse { repeated SipExtension extensions = 1; }
+message DeleteSipExtensionRequest { string id = 1; }
+message DeleteSipExtensionResponse { bool ok = 1; }
+
+message CreateSipTrunkRequest { SipTrunk trunk = 1; }
+message GetSipTrunkRequest    { string id = 1; }
+message ListSipTrunksRequest  { string org_id = 1; }
+message ListSipTrunksResponse { repeated SipTrunk trunks = 1; }
+message UpdateSipTrunkRequest { SipTrunk trunk = 1; }
+message DeleteSipTrunkRequest { string id = 1; }
+message DeleteSipTrunkResponse { bool ok = 1; }
+
+message CreateSipDomainRequest { SipDomain domain = 1; }
+message ListSipDomainsRequest  { string org_id = 1; }
+message ListSipDomainsResponse { repeated SipDomain domains = 1; }
+message DeleteSipDomainRequest { string id = 1; }
+message DeleteSipDomainResponse { bool ok = 1; }
+
+// WebRTC bootstrap
+message IssueSoftphoneTokenRequest {
+  string agent_id = 1;                 // resolved from caller identity if empty
+}
+message IssueSoftphoneTokenResponse {
+  SoftphoneToken token = 1;
+}
+
+// ── Service ──────────────────────────────────────────────────────────────────
+
+service TelephonyService {
+  // Call control
+  rpc OriginateCall(OriginateCallRequest)   returns (OriginateCallResponse);
+  rpc HangupCall(HangupRequest)         returns (HangupResponse);
+  rpc TransferCall(TransferRequest)     returns (TransferResponse);
+  rpc HoldCall(HoldRequest)             returns (HoldResponse);
+  rpc ResumeCall(ResumeRequest)         returns (ResumeResponse);
+
+  // Call history
+  rpc GetCall(GetCallRequest)     returns (Call);
+  rpc ListCalls(ListCallsRequest) returns (ListCallsResponse);
+  rpc AppendCallEvent(AppendCallEventRequest)       returns (AppendCallEventResponse);
+  rpc ListCallEvents(ListCallEventsRequest)         returns (ListCallEventsResponse);
+
+  // SIP admin
+  rpc CreateSipExtension(CreateSipExtensionRequest) returns (SipExtension);
+  rpc GetSipExtension(GetSipExtensionRequest)       returns (SipExtension);
+  rpc ListSipExtensions(ListSipExtensionsRequest)   returns (ListSipExtensionsResponse);
+  rpc DeleteSipExtension(DeleteSipExtensionRequest) returns (DeleteSipExtensionResponse);
+
+  rpc CreateSipTrunk(CreateSipTrunkRequest) returns (SipTrunk);
+  rpc GetSipTrunk(GetSipTrunkRequest)       returns (SipTrunk);
+  rpc ListSipTrunks(ListSipTrunksRequest)   returns (ListSipTrunksResponse);
+  rpc UpdateSipTrunk(UpdateSipTrunkRequest) returns (SipTrunk);
+  rpc DeleteSipTrunk(DeleteSipTrunkRequest) returns (DeleteSipTrunkResponse);
+
+  rpc CreateSipDomain(CreateSipDomainRequest) returns (SipDomain);
+  rpc ListSipDomains(ListSipDomainsRequest)   returns (ListSipDomainsResponse);
+  rpc DeleteSipDomain(DeleteSipDomainRequest) returns (DeleteSipDomainResponse);
+
+  // WebRTC softphone
+  rpc IssueSoftphoneToken(IssueSoftphoneTokenRequest) returns (IssueSoftphoneTokenResponse);
+}

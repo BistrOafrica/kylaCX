@@ -661,10 +661,26 @@ CREATE TABLE messages (
 
 ---
 
-### Phase 5 — Telephony Integration (Weeks 31–36)  ⏳ NOT STARTED
-*Wire the existing extensive telephony proto layer into the platform.*
+### Phase 5 — Telephony Integration (Weeks 31–36)  🚧 FOUNDATION SHIPPED (slice 5a/5b backend done; ESL command path + frontend wiring remain)
+*Self-hosted SIP via FreeSWITCH with WebRTC softphone support.*
 
-> **Status:** `internal/telephony/{events,model,server,store}` directories exist but are empty. Extensive `call_*.proto` and `sip_*.proto` definitions are compiled into `pkg/pb/` but no server implements them yet. WebRTC softphone, IVR builder, call recording — all pending.
+> **Status (2026-05-29):** Architecture choice locked in: self-hosted SIP from day one (FreeSWITCH + coturn). Backend foundation shipped:
+>
+> **Infrastructure** (`deploy/docker-compose.yaml`): `freeswitch` (signalwire/freeswitch:1.10) exposes SIP/UDP 5060, SIP-over-WSS 7443 for browser softphones, ESL 8021 for Go control, RTP 16384-16484; `coturn` (4.6) exposes STUN/TURN 3478 + TURN/TLS 5349 + relay range 49160-49200.
+>
+> **Service layer** (`internal/telephony/`): `0010_telephony.sql` migration adds `calls` (id = FreeSWITCH UUID), `call_events` (per-call timeline), `sip_domains` (one default per org via partial unique index), `sip_extensions` (one per user, bcrypt-hashed SIP password), `sip_trunks` (write-only password field on the gRPC read path); new `telephony.proto` → `TelephonyService` gRPC (Originate/Hangup/Transfer/Hold/Resume + GetCall/ListCalls + AppendCallEvent/ListCallEvents + SIP admin + IssueSoftphoneToken).
+>
+> **PBX abstraction**: `PBXController` interface with `NoopPBX` fallback (binary boots without FS) and `FreeSWITCHController` skeleton that connects + authenticates ESL, subscribes to CHANNEL_CREATE/ANSWER/HANGUP_COMPLETE/SOFIA_REGISTER/RECORD_STOP, lifts events onto a buffered `CallEventStream`, and issues bgapi originate/uuid_kill/uuid_transfer/uuid_hold commands.
+>
+> **Event pipeline**: `EventBridge` consumes the ESL event stream → updates `calls` projection (ringing → answered → ended) + appends `call_events` rows + publishes `call.started`/`call.answered`/`call.ended` NATS events. The existing `communication.VoiceCallBridge` already subscribes to `call.ended` and auto-creates conversations — telephony plugs straight into the inbox.
+>
+> **WebRTC softphone bootstrap**: `IssueSoftphoneToken` returns an HS256 JWT signed with `JWT_SECRET_KEY` (bound to org/user/extension), the SIP-over-WSS URL, the SIP realm, and ICE servers (STUN + TURN credentials).
+>
+> **Open in slice 5a/5b**: ESL bgapi job-correlation (originate currently fires command but doesn't await the BACKGROUND_JOB response — UUID is generated locally and persisted optimistically); FreeSWITCH config (`deploy/freeswitch/` — extension XML, sofia gateway profiles, mod_xml_curl handler for dynamic extension lookup + JWT validation); frontend `Softphone.tsx` SIP.js / JsSIP wiring; mod_xml_curl integration so the PBX consults the Go backend for directory + dialplan lookups.
+>
+> **Open in slices 5c-5e**: IVR engine + IvrFlowBuilder wiring; queues + routing + wallboard; recording S3 upload + transcription via the AI engine.
+>
+> **Open in slice 5f**: SIP admin pages (sip_trunks/sip_extensions/sip_domains gRPCs exist; UI not yet built).
 
 **Goal:** Make VoIP a first-class communication channel in the platform.
 
@@ -694,16 +710,18 @@ CREATE TABLE messages (
 
 ---
 
-### Phase 6 — Automation Engine + AI (Weeks 37–46)  ✅ CORE COMPLETE (Campaigns still pending)
+### Phase 6 — Automation Engine + AI + Campaigns (Weeks 37–46)  ✅ COMPLETE
 *The differentiation layer.*
 
-> **Status (2026-05-26):** Automation engine + minimal AI shipped.
+> **Status (2026-05-29):** Automation engine + minimal AI + campaigns all shipped.
 >
-> **Automation engine** (`internal/automation/`): Temporal client + auto-setup + UI in `docker-compose.yaml`; `0008_automation.sql` migration; `workflow.proto` → `WorkflowService` gRPC (Create/Update/Get/List/Delete/GetRunHistory/TestRunWorkflow); `Store` with JSONB-indexed `FindMatchingWorkflows`; `Executor` with deterministic WorkflowID for NATS-redelivery dedup; `Consumer` on `kyla.*.>` using NATS queue group `kuyla-automation` for horizontal scaling; in-process Temporal worker started from `cmd/server/main.go`. All 11 action types implemented: `delay`, `start_workflow` (inline via `workflow.Sleep` / `ExecuteChildWorkflow`), plus 9 activities (`update_object`, `assign_user`, `create_object`, `create_task`, `send_message`, `invoke_webhook`, `set_sla`, `send_notification`, `run_ai_skill`).
+> **Automation engine** (`internal/automation/`): Temporal client + auto-setup + UI in `docker-compose.yaml`; `0008_automation.sql` migration; `workflow.proto` → `WorkflowService` gRPC (Create/Update/Get/List/Delete/GetRunHistory/TestRunWorkflow); `Store` with JSONB-indexed `FindMatchingWorkflows`; `Executor` with deterministic WorkflowID for NATS-redelivery dedup; `Consumer` on `kyla.*.>` using NATS queue group `kyla-automation` for horizontal scaling; in-process Temporal worker started from `cmd/server/main.go`. All 11 action types implemented: `delay`, `start_workflow` (inline via `workflow.Sleep` / `ExecuteChildWorkflow`), plus 9 activities (`update_object`, `assign_user`, `create_object`, `create_task`, `send_message`, `invoke_webhook`, `set_sla`, `send_notification`, `run_ai_skill`).
 >
 > **Minimal AI engine** (`internal/ai/`): `LLMProvider` interface with OpenAI (default) and Anthropic implementations, both via direct HTTP (no SDK deps); `NoopProvider` fallback so binary boots without keys; provider selection via `LLM_PROVIDER` env var; `AIService` gRPC (`ClassifyText`, `SummarizeText`, `GenerateReply`); in-process `ActivityAdapter` so the worker calls the provider directly without a gRPC hop. Per architectural decision: Temporal worker runs in same binary; versioning uses Temporal's `GetVersion()` patching; no JSONB definition snapshots.
 >
-> **Open:** Campaigns (`internal/campaigns/` still empty); visual workflow builder in React; richer AI (RAG, vector store, virtual agents) — these stay deferred to a later AI-specific phase.
+> **Campaigns** (`internal/campaigns/`): `0009_campaigns.sql` migration adds `campaigns`, `campaign_recipients`, `whatsapp_templates` tables; `campaigns.proto` → `CampaignService` gRPC (CRUD + Launch/Pause/Cancel + ListRecipients + WhatsApp template registry); `CampaignExecutionWorkflow` resolves audience (object_query or explicit), fans out per-recipient send via `SendRecipientActivity` (reuses `communication.AdapterRegistry` so messages route through the same WA/SMS/Email/Voice/WebChat adapters used by the inbox), `FinaliseCampaignActivity` recomputes denormalised stats. Schedule modes: `immediate`, `scheduled_once` (workflow.Sleep), `recurring` (Temporal Schedules with cron). Campaigns worker is a separate Temporal worker on the same `kyla-automation` task queue — keeps a slow audience resolution from starving the automation worker pool.
+>
+> **Open:** Visual workflow builder in React (frontend `automation` feature dir scaffold landed but the React Flow canvas isn't built); richer AI (RAG, vector store, virtual agents) — deferred to a later AI-specific phase; autodialer campaigns (depend on Phase 5 telephony).
 
 **Goal:** Deliver a visual workflow builder backed by Temporal for durable execution, and embedded AI capabilities.
 
@@ -1164,4 +1182,4 @@ A phase is complete when:
 
 ---
 
-*Last updated: 26 May 2026 — Phase 6 core (Automation engine + minimal AI) shipped. Campaigns and Phase 5/7 still pending.*
+*Last updated: 29 May 2026 — Phase 6 complete (Automation + AI + Campaigns). Phase 5 telephony foundation shipped (self-hosted SIP via FreeSWITCH + WebRTC token + ESL event bridge). Phase 7 (Analytics/Billing) still pending.*
