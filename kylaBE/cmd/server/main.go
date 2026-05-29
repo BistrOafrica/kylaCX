@@ -12,6 +12,7 @@ import (
 	"kyla-be/internal/ai"
 	"kyla-be/internal/automation"
 	"kyla-be/internal/automation/activities"
+	"kyla-be/internal/campaigns"
 	"kyla-be/internal/branch"
 	casbinsvc "kyla-be/internal/casbin"
 	"kyla-be/internal/communication"
@@ -196,6 +197,10 @@ func main() {
 		// Phase 6: Automation workflow definitions + Temporal run projections
 		&automation.Workflow{},
 		&automation.WorkflowRun{},
+		// Phase 6: Campaigns + per-recipient state + WhatsApp template mirror
+		&campaigns.Campaign{},
+		&campaigns.CampaignRecipient{},
+		&campaigns.WhatsAppTemplate{},
 	); migrateErr != nil {
 		log.Printf("migration warning: %v", migrateErr)
 	}
@@ -525,6 +530,27 @@ func main() {
 	}
 	defer automationConsumer.Stop()
 
+	// Phase 6: Campaigns — channel-agnostic broadcast engine.
+	// Shares the kyla-automation task queue with the automation worker but
+	// runs in its own Temporal worker so a slow audience resolution can't
+	// starve workflow execution.
+	campaignsStore := campaigns.NewStore(db.DB)
+	campaignsExecutor := campaigns.NewExecutor(temporalClient, automationTaskQueue)
+	campaignsServer := campaigns.NewServer(campaignsStore, authAdaptor, campaignsExecutor)
+	campaignsWorker, cwErr := campaigns.StartWorker(temporalClient, automationTaskQueue, campaigns.ActivityDeps{
+		Store:             campaignsStore,
+		ObjectStore:       ocStore,
+		ConversationStore: convStore,
+		MessageStore:      msgStore,
+		AdapterRegistry:   adapterRegistry,
+	})
+	if cwErr != nil {
+		log.Printf("campaigns worker start failed: %v", cwErr)
+	}
+	if campaignsWorker != nil {
+		defer campaignsWorker.Stop()
+	}
+
 	// ── Interceptors ─────────────────────────────────────────────────────────
 	interceptor := middleware.NewAuthInterceptor(jwtManager, authAdaptor, casbinEnforcer)
 	devicesInterceptor := middleware.NewSessionDevicesInterceptors(dbAuthStore)
@@ -591,6 +617,7 @@ func main() {
 	pb.RegisterProjectServiceServer(grpcServer, projectServer)
 	pb.RegisterWorkflowServiceServer(grpcServer, automationServer)
 	pb.RegisterAIServiceServer(grpcServer, aiServer)
+	pb.RegisterCampaignServiceServer(grpcServer, campaignsServer)
 
 	// ── Run gRPC + HTTP servers + Background Services ────────────────────────
 	// Create cancellation context for graceful shutdown of background services

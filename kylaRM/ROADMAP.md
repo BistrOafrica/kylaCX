@@ -694,16 +694,18 @@ CREATE TABLE messages (
 
 ---
 
-### Phase 6 — Automation Engine + AI (Weeks 37–46)  ✅ CORE COMPLETE (Campaigns still pending)
+### Phase 6 — Automation Engine + AI + Campaigns (Weeks 37–46)  ✅ COMPLETE
 *The differentiation layer.*
 
-> **Status (2026-05-26):** Automation engine + minimal AI shipped.
+> **Status (2026-05-29):** Automation engine + minimal AI + campaigns all shipped.
 >
-> **Automation engine** (`internal/automation/`): Temporal client + auto-setup + UI in `docker-compose.yaml`; `0008_automation.sql` migration; `workflow.proto` → `WorkflowService` gRPC (Create/Update/Get/List/Delete/GetRunHistory/TestRunWorkflow); `Store` with JSONB-indexed `FindMatchingWorkflows`; `Executor` with deterministic WorkflowID for NATS-redelivery dedup; `Consumer` on `kyla.*.>` using NATS queue group `kuyla-automation` for horizontal scaling; in-process Temporal worker started from `cmd/server/main.go`. All 11 action types implemented: `delay`, `start_workflow` (inline via `workflow.Sleep` / `ExecuteChildWorkflow`), plus 9 activities (`update_object`, `assign_user`, `create_object`, `create_task`, `send_message`, `invoke_webhook`, `set_sla`, `send_notification`, `run_ai_skill`).
+> **Automation engine** (`internal/automation/`): Temporal client + auto-setup + UI in `docker-compose.yaml`; `0008_automation.sql` migration; `workflow.proto` → `WorkflowService` gRPC (Create/Update/Get/List/Delete/GetRunHistory/TestRunWorkflow); `Store` with JSONB-indexed `FindMatchingWorkflows`; `Executor` with deterministic WorkflowID for NATS-redelivery dedup; `Consumer` on `kyla.*.>` using NATS queue group `kyla-automation` for horizontal scaling; in-process Temporal worker started from `cmd/server/main.go`. All 11 action types implemented: `delay`, `start_workflow` (inline via `workflow.Sleep` / `ExecuteChildWorkflow`), plus 9 activities (`update_object`, `assign_user`, `create_object`, `create_task`, `send_message`, `invoke_webhook`, `set_sla`, `send_notification`, `run_ai_skill`).
 >
 > **Minimal AI engine** (`internal/ai/`): `LLMProvider` interface with OpenAI (default) and Anthropic implementations, both via direct HTTP (no SDK deps); `NoopProvider` fallback so binary boots without keys; provider selection via `LLM_PROVIDER` env var; `AIService` gRPC (`ClassifyText`, `SummarizeText`, `GenerateReply`); in-process `ActivityAdapter` so the worker calls the provider directly without a gRPC hop. Per architectural decision: Temporal worker runs in same binary; versioning uses Temporal's `GetVersion()` patching; no JSONB definition snapshots.
 >
-> **Open:** Campaigns (`internal/campaigns/` still empty); visual workflow builder in React; richer AI (RAG, vector store, virtual agents) — these stay deferred to a later AI-specific phase.
+> **Campaigns** (`internal/campaigns/`): `0009_campaigns.sql` migration adds `campaigns`, `campaign_recipients`, `whatsapp_templates` tables; `campaigns.proto` → `CampaignService` gRPC (CRUD + Launch/Pause/Cancel + ListRecipients + WhatsApp template registry); `CampaignExecutionWorkflow` resolves audience (object_query or explicit), fans out per-recipient send via `SendRecipientActivity` (reuses `communication.AdapterRegistry` so messages route through the same WA/SMS/Email/Voice/WebChat adapters used by the inbox), `FinaliseCampaignActivity` recomputes denormalised stats. Schedule modes: `immediate`, `scheduled_once` (workflow.Sleep), `recurring` (Temporal Schedules with cron). Campaigns worker is a separate Temporal worker on the same `kyla-automation` task queue — keeps a slow audience resolution from starving the automation worker pool.
+>
+> **Open:** Visual workflow builder in React (frontend `automation` feature dir scaffold landed but the React Flow canvas isn't built); richer AI (RAG, vector store, virtual agents) — deferred to a later AI-specific phase; autodialer campaigns (depend on Phase 5 telephony).
 
 **Goal:** Deliver a visual workflow builder backed by Temporal for durable execution, and embedded AI capabilities.
 
@@ -1164,4 +1166,4 @@ A phase is complete when:
 
 ---
 
-*Last updated: 26 May 2026 — Phase 6 core (Automation engine + minimal AI) shipped. Campaigns and Phase 5/7 still pending.*
+*Last updated: 29 May 2026 — Phase 6 complete (Automation engine + minimal AI + Campaigns shipped). Phase 5 (Telephony) and Phase 7 (Analytics/Billing) still pending.*
